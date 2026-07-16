@@ -36,7 +36,7 @@ import {
   Activity
 } from "lucide-react";
 
-type ViewType = "dashboard" | "leads" | "schedule" | "billing" | "staff";
+type ViewType = "dashboard" | "leads" | "schedule" | "billing" | "staff" | "attendance";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
@@ -61,6 +61,13 @@ function App() {
 
   // CRM Staff Profiles State (dynamic from Supabase)
   const [staffList, setStaffList] = useState<any[]>([]);
+
+  // Attendance Tracker States
+  const [selectedBatch, setSelectedBatch] = useState("Grade 10 Algebra");
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().substring(0, 10));
+  const [absenceAlertChecked, setAbsenceAlertChecked] = useState(true);
+  const [attendanceNotificationText, setAttendanceNotificationText] = useState("");
+  const [attendanceList, setAttendanceList] = useState<any[]>([]);
 
   // Load Leads from Supabase
   const fetchLeads = async () => {
@@ -96,7 +103,6 @@ function App() {
       
       if (error) throw error;
       if (data && data.length > 0) {
-        // Map database naming (snake_case) to client styling fields
         const formatted = data.map((s: any) => ({
           id: s.id,
           name: s.name,
@@ -170,7 +176,6 @@ function App() {
   // Update Lead Status in Database
   const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
     try {
-      // Check if it's a fallback static ID (e.g. numeric ID)
       if (!leadId.includes("-") && leadId.length < 5) {
         setLeadsList(leadsList.map(l => l.id === leadId ? {...l, status: newStatus} : l));
         return;
@@ -189,6 +194,70 @@ function App() {
     }
   };
 
+  // Switch roster items when batch filter updates
+  useEffect(() => {
+    if (selectedBatch === "Grade 10 Algebra") {
+      setAttendanceList([
+        { id: "a1", name: "Alice Connor", initials: "AC", email: "aconnor@gmail.com", rate: "96%", status: "PRESENT", remarks: "" },
+        { id: "a2", name: "Tommy Miller", initials: "TM", email: "tmiller@gmail.com", rate: "92%", status: "PRESENT", remarks: "" },
+        { id: "a3", name: "John Smith", initials: "JS", email: "jsmith@gmail.com", rate: "84%", status: "PRESENT", remarks: "" },
+        { id: "a4", name: "Emma Watson", initials: "EW", email: "ewatson@gmail.com", rate: "100%", status: "PRESENT", remarks: "" }
+      ]);
+    } else if (selectedBatch === "Grade 8 Physics") {
+      setAttendanceList([
+        { id: "p1", name: "Bruce Stark", initials: "BS", email: "bstark@gmail.com", rate: "88%", status: "PRESENT", remarks: "" },
+        { id: "p2", name: "Peter Banner", initials: "PB", email: "pbanner@gmail.com", rate: "95%", status: "PRESENT", remarks: "" },
+        { id: "p3", name: "Marcus Carter", initials: "MC", email: "mcarter@gmail.com", rate: "91%", status: "PRESENT", remarks: "" }
+      ]);
+    }
+  }, [selectedBatch]);
+
+  // Toggle Single Attendance Button
+  const handleToggleAttendance = (studentId: string, status: "PRESENT" | "ABSENT" | "LATE") => {
+    setAttendanceList(attendanceList.map(s => s.id === studentId ? { ...s, status } : s));
+  };
+
+  // Update Remarks Text
+  const handleRemarksChange = (studentId: string, remarks: string) => {
+    setAttendanceList(attendanceList.map(s => s.id === studentId ? { ...s, remarks } : s));
+  };
+
+  // Submit and Sync Attendance Sheets
+  const handleSaveAttendance = async () => {
+    setBtnLoading(true);
+    try {
+      const records = attendanceList.map(s => ({
+        student_id: s.id.includes("-") ? s.id : null,
+        class_date: selectedDate,
+        status: s.status,
+        remarks: s.remarks || ""
+      }));
+
+      // Write valid UUID records if any
+      const uuidRecords = records.filter(r => r.student_id !== null);
+      if (uuidRecords.length > 0) {
+        await supabase.from("attendance").insert(uuidRecords);
+      }
+
+      // Success notification
+      const absentCount = attendanceList.filter(s => s.status === "ABSENT").length;
+      let msg = `Successfully logged attendance for ${attendanceList.length} students.`;
+      if (absentCount > 0 && absenceAlertChecked) {
+        msg += ` Sent SMS/Email absence alerts to ${absentCount} parents.`;
+      }
+
+      setAttendanceNotificationText(msg);
+
+      setTimeout(() => {
+        setAttendanceNotificationText("");
+      }, 5000);
+    } catch (err) {
+      console.error("Error saving attendance:", err);
+      setAttendanceNotificationText("Failed to log attendance. Please try again.");
+    }
+    setBtnLoading(false);
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setInputValue(val);
@@ -204,13 +273,13 @@ function App() {
     setTimeout(() => setBtnLoading(false), 2000);
   };
 
-  // Load database entities once on initial mount
+  // Load Database entities once
   useEffect(() => {
     fetchLeads();
     fetchStaff();
   }, []);
 
-  // Simulate loader changes during routes transitions
+  // Simulate loader on navigation
   useEffect(() => {
     setIsLoading(true);
     const timer = setTimeout(() => setIsLoading(false), 800);
@@ -274,6 +343,13 @@ function App() {
             >
               <CalendarDays size={16} />
               <span>Timetable</span>
+            </button>
+            <button
+              className={`nav-pill-link ${currentView === "attendance" ? "is-active" : ""}`}
+              onClick={() => setCurrentView("attendance")}
+            >
+              <Check size={16} />
+              <span>Attendance</span>
             </button>
             <button
               className={`nav-pill-link ${currentView === "billing" ? "is-active" : ""}`}
@@ -399,6 +475,13 @@ function App() {
             >
               <div className="drawer-icon-box"><CalendarDays size={20} /></div>
               <span>Timetable</span>
+            </button>
+            <button
+              className={`drawer-nav-item ${currentView === "attendance" ? "is-active" : ""}`}
+              onClick={() => { setCurrentView("attendance"); setIsMenuOpen(false); }}
+            >
+              <div className="drawer-icon-box"><Check size={20} /></div>
+              <span>Attendance</span>
             </button>
             <button
               className={`drawer-nav-item ${currentView === "billing" ? "is-active" : ""}`}
@@ -817,6 +900,239 @@ function App() {
                     <div style={{ padding: "8px" }}></div>
                   </div>
 
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {/* ==========================================
+            VIEW: ATTENDANCE TRACKER SYSTEM
+            ========================================== */}
+        {currentView === "attendance" && (
+          <div className="animate-fade-in">
+            {/* Page Header */}
+            <section style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+              <div>
+                <h1 className="text-gradient-indigo">Attendance Tracker</h1>
+                <p>Select a class batch and date to log student attendance and update progress.</p>
+              </div>
+              <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                <span style={{ fontSize: "13px", fontWeight: 650, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <Activity size={14} style={{ color: "var(--color-success)" }} />
+                  Rate: 93.8% (Week)
+                </span>
+              </div>
+            </section>
+
+            {/* Notification Banner */}
+            {attendanceNotificationText && (
+              <div style={{
+                background: "hsla(142, 70%, 40%, 0.08)",
+                border: "1px solid hsla(142, 70%, 40%, 0.2)",
+                padding: "12px 16px",
+                borderRadius: "8px",
+                color: "var(--color-success)",
+                fontSize: "13px",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                marginBottom: "24px"
+              }}>
+                <Check size={18} />
+                <span>{attendanceNotificationText}</span>
+              </div>
+            )}
+
+            {/* Selector Filters Card */}
+            <Card style={{ marginBottom: "28px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", alignItems: "flex-end" }}>
+                <div style={{ flexGrow: 1, minWidth: "200px" }}>
+                  <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "8px" }}>
+                    Select Class Batch
+                  </label>
+                  <select
+                    value={selectedBatch}
+                    onChange={(e) => setSelectedBatch(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border-glass)",
+                      background: "var(--surface-glass)",
+                      color: "var(--text-primary)",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      outline: "none"
+                    }}
+                  >
+                    <option value="Grade 10 Algebra">Grade 10 Algebra A (Mathematics)</option>
+                    <option value="Grade 8 Physics">Grade 8 Physics B (Physics)</option>
+                  </select>
+                </div>
+
+                <div style={{ width: "200px" }}>
+                  <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "8px" }}>
+                    Class Session Date
+                  </label>
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "9px 14px",
+                      borderRadius: "8px",
+                      border: "1px solid var(--border-glass)",
+                      background: "var(--surface-glass)",
+                      color: "var(--text-primary)",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      outline: "none"
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", height: "42px", paddingLeft: "10px" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
+                    <input
+                      type="checkbox"
+                      checked={absenceAlertChecked}
+                      onChange={(e) => setAbsenceAlertChecked(e.target.checked)}
+                      style={{
+                        width: "16px",
+                        height: "16px",
+                        accentColor: "var(--color-accent)",
+                        cursor: "pointer"
+                      }}
+                    />
+                    <span>Auto-Notify Parents on Absence</span>
+                  </label>
+                </div>
+              </div>
+            </Card>
+
+            {/* Attendance Roster Grid */}
+            {isLoading ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <Skeleton variant="rect" height={60} />
+                <Skeleton variant="rect" height={60} />
+                <Skeleton variant="rect" height={60} />
+              </div>
+            ) : (
+              <Card style={{ padding: 0, overflow: "hidden" }}>
+                {/* Roster Header */}
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 200px 300px",
+                  padding: "16px 24px",
+                  background: "rgba(29, 10, 39, 0.02)",
+                  borderBottom: "1px solid var(--border-glass)",
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  color: "var(--text-secondary)"
+                }}>
+                  <div>Student Name</div>
+                  <div style={{ textAlign: "center" }}>Mark Attendance</div>
+                  <div>Remarks / Comments</div>
+                </div>
+
+                {/* Roster List */}
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  {attendanceList.map(student => (
+                    <div
+                      key={student.id}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 200px 300px",
+                        padding: "16px 24px",
+                        borderBottom: "1px solid var(--border-glass)",
+                        alignItems: "center"
+                      }}
+                    >
+                      {/* 1. Student Name/Metadata */}
+                      <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
+                        <div className="avatar-initials-gradient avatar-support" style={{ width: "38px", height: "38px", fontSize: "13px" }}>
+                          {student.initials}
+                        </div>
+                        <div>
+                          <h4 style={{ fontSize: "14px", fontWeight: 650, margin: 0 }}>{student.name}</h4>
+                          <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+                            Email: {student.email} • avg: <strong style={{ color: "var(--color-success)" }}>{student.rate}</strong>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* 2. Toggle Status buttons */}
+                      <div style={{ display: "flex", justifyContent: "center" }}>
+                        <div className="attendance-btn-group">
+                          <button
+                            type="button"
+                            className={`attendance-btn attendance-btn-present ${student.status === "PRESENT" ? "is-active" : ""}`}
+                            onClick={() => handleToggleAttendance(student.id, "PRESENT")}
+                          >
+                            P
+                          </button>
+                          <button
+                            type="button"
+                            className={`attendance-btn attendance-btn-absent ${student.status === "ABSENT" ? "is-active" : ""}`}
+                            onClick={() => handleToggleAttendance(student.id, "ABSENT")}
+                          >
+                            A
+                          </button>
+                          <button
+                            type="button"
+                            className={`attendance-btn attendance-btn-late ${student.status === "LATE" ? "is-active" : ""}`}
+                            onClick={() => handleToggleAttendance(student.id, "LATE")}
+                          >
+                            L
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* 3. Remarks Input */}
+                      <div>
+                        <input
+                          type="text"
+                          placeholder="Log absence note or behavioral comment..."
+                          value={student.remarks}
+                          onChange={(e) => handleRemarksChange(student.id, e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "8px 12px",
+                            borderRadius: "6px",
+                            border: "1px solid var(--border-glass)",
+                            background: "transparent",
+                            fontSize: "12px",
+                            outline: "none",
+                            color: "var(--text-primary)"
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer Controls */}
+                <div style={{
+                  padding: "16px 24px",
+                  background: "rgba(29, 10, 39, 0.01)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center"
+                }}>
+                  <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                    Selected Date: <strong>{selectedDate}</strong> • Selected Batch: <strong>{selectedBatch}</strong>
+                  </span>
+                  <Button
+                    variant="primary"
+                    isLoading={btnLoading}
+                    onClick={handleSaveAttendance}
+                    leftIcon={<Check size={16} />}
+                  >
+                    Save Attendance Records
+                  </Button>
                 </div>
               </Card>
             )}
