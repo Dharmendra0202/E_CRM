@@ -4,6 +4,7 @@ import { Input } from "./components/ui/Input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./components/ui/Card";
 import { Skeleton } from "./components/ui/Skeleton";
 import { Toggle } from "./components/ui/Toggle";
+import { supabase } from "./utils/supabaseClient";
 import {
   Search,
   User,
@@ -53,125 +54,139 @@ function App() {
   // Staff Directory Filters
   const [activeStaffFilter, setActiveStaffFilter] = useState<StaffRoleType>("ALL");
 
-  // Leads CRM Mock State
-  const [leadsList, setLeadsList] = useState([
-    { id: "1", name: "Alice Cooper", email: "alice@rock.com", phone: "+1555001", status: "NEW", source: "Facebook Ad" },
-    { id: "2", name: "John Connor", email: "jconnor@sky.net", phone: "+1555002", status: "CONTACTED", source: "Referral" },
-    { id: "3", name: "Sarah Connor", email: "sconnor@sky.net", phone: "+1555003", status: "DEMO", source: "Web Form" },
-    { id: "4", name: "Marcus Wright", email: "mwright@cyber.com", phone: "+1555004", status: "ENROLLED", source: "Google Search" }
-  ]);
+  // Leads CRM State (dynamic from Supabase)
+  const [leadsList, setLeadsList] = useState<any[]>([]);
   const [newLeadName, setNewLeadName] = useState("");
   const [newLeadEmail, setNewLeadEmail] = useState("");
 
-  // CRM Staff Profiles Mock Data
-  const [staffList] = useState([
-    {
-      id: "s1",
-      name: "Dharmendra Admin",
-      initials: "DA",
-      role: "ADMIN",
-      title: "Super Administrator",
-      email: "dharmendra@ecrm.com",
-      phone: "+1555101",
-      status: "Online",
-      assignment: "Database Audits, Access Controls",
-      avatarClass: "avatar-admin",
-      badgeClass: "role-badge-admin"
-    },
-    {
-      id: "s2",
-      name: "Sarah Jenkins",
-      initials: "SJ",
-      role: "ADMIN",
-      title: "Admissions Registrar",
-      email: "sjenkins@ecrm.com",
-      phone: "+1555102",
-      status: "Online",
-      assignment: "Student Rosters, Batch Placement",
-      avatarClass: "avatar-admin",
-      badgeClass: "role-badge-admin"
-    },
-    {
-      id: "s3",
-      name: "Prof. Aaron Carter",
-      initials: "AC",
-      role: "TEACHER",
-      title: "Mathematics Head — Ph.D.",
-      email: "acarter@ecrm.com",
-      phone: "+1555103",
-      status: "In Class",
-      assignment: "Grade 10 Algebra, Calculus Advanced",
-      avatarClass: "avatar-teacher",
-      badgeClass: "role-badge-teacher"
-    },
-    {
-      id: "s4",
-      name: "Prof. Bruce Banner",
-      initials: "BB",
-      role: "TEACHER",
-      title: "Physics Instructor — M.Sc.",
-      email: "bbanner@ecrm.com",
-      phone: "+1555104",
-      status: "On Break",
-      assignment: "Grade 8 Mechanics, Thermal Dynamics",
-      avatarClass: "avatar-teacher",
-      badgeClass: "role-badge-teacher"
-    },
-    {
-      id: "s5",
-      name: "Clara Oswald",
-      initials: "CO",
-      role: "SALES",
-      title: "Senior Admissions Advisor",
-      email: "coswald@ecrm.com",
-      phone: "+1555105",
-      status: "Online",
-      assignment: "Lead Pipeline Audits, Parent Consultation",
-      avatarClass: "avatar-sales",
-      badgeClass: "role-badge-sales"
-    },
-    {
-      id: "s6",
-      name: "Tony Stark",
-      initials: "TS",
-      role: "BILLING",
-      title: "Finance Controller",
-      email: "tstark@ecrm.com",
-      phone: "+1555106",
-      status: "Offline",
-      assignment: "Stripe Reconciliations, Billing Overdues",
-      avatarClass: "avatar-billing",
-      badgeClass: "role-badge-billing"
-    },
-    {
-      id: "s7",
-      name: "Peter Parker",
-      initials: "PP",
-      role: "SUPPORT",
-      title: "IT Support Technician",
-      email: "pparker@ecrm.com",
-      phone: "+1555107",
-      status: "Online",
-      assignment: "Vite Bundles, Database Backups",
-      avatarClass: "avatar-support",
-      badgeClass: "role-badge-support"
-    }
-  ]);
+  // CRM Staff Profiles State (dynamic from Supabase)
+  const [staffList, setStaffList] = useState<any[]>([]);
 
-  const handleAddLead = (e: React.FormEvent) => {
+  // Load Leads from Supabase
+  const fetchLeads = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*")
+        .order("created_at", { ascending: false });
+      
+      if (error) throw error;
+      if (data) {
+        setLeadsList(data);
+      }
+    } catch (err) {
+      console.error("Error fetching leads from Supabase:", err);
+      // Fallback list
+      setLeadsList([
+        { id: "1", name: "Alice Cooper", email: "alice@rock.com", phone: "+1555001", status: "NEW", source: "Facebook Ad" },
+        { id: "2", name: "John Connor", email: "jconnor@sky.net", phone: "+1555002", status: "CONTACTED", source: "Referral" },
+        { id: "3", name: "Sarah Connor", email: "sconnor@sky.net", phone: "+1555003", status: "DEMO", source: "Web Form" },
+        { id: "4", name: "Marcus Wright", email: "mwright@cyber.com", phone: "+1555004", status: "ENROLLED", source: "Google Search" }
+      ]);
+    }
+  };
+
+  // Load Staff from Supabase
+  const fetchStaff = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("staff")
+        .select("*")
+        .order("created_at", { ascending: true });
+      
+      if (error) throw error;
+      if (data && data.length > 0) {
+        // Map database naming (snake_case) to client styling fields
+        const formatted = data.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          initials: s.initials,
+          role: s.role,
+          title: s.title,
+          email: s.email,
+          phone: s.phone,
+          status: s.status,
+          assignment: s.assignment,
+          avatarClass: s.avatar_class,
+          badgeClass: s.badge_class
+        }));
+        setStaffList(formatted);
+      } else {
+        loadMockStaff();
+      }
+    } catch (err) {
+      console.error("Error fetching staff from Supabase:", err);
+      loadMockStaff();
+    }
+  };
+
+  const loadMockStaff = () => {
+    setStaffList([
+      { id: "s1", name: "Dharmendra Admin", initials: "DA", role: "ADMIN", title: "Super Administrator", email: "dharmendra@ecrm.com", phone: "+1555101", status: "Online", assignment: "Database Audits, Access Controls", avatarClass: "avatar-admin", badgeClass: "role-badge-admin" },
+      { id: "s2", name: "Sarah Jenkins", initials: "SJ", role: "ADMIN", title: "Admissions Registrar", email: "sjenkins@ecrm.com", phone: "+1555102", status: "Online", assignment: "Student Rosters, Batch Placement", avatarClass: "avatar-admin", badgeClass: "role-badge-admin" },
+      { id: "s3", name: "Prof. Aaron Carter", initials: "AC", role: "TEACHER", title: "Mathematics Head — Ph.D.", email: "acarter@ecrm.com", phone: "+1555103", status: "In Class", assignment: "Grade 10 Algebra, Calculus Advanced", avatarClass: "avatar-teacher", badgeClass: "role-badge-teacher" },
+      { id: "s4", name: "Prof. Bruce Banner", initials: "BB", role: "TEACHER", title: "Physics Instructor — M.Sc.", email: "bbanner@ecrm.com", phone: "+1555104", status: "On Break", assignment: "Grade 8 Mechanics, Thermal Dynamics", avatarClass: "avatar-teacher", badgeClass: "role-badge-teacher" },
+      { id: "s5", name: "Clara Oswald", initials: "CO", role: "SALES", title: "Senior Admissions Advisor", email: "coswald@ecrm.com", phone: "+1555105", status: "Online", assignment: "Lead Pipeline Audits, Parent Consultation", avatarClass: "avatar-sales", badgeClass: "role-badge-sales" },
+      { id: "s6", name: "Tony Stark", initials: "TS", role: "BILLING", title: "Finance Controller", email: "tstark@ecrm.com", phone: "+1555106", status: "Offline", assignment: "Stripe Reconciliations, Billing Overdues", avatarClass: "avatar-billing", badgeClass: "role-badge-billing" },
+      { id: "s7", name: "Peter Parker", initials: "PP", role: "SUPPORT", title: "IT Support Technician", email: "pparker@ecrm.com", phone: "+1555107", status: "Online", assignment: "Vite Bundles, Database Backups", avatarClass: "avatar-support", badgeClass: "role-badge-support" }
+    ]);
+  };
+
+  // Add Lead to Database
+  const handleAddLead = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newLeadName) return;
-    const newLead = {
-      id: Date.now().toString(),
-      name: newLeadName,
-      email: newLeadEmail || "no-email@inquiry.com",
-      phone: "+1555099",
-      status: "NEW",
-      source: "Manual Entry"
-    };
-    setLeadsList([...leadsList, newLead]);
+    const email = newLeadEmail || "no-email@inquiry.com";
+
+    try {
+      const { data, error } = await supabase
+        .from("leads")
+        .insert([{
+          name: newLeadName,
+          email: email,
+          phone: "+1555099",
+          status: "NEW",
+          source: "Manual Entry"
+        }])
+        .select();
+
+      if (error) throw error;
+      if (data && data.length > 0) {
+        setLeadsList([data[0], ...leadsList]);
+      } else {
+        const fallback = { id: Date.now().toString(), name: newLeadName, email, phone: "+1555099", status: "NEW", source: "Manual Entry" };
+        setLeadsList([fallback, ...leadsList]);
+      }
+    } catch (err) {
+      console.error("Error inserting lead to Supabase:", err);
+      const fallback = { id: Date.now().toString(), name: newLeadName, email, phone: "+1555099", status: "NEW", source: "Manual Entry" };
+      setLeadsList([fallback, ...leadsList]);
+    }
+    
     setNewLeadName("");
     setNewLeadEmail("");
+  };
+
+  // Update Lead Status in Database
+  const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
+    try {
+      // Check if it's a fallback static ID (e.g. numeric ID)
+      if (!leadId.includes("-") && leadId.length < 5) {
+        setLeadsList(leadsList.map(l => l.id === leadId ? {...l, status: newStatus} : l));
+        return;
+      }
+
+      const { error } = await supabase
+        .from("leads")
+        .update({ status: newStatus })
+        .eq("id", leadId);
+
+      if (error) throw error;
+      setLeadsList(leadsList.map(l => l.id === leadId ? {...l, status: newStatus} : l));
+    } catch (err) {
+      console.error("Error updating lead status in Supabase:", err);
+      setLeadsList(leadsList.map(l => l.id === leadId ? {...l, status: newStatus} : l));
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -189,10 +204,16 @@ function App() {
     setTimeout(() => setBtnLoading(false), 2000);
   };
 
-  // Simulate dashboard initial load
+  // Load database entities once on initial mount
+  useEffect(() => {
+    fetchLeads();
+    fetchStaff();
+  }, []);
+
+  // Simulate loader changes during routes transitions
   useEffect(() => {
     setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 1200);
+    const timer = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(timer);
   }, [currentView]);
 
@@ -625,9 +646,7 @@ function App() {
                           <span style={{ fontSize: "10px", background: "hsla(328, 100%, 54%, 0.1)", color: "var(--color-accent)", padding: "2px 6px", borderRadius: "4px" }}>
                             {lead.source}
                           </span>
-                          <Button size="sm" variant="ghost" onClick={() => {
-                            setLeadsList(leadsList.map(l => l.id === lead.id ? {...l, status: "CONTACTED"} : l));
-                          }} style={{ padding: "2px 4px", fontSize: "11px" }}>
+                          <Button size="sm" variant="ghost" onClick={() => handleUpdateLeadStatus(lead.id, "CONTACTED")} style={{ padding: "2px 4px", fontSize: "11px" }}>
                             Contact <ChevronRight size={12} />
                           </Button>
                         </div>
@@ -655,9 +674,7 @@ function App() {
                           <span style={{ fontSize: "10px", background: "hsla(271, 91%, 60%, 0.1)", color: "var(--color-warning)", padding: "2px 6px", borderRadius: "4px" }}>
                             {lead.source}
                           </span>
-                          <Button size="sm" variant="ghost" onClick={() => {
-                            setLeadsList(leadsList.map(l => l.id === lead.id ? {...l, status: "DEMO"} : l));
-                          }} style={{ padding: "2px 4px", fontSize: "11px" }}>
+                          <Button size="sm" variant="ghost" onClick={() => handleUpdateLeadStatus(lead.id, "DEMO")} style={{ padding: "2px 4px", fontSize: "11px" }}>
                             Demo <ChevronRight size={12} />
                           </Button>
                         </div>
@@ -685,9 +702,7 @@ function App() {
                           <span style={{ fontSize: "10px", background: "hsla(200, 95%, 50%, 0.1)", color: "var(--color-info)", padding: "2px 6px", borderRadius: "4px" }}>
                             {lead.source}
                           </span>
-                          <Button size="sm" variant="ghost" onClick={() => {
-                            setLeadsList(leadsList.map(l => l.id === lead.id ? {...l, status: "ENROLLED"} : l));
-                          }} style={{ padding: "2px 4px", fontSize: "11px" }}>
+                          <Button size="sm" variant="ghost" onClick={() => handleUpdateLeadStatus(lead.id, "ENROLLED")} style={{ padding: "2px 4px", fontSize: "11px" }}>
                             Enroll <ChevronRight size={12} />
                           </Button>
                         </div>
