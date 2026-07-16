@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./com
 import { Skeleton } from "./components/ui/Skeleton";
 import { Toggle } from "./components/ui/Toggle";
 import { supabase } from "./utils/supabaseClient";
+import { Login } from "./components/Login";
 import {
   Search,
   User,
@@ -40,6 +41,10 @@ type ViewType = "dashboard" | "leads" | "schedule" | "billing" | "staff" | "atte
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
+  // Authentication & Session States
+  const [session, setSession] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+
   // Navigation & UI States
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -271,11 +276,34 @@ function App() {
     setTimeout(() => setBtnLoading(false), 2000);
   };
 
-  // Load Database entities once
+  // Handle Auth Session loading on Mount
   useEffect(() => {
-    fetchLeads();
-    fetchStaff();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        setUserProfile(session.user);
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session?.user) {
+        setUserProfile(session.user);
+      } else {
+        setUserProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  // Fetch Database entities once session changes to authenticated
+  useEffect(() => {
+    if (userProfile) {
+      fetchLeads();
+      fetchStaff();
+    }
+  }, [userProfile]);
 
   // Simulate loader on navigation
   useEffect(() => {
@@ -288,6 +316,19 @@ function App() {
   const filteredStaff = activeStaffFilter === "ALL" 
     ? staffList 
     : staffList.filter(s => s.role === activeStaffFilter);
+
+  const userInitials = userProfile?.user_metadata?.name
+    ? userProfile.user_metadata.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()
+    : userProfile?.email
+    ? userProfile.email.substring(0, 2).toUpperCase()
+    : "DA";
+
+  const userName = userProfile?.user_metadata?.name || userProfile?.email?.split("@")[0] || "Dharmendra Admin";
+  const userRole = userProfile?.user_metadata?.role || "Super Administrator";
+
+  if (!userProfile) {
+    return <Login onLoginSuccess={(u) => setUserProfile(u)} />;
+  }
 
   return (
     <div className="crm-container relative overflow-hidden">
@@ -385,15 +426,15 @@ function App() {
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 aria-label="User profile menu"
               >
-                <div className="navbar-avatar-circle">DA</div>
+                <div className="navbar-avatar-circle">{userInitials}</div>
               </button>
 
               {/* Profile Dropdown Menu */}
               {isProfileOpen && (
                 <div className="navbar-profile-dropdown" style={{ top: "45px" }}>
                   <div className="dropdown-user-header">
-                    <div className="dropdown-user-name">Dharmendra Admin</div>
-                    <div className="dropdown-user-role">Super Administrator</div>
+                    <div className="dropdown-user-name">{userName}</div>
+                    <div className="dropdown-user-role">{userRole}</div>
                   </div>
                   
                   <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}>
@@ -418,7 +459,15 @@ function App() {
 
                   <hr style={{ border: 0, borderTop: "1px solid var(--border-glass)", margin: "4px 0" }} />
 
-                  <button className="dropdown-item dropdown-item-danger" onClick={() => setIsProfileOpen(false)}>
+                  <button
+                    className="dropdown-item dropdown-item-danger"
+                    onClick={async () => {
+                      setIsProfileOpen(false);
+                      await supabase.auth.signOut();
+                      setUserProfile(null);
+                      setSession(null);
+                    }}
+                  >
                     <LogOut size={14} />
                     <span>Log Out</span>
                   </button>
