@@ -1,0 +1,137 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id               String       @id @default(uuid())
+  email            String       @unique
+  passwordHash     String
+  role             String       // ADMIN, TEACHER, STUDENT, PARENT
+  firstName        String
+  lastName         String
+  phone            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  student          Student?
+  teacher          Teacher?
+  attendanceMarked Attendance[] @relation("markedBy")
+  leadsAssigned    Lead[]       @relation("assignedAdmin")
+}
+
+model Lead {
+  id              String   @id @default(uuid())
+  name            String
+  email           String
+  phone           String
+  status          String   // NEW, CONTACTED, DEMO_SCHEDULED, ENROLLED, LOST
+  source          String
+  notes           String?
+  assignedAdminId String?
+  assignedAdmin   User?    @relation("assignedAdmin", fields: [assignedAdminId], references: [id])
+  createdAt       DateTime @default(now())
+}
+
+model Student {
+  id          String            @id @default(uuid())
+  userId      String?           @unique
+  user        User?             @relation(fields: [userId], references: [id])
+  parentName  String
+  parentPhone String
+  parentEmail String
+  dateOfBirth DateTime
+  createdAt   DateTime          @default(now())
+  enrollments BatchEnrollment[]
+  attendance  Attendance[]
+  invoices    Invoice[]
+}
+
+model Teacher {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  bio           String?
+  qualification String
+  hourlyRate    Float
+  batches       Batch[]
+}
+
+model Batch {
+  id           String            @id @default(uuid())
+  name         String
+  subject      String
+  startDate    DateTime
+  endDate      DateTime
+  capacity     Int
+  teacherId    String
+  teacher      Teacher           @relation(fields: [teacherId], references: [id])
+  feeAmount    Float
+  feeFrequency String            // MONTHLY, TERM, ONETIME
+  enrollments  BatchEnrollment[]
+  schedules    Schedule[]
+}
+
+model BatchEnrollment {
+  id         String   @id @default(uuid())
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id])
+  batchId    String
+  batch      Batch    @relation(fields: [batchId], references: [id])
+  enrolledAt DateTime @default(now())
+  status     String   // ACTIVE, COMPLETED, SUSPENDED
+
+  @@unique([studentId, batchId])
+}
+
+model Schedule {
+  id         String       @id @default(uuid())
+  batchId    String
+  batch      Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  roomOrLink String
+  dayOfWeek  Int          // 1 (Mon) to 7 (Sun)
+  startTime  String       // e.g. "08:00"
+  endTime    String       // e.g. "09:30"
+  attendance Attendance[]
+}
+
+model Attendance {
+  id         String   @id @default(uuid())
+  scheduleId String
+  schedule   Schedule @relation(fields: [scheduleId], references: [id])
+  studentId  String
+  student    Student  @relation(fields: [studentId], references: [id])
+  classDate  DateTime
+  status     String   // PRESENT, ABSENT, LATE
+  remarks    String?
+  markedById String
+  markedBy   User     @relation("markedBy", fields: [markedById], references: [id])
+  recordedAt DateTime @default(now())
+
+  @@unique([scheduleId, studentId, classDate])
+}
+
+model Invoice {
+  id                    String    @id @default(uuid())
+  studentId             String
+  student               Student   @relation(fields: [studentId], references: [id])
+  totalAmount           Float
+  status                String    // UNPAID, PARTIAL, PAID, VOID
+  dueDate               DateTime
+  paidAt                DateTime?
+  stripePaymentIntentId String?   @unique
+  payments              Payment[]
+}
+
+model Payment {
+  id                   String   @id @default(uuid())
+  invoiceId            String
+  invoice              Invoice  @relation(fields: [invoiceId], references: [id])
+  amount               Float
+  paymentMethod        String   // CARD, CASH, BANK_TRANSFER
+  transactionReference String?  @unique
+  paidAt               DateTime @default(now())
+}

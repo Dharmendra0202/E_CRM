@@ -1,0 +1,1235 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   TABLE OF CONTENTS
+   ==========================================================================
+   1. GLOBAL DESIGN VARIABLES & TOKENS
+   2. GLOBAL RESET & SCROLLBAR STYLING
+   3. TYPOGRAPHY SYSTEM
+   4. UTILITY ANIMATIONS & TRANSITIONS
+   5. BACKGROUND GRIDS & SPOTLIGHT UTILITIES
+   6. UI COMPONENT: BUTTONS
+   7. UI COMPONENT: INPUT FIELDS
+   8. UI COMPONENT: CARDS & LAYOUT MODULES
+   9. UI COMPONENT: SKELETON LOADERS
+   10. UI COMPONENT: TOGGLE SWITCHES
+   ========================================================================== */
+
+/* ==========================================================================
+   1. GLOBAL DESIGN VARIABLES & TOKENS
+   ========================================================================== */
+:root {
+  /* HSL Velvet Magenta & Royal Purple Colors (Premium Light Mode) */
+  --bg-primary: hsl(320, 30%, 98%); /* Soft pink-white background */
+  --bg-secondary: hsl(320, 20%, 94%); /* Lilac-white secondary background */
+  --surface-glass: hsla(0, 0%, 100%, 0.7); /* Frosted glass white */
+  --border-glass: hsla(285, 30%, 20%, 0.06); /* Translucent dark borders */
+  
+  --text-primary: hsl(285, 50%, 12%); /* Deep velvet plum text */
+  --text-secondary: hsl(285, 20%, 45%); /* Muted plum-gray text */
+  
+  --color-accent: hsl(328, 100%, 54%); /* Bright neon pink */
+  --color-accent-glow: hsla(328, 100%, 54%, 0.06);
+  --color-success: hsl(142, 70%, 40%);
+  --color-warning: hsl(271, 91%, 60%);
+  --color-danger: hsl(342, 90%, 48%);
+  --color-info: hsl(200, 95%, 50%);
+  
+  /* Fonts */
+  --font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Shadows & Glassmorphic filters */
+  --shadow-card: 0 10px 30px -10px rgba(29, 10, 39, 0.06), 0 1px 3px rgba(29, 10, 39, 0.04);
+  --shadow-glow: 0 0 20px var(--color-accent-glow);
+  --glass-blur: blur(20px) saturate(190%);
+
+  /* Border Radii */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  
+  /* Spacing Grid */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-xxl: 32px;
+}
+
+@theme {
+  --color-brand-accent: var(--color-accent);
+  --color-brand-bg: var(--bg-primary);
+  --color-brand-card: var(--bg-secondary);
+  --color-brand-text: var(--text-primary);
+  --color-brand-muted: var(--text-secondary);
+  --color-brand-success: var(--color-success);
+  --color-brand-warning: var(--color-warning);
+  --color-brand-danger: var(--color-danger);
+  
+  --font-outfit: var(--font-family);
+}
+
+/* ==========================================================================
+   2. GLOBAL RESET & SCROLLBAR STYLING
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsla(285, 20%, 45%, 0.35);
+  border-radius: var(--radius-sm);
+  border: 3px solid var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* ==========================================================================
+   3. TYPOGRAPHY SYSTEM
+   ========================================================================== */
+h1 {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+h2 {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   4. UTILITY ANIMATIONS & TRANSITIONS
+   ========================================================================== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px var(--color-accent-glow);
+  }
+  50% {
+    box-shadow: 0 0 25px hsla(328, 100%, 54%, 0.15);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+/* ==========================================================================
+   5. BACKGROUND GRIDS & SPOTLIGHT UTILITIES
+   ========================================================================== */
+.bg-grid-pattern {
+  position: relative;
+}
+
+.bg-grid-pattern::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(hsla(328, 100%, 54%, 0.05) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Linear text gradients inspired by GradientDeck */
+.text-gradient-indigo {
+  background: linear-gradient(135deg, hsl(328, 100%, 55%) 0%, hsl(271, 91%, 50%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, hsl(142, 70%, 45%) 0%, hsl(172, 70%, 35%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-sunset {
+  background: linear-gradient(135deg, hsl(328, 100%, 55%) 0%, hsl(342, 90%, 50%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Radial light source overlay helper */
+.radial-spotlight {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, hsla(328, 100%, 54%, 0.06) 0%, transparent 70%);
+  top: -10%;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ==========================================================================
+   6. UI COMPONENT: BUTTONS
+   ========================================================================== */
+.glass-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--border-glass);
+  background: var(--surface-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--text-primary);
+  text-decoration: none;
+  gap: var(--space-sm);
+  position: relative;
+  overflow: hidden;
+  outline: none;
+}
+
+.glass-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
+.btn-md {
+  padding: 10px 20px;
+  font-size: 14px;
+}
+
+.btn-lg {
+  padding: 14px 28px;
+  font-size: 16px;
+}
+
+.glass-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: hsla(285, 30%, 94%, 0.8);
+  border-color: rgba(29, 10, 39, 0.15);
+}
+
+.glass-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, hsl(328, 100%, 54%) 0%, hsl(271, 91%, 60%) 100%);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 15px -3px hsla(328, 100%, 54%, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(328, 100%, 60%) 0%, hsl(271, 91%, 65%) 100%);
+  border-color: transparent;
+  box-shadow: 0 6px 20px -3px hsla(328, 100%, 54%, 0.45);
+}
+
+.btn-secondary {
+  background: hsla(285, 30%, 98%, 0.6);
+  border-color: rgba(29, 10, 39, 0.1);
+  color: var(--text-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: hsla(285, 30%, 94%, 0.8);
+  border-color: rgba(29, 10, 39, 0.15);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, hsl(142, 70%, 40%) 0%, hsl(150, 70%, 35%) 100%);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(142, 70%, 45%) 0%, hsl(150, 70%, 40%) 100%);
+  box-shadow: 0 4px 15px -3px hsla(142, 70%, 40%, 0.3);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, hsl(342, 90%, 48%) 0%, hsl(350, 90%, 42%) 100%);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(342, 90%, 53%) 0%, hsl(350, 90%, 47%) 100%);
+  box-shadow: 0 4px 15px -3px hsla(342, 90%, 48%, 0.3);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, hsl(271, 91%, 60%) 0%, hsl(260, 91%, 55%) 100%);
+  color: #ffffff;
+  border-color: transparent;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: linear-gradient(135deg, hsl(271, 91%, 65%) 0%, hsl(260, 91%, 60%) 100%);
+  box-shadow: 0 4px 15px -3px hsla(271, 91%, 60%, 0.3);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(29, 10, 39, 0.05);
+  border-color: transparent;
+  transform: none;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: btnSpinnerRotate 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes btnSpinnerRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.btn-icon-left, .btn-icon-right {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1.1em;
+}
+
+/* ==========================================================================
+   7. UI COMPONENT: INPUT FIELDS
+   ========================================================================== */
+.glass-input-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  margin-bottom: var(--space-md);
+}
+
+.glass-input-wrapper {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  height: 52px;
+  background: var(--surface-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-sm);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-input-field {
+  width: 100%;
+  height: 100%;
+  padding: 22px var(--space-lg) 6px var(--space-lg);
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-family);
+  font-size: 14px;
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+.glass-input-field:placeholder-shown {
+  padding: 14px var(--space-lg);
+}
+
+.glass-input-field.has-left-icon {
+  padding-left: 44px;
+}
+
+.glass-input-field.has-right-icon {
+  padding-right: 44px;
+}
+
+.glass-input-label {
+  position: absolute;
+  left: var(--space-lg);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: var(--text-secondary);
+  pointer-events: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: left top;
+}
+
+.has-left-icon ~ .glass-input-label {
+  left: 44px;
+}
+
+.is-active .glass-input-label {
+  top: 14px;
+  transform: translateY(-50%) scale(0.8);
+  color: var(--text-secondary);
+}
+
+.is-focused .glass-input-label {
+  color: var(--color-accent);
+}
+
+.glass-input-wrapper:hover {
+  border-color: rgba(29, 10, 39, 0.15);
+}
+
+.is-focused .glass-input-wrapper {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 15px var(--color-accent-glow);
+  background: hsla(285, 30%, 98%, 0.7);
+}
+
+.has-error .glass-input-wrapper {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 10px hsla(342, 90%, 48%, 0.1);
+}
+
+.has-error .is-focused .glass-input-wrapper {
+  box-shadow: 0 0 15px hsla(342, 90%, 48%, 0.2);
+}
+
+.has-error .glass-input-label {
+  color: var(--color-danger) !important;
+}
+
+.glass-input-error-msg {
+  font-size: 12px;
+  color: var(--color-danger);
+  margin-top: 4px;
+  padding-left: var(--space-xs);
+  display: flex;
+  align-items: center;
+}
+
+.glass-input-icon-left {
+  position: absolute;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  pointer-events: none;
+  font-size: 18px;
+}
+
+.glass-input-icon-right {
+  position: absolute;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.glass-input-icon-right:hover {
+  color: var(--text-primary);
+}
+
+/* ==========================================================================
+   8. UI COMPONENT: CARDS & LAYOUT MODULES
+   ========================================================================== */
+.glass-card {
+  background: var(--surface-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.card-hover-lift:hover {
+  transform: translateY(-4px);
+  border-color: rgba(29, 10, 39, 0.12);
+  box-shadow: 0 15px 35px -5px rgba(29, 10, 39, 0.1),
+              0 0 25px var(--color-accent-glow);
+}
+
+.card-glow {
+  border-color: hsla(328, 100%, 54%, 0.2);
+  box-shadow: var(--shadow-card),
+              0 0 20px var(--color-accent-glow);
+}
+
+.card-glow:hover {
+  border-color: hsla(328, 100%, 54%, 0.4);
+  box-shadow: 0 15px 35px -5px rgba(29, 10, 39, 0.1),
+              0 0 30px hsla(328, 100%, 54%, 0.2);
+}
+
+.glass-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-lg);
+}
+
+.glass-card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.glass-card-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.glass-card-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.glass-card-footer {
+  display: flex;
+  align-items: center;
+  margin-top: var(--space-xl);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-glass);
+}
+
+/* ==========================================================================
+   9. UI COMPONENT: SKELETON LOADERS
+   ========================================================================== */
+.glass-skeleton {
+  display: block;
+  background: rgba(29, 10, 39, 0.05);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.glass-skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 20%,
+    rgba(255, 255, 255, 0.6) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: glassSkeletonShimmer 1.8s infinite;
+}
+
+@keyframes glassSkeletonShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-text {
+  height: 14px;
+  width: 100%;
+  border-radius: 4px;
+  margin-bottom: var(--space-xs);
+}
+
+.skeleton-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-rect {
+  width: 100%;
+  height: 100px;
+  border-radius: var(--radius-sm);
+}
+
+/* ==========================================================================
+   10. UI COMPONENT: TOGGLE SWITCHES
+   ========================================================================== */
+.glass-toggle-container {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.glass-toggle-switch-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.glass-toggle-input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.glass-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(29, 10, 39, 0.05);
+  border: 1px solid var(--border-glass);
+  border-radius: 34px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.glass-toggle-slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-secondary);
+  border-radius: 50%;
+  transition: all 0.35s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+  box-shadow: 0 2px 4px rgba(29, 10, 39, 0.08);
+}
+
+.glass-toggle-input:checked + .glass-toggle-slider {
+  background-color: hsla(328, 100%, 54%, 0.15);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent-glow);
+}
+
+.glass-toggle-input:checked + .glass-toggle-slider::before {
+  transform: translateX(20px);
+  background-color: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+}
+
+.glass-toggle-input:focus-visible + .glass-toggle-slider {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+.glass-toggle-slider:hover {
+  border-color: rgba(29, 10, 39, 0.15);
+}
+
+.glass-toggle-labels {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  cursor: pointer;
+}
+
+.glass-toggle-label {
+  font-size: 14px;
+  font-weight: 550;
+  color: var(--text-primary);
+  cursor: pointer;
+  line-height: 26px;
+}
+
+.glass-toggle-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   11. UI COMPONENT: NAVIGATION DRAWER
+   ========================================================================== */
+.top-drawer {
+  position: absolute;
+  top: 75px; /* Height of the sticky header */
+  left: 0;
+  width: 100%;
+  background: var(--surface-glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--border-glass);
+  z-index: 40;
+  box-shadow: 0 20px 40px -15px rgba(29, 10, 39, 0.08);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+  padding: var(--space-xl) 0;
+}
+
+.top-drawer.is-open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.drawer-content-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-xl);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.drawer-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.drawer-nav-item:hover {
+  background: hsla(328, 100%, 54%, 0.05);
+  border-color: hsla(328, 100%, 54%, 0.15);
+  color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.drawer-nav-item.is-active {
+  background: hsla(328, 100%, 54%, 0.08);
+  border-color: hsla(328, 100%, 54%, 0.25);
+  color: var(--color-accent);
+  box-shadow: 0 0 15px var(--color-accent-glow);
+}
+
+.drawer-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 6px;
+  background: rgba(29, 10, 39, 0.04);
+  color: var(--text-secondary);
+  transition: all 0.25s ease;
+}
+
+.drawer-nav-item:hover .drawer-icon-box,
+.drawer-nav-item.is-active .drawer-icon-box {
+  background: hsla(328, 100%, 54%, 0.15);
+  color: var(--color-accent);
+}
+
+/* Fast Info/Metric Banner inside Drawer */
+.drawer-footer-banner {
+  max-width: 1200px;
+  margin: var(--space-xl) auto 0 auto;
+  padding: var(--space-md) var(--space-xl) 0 var(--space-xl);
+  border-top: 1px dashed var(--border-glass);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   12. UI COMPONENT: RESPONSIVE NAVBAR SYSTEM
+   ========================================================================== */
+.navbar-desktop-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.nav-pill-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+
+.nav-pill-link:hover {
+  background: hsla(328, 100%, 54%, 0.04);
+  color: var(--color-accent);
+  border-color: hsla(328, 100%, 54%, 0.1);
+  transform: translateY(-1px);
+}
+
+.nav-pill-link.is-active {
+  background: hsla(328, 100%, 54%, 0.08);
+  color: var(--color-accent);
+  border-color: hsla(328, 100%, 54%, 0.2);
+  box-shadow: 0 0 12px var(--color-accent-glow);
+}
+
+/* Search Box inside Navbar */
+.navbar-search-box {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 280px;
+  height: 38px;
+  background: hsla(285, 30%, 94%, 0.5);
+  border: 1px solid var(--border-glass);
+  border-radius: 18px;
+  padding: 0 var(--space-md);
+  transition: all 0.25s ease;
+}
+
+.navbar-search-box:focus-within {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent-glow);
+  background: #ffffff;
+}
+
+.navbar-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  width: 100%;
+  color: var(--text-primary);
+  margin-left: 8px;
+}
+
+/* Profile Dropdown trigger & menus */
+.profile-dropdown-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-profile-trigger {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 2px solid var(--border-glass);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.navbar-profile-trigger:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent-glow);
+  transform: scale(1.05);
+}
+
+.navbar-profile-dropdown {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  width: 220px;
+  background: #ffffff;
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  box-shadow: 0 15px 35px -5px rgba(29, 10, 39, 0.12),
+              0 0 15px rgba(328, 100%, 54%, 0.02);
+  backdrop-filter: var(--glass-blur);
+  padding: var(--space-sm);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transform-origin: top right;
+  animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.dropdown-user-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-glass);
+  margin-bottom: 4px;
+}
+
+.dropdown-user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dropdown-user-role {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--text-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: hsla(328, 100%, 54%, 0.05);
+  color: var(--color-accent);
+}
+
+.dropdown-item-danger {
+  color: var(--color-danger);
+}
+
+.dropdown-item-danger:hover {
+  background: hsla(342, 90%, 48%, 0.05);
+  color: var(--color-danger);
+}
+
+/* Visibility Rules across screen sizes */
+@media (min-width: 901px) {
+  .navbar-mobile-toggle {
+    display: none !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .navbar-desktop-nav,
+  .navbar-search-box {
+    display: none !important;
+  }
+}
+
+/* Premium Navbar Ornaments & Details */
+.navbar-gradient-top-border {
+  position: relative;
+}
+
+.navbar-gradient-top-border::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-accent) 0%, var(--color-warning) 50%, var(--color-danger) 100%);
+  z-index: 60;
+}
+
+.navbar-avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, hsl(328, 100%, 60%) 0%, hsl(271, 91%, 65%) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 10px var(--color-accent-glow);
+  transition: all 0.25s ease;
+}
+
+.navbar-profile-trigger {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.navbar-profile-trigger:hover .navbar-avatar-circle {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px hsla(328, 100%, 60%, 0.45);
+}
+
+.navbar-logo-badge {
+  font-size: 9px;
+  font-weight: 850;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-danger) 100%);
+  padding: 2px 6px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px var(--color-accent-glow);
+}
+
+.navbar-bell-ping {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  box-shadow: 0 0 8px var(--color-danger);
+  z-index: 10;
+}
+
+.navbar-bell-ping-ring {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+  z-index: 5;
+}
+
+@keyframes ping {
+  75%, 100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+/* ==========================================================================
+   13. UI COMPONENT: CRM STAFF & DIRECTORY LAYOUTS
+   ========================================================================== */
+.staff-layout-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-xl);
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .staff-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.staff-sidebar-card {
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.staff-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px var(--space-md);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.staff-filter-btn:hover {
+  background: hsla(285, 30%, 94%, 0.6);
+  color: var(--text-primary);
+}
+
+.staff-filter-btn.is-active {
+  background: hsla(328, 100%, 54%, 0.08);
+  color: var(--color-accent);
+  border-color: hsla(328, 100%, 54%, 0.2);
+  box-shadow: 0 0 10px var(--color-accent-glow);
+}
+
+.role-badge {
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.role-badge-admin {
+  background: hsla(271, 91%, 60%, 0.1);
+  color: var(--color-warning);
+}
+
+.role-badge-teacher {
+  background: hsla(142, 70%, 40%, 0.1);
+  color: var(--color-success);
+}
+
+.role-badge-sales {
+  background: hsla(328, 100%, 54%, 0.1);
+  color: var(--color-accent);
+}
+
+.role-badge-billing {
+  background: hsla(38, 92%, 50%, 0.1);
+  color: hsl(38, 92%, 45%);
+}
+
+.role-badge-support {
+  background: hsla(200, 95%, 50%, 0.1);
+  color: var(--color-info);
+}
+
+.avatar-initials-gradient {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(29, 10, 39, 0.08);
+}
+
+.avatar-admin {
+  background: linear-gradient(135deg, hsl(271, 91%, 60%) 0%, hsl(285, 91%, 50%) 100%);
+}
+
+.avatar-teacher {
+  background: linear-gradient(135deg, hsl(142, 70%, 40%) 0%, hsl(160, 70%, 35%) 100%);
+}
+
+.avatar-sales {
+  background: linear-gradient(135deg, hsl(328, 100%, 54%) 0%, hsl(342, 90%, 48%) 100%);
+}
+
+.avatar-billing {
+  background: linear-gradient(135deg, hsl(38, 92%, 50%) 0%, hsl(20, 92%, 45%) 100%);
+}
+
+.avatar-support {
+  background: linear-gradient(135deg, hsl(200, 95%, 50%) 0%, hsl(220, 95%, 45%) 100%);
+}
+

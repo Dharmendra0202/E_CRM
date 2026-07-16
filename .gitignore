@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+jspm_packages/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# SQLite Local Database
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.staging
+
+# System / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Agent caches / configs
+.agents/
+.gemini/
+mcp_config.json
+task.md
+implementation_plan.md
+walkthrough.md
