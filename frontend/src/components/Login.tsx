@@ -13,7 +13,8 @@ import {
   Lightbulb,
   Trophy,
   HelpCircle,
-  Puzzle
+  Puzzle,
+  BookOpen
 } from "lucide-react";
 
 interface LoginProps {
@@ -22,8 +23,8 @@ interface LoginProps {
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [activeTab, setActiveTab] = useState<"login" | "signup">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("Dharmendra");
+  const [password, setPassword] = useState("1234567890");
   const [name, setName] = useState("");
   const [role, setRole] = useState("STUDENT");
   const [loading, setLoading] = useState(false);
@@ -367,8 +368,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
         {/* NEON SYMBOLS LAYER */}
         <div className="neon-floating-icons-layer">
-          <div className="neon-symbol-wrapper symbol-question neon-glow-cyan" style={{ fontStyle: "italic", fontWeight: "bold" }}>
-            ?
+          {/* Custom neon-tube style SVG Question Mark to resolve clipping/font issues */}
+          <div className="neon-symbol-wrapper symbol-question neon-glow-cyan">
+            <svg width="50" height="70" viewBox="0 0 50 70" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M 8 20 C 8 4, 42 4, 42 20 C 42 34, 25 38, 25 48" />
+              <circle cx="25" cy="60" r="3" fill="currentColor" stroke="none" />
+            </svg>
           </div>
           
           <div className="neon-symbol-wrapper symbol-brain neon-glow-pink">
@@ -397,6 +402,64 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
           <div className="neon-symbol-wrapper symbol-star-2 neon-glow-yellow">
             <Sparkles size={32} />
+          </div>
+
+          <div className="neon-symbol-wrapper symbol-planet">
+            <svg width="140" height="140" viewBox="-10 -10 140 140" overflow="visible" style={{ filter: "drop-shadow(0 0 15px hsla(328, 100%, 54%, 0.6))" }}>
+              <defs>
+                <radialGradient id="planetGrad" cx="30%" cy="30%" r="70%">
+                  <stop offset="0%" stopColor="hsl(328, 100%, 75%)" />
+                  <stop offset="60%" stopColor="hsl(328, 100%, 45%)" />
+                  <stop offset="100%" stopColor="hsl(244, 49%, 14%)" />
+                </radialGradient>
+              </defs>
+              {/* Back of the planet ring */}
+              <path d="M 5 65 A 58 18 15 0 1 115 52" fill="none" stroke="hsl(200, 95%, 65%)" strokeWidth="3.5" opacity="0.55" style={{ filter: "drop-shadow(0 0 8px hsl(200, 95%, 50%))" }} />
+              {/* Planet sphere */}
+              <circle cx="60" cy="60" r="28" fill="url(#planetGrad)" />
+              {/* Front of the planet ring */}
+              <path d="M 115 52 A 58 18 15 0 1 5 65" fill="none" stroke="hsl(200, 95%, 65%)" strokeWidth="4" style={{ filter: "drop-shadow(0 0 10px hsl(200, 95%, 50%))" }} />
+            </svg>
+          </div>
+
+          {/* New Custom High-Fidelity SVG Satellite (pointing outwards/upwards) */}
+          <div className="neon-symbol-wrapper symbol-satellite">
+            <svg width="70" height="70" viewBox="0 0 64 64" style={{ filter: "drop-shadow(0 0 12px hsla(271, 91%, 60%, 0.65))" }}>
+              {/* Left solar panel array */}
+              <rect x="2" y="22" width="16" height="20" rx="2" fill="hsl(200, 95%, 65%)" stroke="hsl(200, 95%, 45%)" strokeWidth="2"/>
+              <line x1="2" y1="32" x2="18" y2="32" stroke="hsl(200, 95%, 45%)" strokeWidth="1.5" />
+              {/* Right solar panel array */}
+              <rect x="46" y="22" width="16" height="20" rx="2" fill="hsl(200, 95%, 65%)" stroke="hsl(200, 95%, 45%)" strokeWidth="2"/>
+              <line x1="46" y1="32" x2="62" y2="32" stroke="hsl(200, 95%, 45%)" strokeWidth="1.5" />
+              {/* Core chassis connect rods */}
+              <line x1="18" y1="32" x2="46" y2="32" stroke="#ecf0f1" strokeWidth="3.5"/>
+              {/* Satellite central body */}
+              <rect x="25" y="24" width="14" height="16" rx="3" fill="#ffffff" stroke="hsl(271, 91%, 60%)" strokeWidth="2.5" />
+              <circle cx="32" cy="32" r="3" fill="hsl(328, 100%, 54%)" />
+              {/* Antenna dish pointing outwards */}
+              <path d="M 22 18 Q 32 10 42 18" fill="none" stroke="#ffffff" strokeWidth="2"/>
+              <line x1="32" y1="14" x2="32" y2="6" stroke="#ffffff" strokeWidth="1.5" />
+              <circle cx="32" cy="4" r="2.5" fill="hsl(328, 100%, 54%)" style={{ filter: "drop-shadow(0 0 6px hsl(328, 100%, 54%))" }} />
+            </svg>
+          </div>
+
+          {/* New Book Symbol representing learning */}
+          <div className="neon-symbol-wrapper symbol-book neon-glow-purple">
+            <BookOpen size={42} />
+          </div>
+
+          {/* New Graduation Cap Symbol */}
+          <div className="neon-symbol-wrapper symbol-grad-cap neon-glow-yellow">
+            <GraduationCap size={44} />
+          </div>
+
+          {/* Extra sparkles background details */}
+          <div className="neon-symbol-wrapper symbol-star-3 neon-glow-cyan">
+            <Sparkles size={18} />
+          </div>
+
+          <div className="neon-symbol-wrapper symbol-star-4 neon-glow-yellow">
+            <Sparkles size={20} />
           </div>
         </div>
 

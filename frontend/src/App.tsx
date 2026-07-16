@@ -6,6 +6,7 @@ import { Skeleton } from "./components/ui/Skeleton";
 import { Toggle } from "./components/ui/Toggle";
 import { supabase } from "./utils/supabaseClient";
 import { Login } from "./components/Login";
+import { StudentManagement } from "./components/StudentManagement";
 import {
   Search,
   User,
@@ -350,7 +351,7 @@ function App() {
           onClick={() => setCurrentView("leads")}
         >
           <Users2 size={20} />
-          <span className="crm-dock-tooltip">Leads CRM</span>
+          <span className="crm-dock-tooltip">Students</span>
         </button>
 
         <button
@@ -504,7 +505,7 @@ function App() {
                 onClick={() => { setCurrentView("leads"); setIsMenuOpen(false); }}
               >
                 <div className="drawer-icon-box"><Users2 size={20} /></div>
-                <span>Leads CRM</span>
+                <span>Students</span>
               </button>
               <button
                 className={`drawer-nav-item ${currentView === "schedule" ? "is-active" : ""}`}
@@ -585,7 +586,7 @@ function App() {
                           <span style={{ fontSize: "12px", color: "var(--color-success)", fontWeight: 600 }}>+12% MoM</span>
                         </div>
                         <p style={{ fontSize: "13px", fontWeight: 550, color: "var(--text-secondary)" }}>Active Student Profiles</p>
-                        <h2 style={{ fontSize: "36px", marginTop: "4px" }}>{leadsList.length + 450}</h2>
+                        <h2 style={{ fontSize: "36px", marginTop: "4px" }}>458</h2>
                       </>
                     )}
                   </Card>
@@ -606,7 +607,7 @@ function App() {
                           <span style={{ fontSize: "12px", color: "var(--color-success)", fontWeight: 600 }}>92% collected</span>
                         </div>
                         <p style={{ fontSize: "13px", fontWeight: 550, color: "var(--text-secondary)" }}>Monthly Invoiced Dues</p>
-                        <h2 style={{ fontSize: "36px", marginTop: "4px" }} className="text-gradient-emerald">$12,850</h2>
+                        <h2 style={{ fontSize: "36px", marginTop: "4px" }} className="text-gradient-emerald">₹1,28,500</h2>
                       </>
                     )}
                   </Card>
@@ -624,10 +625,10 @@ function App() {
                           <div style={{ background: "hsla(271, 91%, 60%, 0.1)", padding: "10px", borderRadius: "10px" }}>
                             <TrendingUp size={20} style={{ color: "var(--color-warning)" }} />
                           </div>
-                          <span style={{ fontSize: "12px", color: "var(--color-warning)", fontWeight: 600 }}>{leadsList.length} Active Leads</span>
+                          <span style={{ fontSize: "12px", color: "var(--color-success)", fontWeight: 600 }}>8 Registered</span>
                         </div>
-                        <p style={{ fontSize: "13px", fontWeight: 550, color: "var(--text-secondary)" }}>Lead Pipeline Conversion</p>
-                        <h2 style={{ fontSize: "36px", marginTop: "4px" }}>18.4%</h2>
+                        <p style={{ fontSize: "13px", fontWeight: 550, color: "var(--text-secondary)" }}>Average Attendance Rate</p>
+                        <h2 style={{ fontSize: "36px", marginTop: "4px" }}>94.2%</h2>
                       </>
                     )}
                   </Card>
@@ -707,161 +708,10 @@ function App() {
           )}
 
           {/* ==========================================
-              VIEW: LEAD PIPELINE (CRM)
+              VIEW: STUDENT MANAGEMENT HUB
               ========================================== */}
           {currentView === "leads" && (
-            <div className="animate-fade-in">
-              <section style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
-                <div>
-                  <h1 className="text-gradient-indigo">Lead Inquiry Pipeline</h1>
-                  <p>Track student registrations, follow-ups, and demo bookings.</p>
-                </div>
-                <form onSubmit={handleAddLead} style={{ display: "flex", gap: "12px", alignItems: "flex-end" }}>
-                  <Input
-                    placeholder="Lead Name"
-                    value={newLeadName}
-                    onChange={(e) => setNewLeadName(e.target.value)}
-                    containerClassName="mb-0"
-                    style={{ height: "42px", padding: "12px" }}
-                  />
-                  <Input
-                    placeholder="Email"
-                    value={newLeadEmail}
-                    onChange={(e) => setNewLeadEmail(e.target.value)}
-                    containerClassName="mb-0"
-                    style={{ height: "42px", padding: "12px" }}
-                  />
-                  <Button type="submit" variant="primary" style={{ height: "42px" }} leftIcon={<Plus size={16} />}>
-                    Add
-                  </Button>
-                </form>
-              </section>
-
-              {isLoading ? (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "20px" }}>
-                  <Skeleton variant="rect" height={250} />
-                  <Skeleton variant="rect" height={250} />
-                  <Skeleton variant="rect" height={250} />
-                  <Skeleton variant="rect" height={250} />
-                </div>
-              ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "20px" }}>
-                  
-                  {/* Column: NEW */}
-                  <Card style={{ background: "rgba(29, 10, 39, 0.02)" }}>
-                    <CardHeader style={{ padding: "0 0 10px 0", borderBottom: "2px solid var(--color-accent)" }}>
-                      <CardTitle style={{ fontSize: "15px", display: "flex", justifyContent: "space-between" }}>
-                        <span>New Inquiry</span>
-                        <span style={{ fontSize: "11px", background: "var(--border-glass)", padding: "2px 8px", borderRadius: "10px" }}>
-                          {leadsList.filter(l => l.status === "NEW").length}
-                        </span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent style={{ gap: "12px", marginTop: "16px", padding: 0 }}>
-                      {leadsList.filter(l => l.status === "NEW").map(lead => (
-                        <Card key={lead.id} hoverLift style={{ padding: "12px", background: "var(--surface-glass)" }}>
-                          <h4 style={{ fontSize: "14px", fontWeight: 600 }}>{lead.name}</h4>
-                          <p style={{ fontSize: "11px", margin: "4px 0" }}>{lead.email}</p>
-                          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
-                            <span style={{ fontSize: "10px", background: "hsla(328, 100%, 54%, 0.1)", color: "var(--color-accent)", padding: "2px 6px", borderRadius: "4px" }}>
-                              {lead.source}
-                            </span>
-                            <Button size="sm" variant="ghost" onClick={() => handleUpdateLeadStatus(lead.id, "CONTACTED")} style={{ padding: "2px 4px", fontSize: "11px" }}>
-                              Contact <ChevronRight size={12} />
-                            </Button>
-                          </div>
-                        </Card>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                  {/* Column: CONTACTED */}
-                  <Card style={{ background: "rgba(29, 10, 39, 0.02)" }}>
-                    <CardHeader style={{ padding: "0 0 10px 0", borderBottom: "2px solid var(--color-warning)" }}>
-                      <CardTitle style={{ fontSize: "15px", display: "flex", justifyContent: "space-between" }}>
-                        <span>Contacted</span>
-                        <span style={{ fontSize: "11px", background: "var(--border-glass)", padding: "2px 8px", borderRadius: "10px" }}>
-                          {leadsList.filter(l => l.status === "CONTACTED").length}
-                        </span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent style={{ gap: "12px", marginTop: "16px", padding: 0 }}>
-                      {leadsList.filter(l => l.status === "CONTACTED").map(lead => (
-                        <Card key={lead.id} hoverLift style={{ padding: "12px", background: "var(--surface-glass)" }}>
-                          <h4 style={{ fontSize: "14px", fontWeight: 600 }}>{lead.name}</h4>
-                          <p style={{ fontSize: "11px", margin: "4px 0" }}>{lead.email}</p>
-                          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
-                            <span style={{ fontSize: "10px", background: "hsla(271, 91%, 60%, 0.1)", color: "var(--color-warning)", padding: "2px 6px", borderRadius: "4px" }}>
-                              {lead.source}
-                            </span>
-                            <Button size="sm" variant="ghost" onClick={() => handleUpdateLeadStatus(lead.id, "DEMO")} style={{ padding: "2px 4px", fontSize: "11px" }}>
-                              Demo <ChevronRight size={12} />
-                            </Button>
-                          </div>
-                        </Card>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                  {/* Column: DEMO SCHEDULED */}
-                  <Card style={{ background: "rgba(29, 10, 39, 0.02)" }}>
-                    <CardHeader style={{ padding: "0 0 10px 0", borderBottom: "2px solid var(--color-info)" }}>
-                      <CardTitle style={{ fontSize: "15px", display: "flex", justifyContent: "space-between" }}>
-                        <span>Demo Scheduled</span>
-                        <span style={{ fontSize: "11px", background: "var(--border-glass)", padding: "2px 8px", borderRadius: "10px" }}>
-                          {leadsList.filter(l => l.status === "DEMO").length}
-                        </span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent style={{ gap: "12px", marginTop: "16px", padding: 0 }}>
-                      {leadsList.filter(l => l.status === "DEMO").map(lead => (
-                        <Card key={lead.id} hoverLift style={{ padding: "12px", background: "var(--surface-glass)" }}>
-                          <h4 style={{ fontSize: "14px", fontWeight: 600 }}>{lead.name}</h4>
-                          <p style={{ fontSize: "11px", margin: "4px 0" }}>{lead.email}</p>
-                          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
-                            <span style={{ fontSize: "10px", background: "hsla(200, 95%, 50%, 0.1)", color: "var(--color-info)", padding: "2px 6px", borderRadius: "4px" }}>
-                              {lead.source}
-                            </span>
-                            <Button size="sm" variant="ghost" onClick={() => handleUpdateLeadStatus(lead.id, "ENROLLED")} style={{ padding: "2px 4px", fontSize: "11px" }}>
-                              Enroll <ChevronRight size={12} />
-                            </Button>
-                          </div>
-                        </Card>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                  {/* Column: ENROLLED */}
-                  <Card style={{ background: "rgba(29, 10, 39, 0.02)" }}>
-                    <CardHeader style={{ padding: "0 0 10px 0", borderBottom: "2px solid var(--color-success)" }}>
-                      <CardTitle style={{ fontSize: "15px", display: "flex", justifyContent: "space-between" }}>
-                        <span>Enrolled</span>
-                        <span style={{ fontSize: "11px", background: "var(--border-glass)", padding: "2px 8px", borderRadius: "10px" }}>
-                          {leadsList.filter(l => l.status === "ENROLLED").length}
-                        </span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent style={{ gap: "12px", marginTop: "16px", padding: 0 }}>
-                      {leadsList.filter(l => l.status === "ENROLLED").map(lead => (
-                        <Card key={lead.id} hoverLift style={{ padding: "12px", background: "var(--surface-glass)" }}>
-                          <h4 style={{ fontSize: "14px", fontWeight: 600 }}>{lead.name}</h4>
-                          <p style={{ fontSize: "11px", margin: "4px 0" }}>{lead.email}</p>
-                          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
-                            <span style={{ fontSize: "10px", background: "hsla(142, 70%, 40%, 0.1)", color: "var(--color-success)", padding: "2px 6px", borderRadius: "4px" }}>
-                              {lead.source}
-                            </span>
-                            <span style={{ fontSize: "11px", color: "var(--color-success)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "2px" }}>
-                              <Check size={12} /> Student
-                            </span>
-                          </div>
-                        </Card>
-                      ))}
-                    </CardContent>
-                  </Card>
-
-                </div>
-              )}
-            </div>
+            <StudentManagement />
           )}
 
           {/* ==========================================

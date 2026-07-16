@@ -23,20 +23,27 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
+    // Determine if we should apply the React Bits animated style
+    const isAnimated = variant === "primary" && !disabled && !isLoading;
+
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={`glass-btn btn-${variant} btn-${size} ${isLoading ? "btn-loading" : ""} ${className}`}
+        className={`glass-btn btn-${variant} btn-${size} ${isAnimated ? "react-bits-animated-btn" : ""} ${isLoading ? "btn-loading" : ""} ${className}`}
         {...props}
       >
-        {isLoading && <span className="btn-spinner" />}
-        {!isLoading && leftIcon && <span className="btn-icon-left">{leftIcon}</span>}
-        <span className="btn-content">{children}</span>
-        {!isLoading && rightIcon && <span className="btn-icon-right">{rightIcon}</span>}
+        {isAnimated && <span className="react-bits-shimmer"></span>}
+        <span className="btn-inner-content">
+          {isLoading && <span className="btn-spinner" />}
+          {!isLoading && leftIcon && <span className="btn-icon-left">{leftIcon}</span>}
+          <span className="btn-content">{children}</span>
+          {!isLoading && rightIcon && <span className="btn-icon-right">{rightIcon}</span>}
+        </span>
       </button>
     );
   }
 );
 
 Button.displayName = "Button";
+
