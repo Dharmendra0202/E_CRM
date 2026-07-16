@@ -24,6 +24,9 @@ out/
 .env.test
 .env.production
 .env.staging
+*.env
+.env.*
+
 
 # System / IDE
 .DS_Store
