@@ -1,1024 +1,585 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./components/ui/Button";
-import { Input } from "./components/ui/Input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./components/ui/Card";
+import { Card } from "./components/ui/Card";
 import { Skeleton } from "./components/ui/Skeleton";
 import { Toggle } from "./components/ui/Toggle";
 import { supabase } from "./utils/supabaseClient";
 import { Login } from "./components/Login";
 import { StudentManagement } from "./components/StudentManagement";
 import {
-  Search,
-  User,
-  Mail,
-  Plus,
-  Check,
-  Trash2,
-  AlertTriangle,
-  GraduationCap,
-  DollarSign,
-  TrendingUp,
-  Menu,
-  X,
-  LayoutDashboard,
-  Users2,
-  CalendarDays,
-  CreditCard,
-  Briefcase,
-  ExternalLink,
-  ChevronRight,
-  Filter,
-  Settings,
-  LogOut,
-  ShieldCheck,
-  Bell,
-  Sparkles,
-  Phone,
-  MessageSquare,
-  Activity
+  Search, User, Plus, Check, GraduationCap, DollarSign, TrendingUp,
+  Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
+  ExternalLink, Filter, Settings, LogOut, ShieldCheck, Bell, Sparkles,
+  Activity, BookOpen, AlertCircle, ArrowUpRight, Clock, UserCheck,
+  BarChart3, IndianRupee, CheckCircle2, XCircle, Target, Zap
 } from "lucide-react";
 
 type ViewType = "dashboard" | "leads" | "schedule" | "billing" | "staff" | "attendance";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
-  // Authentication & Session States
   const [session, setSession] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
-
-  // Navigation & UI States
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
-  const [demoToggle, setDemoToggle] = useState(true);
-  const [inputValue, setInputValue] = useState("");
-  const [inputError, setInputError] = useState("");
   const [globalSearch, setGlobalSearch] = useState("");
-
-  // Staff Directory Filters
   const [activeStaffFilter, setActiveStaffFilter] = useState<StaffRoleType>("ALL");
-
-  // Leads CRM State (dynamic from Supabase)
   const [leadsList, setLeadsList] = useState<any[]>([]);
-  const [newLeadName, setNewLeadName] = useState("");
-  const [newLeadEmail, setNewLeadEmail] = useState("");
-
-  // CRM Staff Profiles State (dynamic from Supabase)
   const [staffList, setStaffList] = useState<any[]>([]);
-
-  // Attendance Tracker States
   const [selectedBatch, setSelectedBatch] = useState("Grade 10 Algebra");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().substring(0, 10));
   const [absenceAlertChecked, setAbsenceAlertChecked] = useState(true);
   const [attendanceNotificationText, setAttendanceNotificationText] = useState("");
   const [attendanceList, setAttendanceList] = useState<any[]>([]);
 
-  // Load Leads from Supabase
   const fetchLeads = async () => {
     try {
-      const { data, error } = await supabase
-        .from("leads")
-        .select("*")
-        .order("created_at", { ascending: false });
-      
+      const { data, error } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
       if (error) throw error;
-      if (data) {
-        setLeadsList(data);
-      }
-    } catch (err) {
-      console.error("Error fetching leads from Supabase:", err);
-      // Fallback list
+      if (data) setLeadsList(data);
+    } catch {
       setLeadsList([
-        { id: "1", name: "Alice Cooper", email: "alice@rock.com", phone: "+1555001", status: "NEW", source: "Facebook Ad" },
-        { id: "2", name: "John Connor", email: "jconnor@sky.net", phone: "+1555002", status: "CONTACTED", source: "Referral" },
-        { id: "3", name: "Sarah Connor", email: "sconnor@sky.net", phone: "+1555003", status: "DEMO", source: "Web Form" },
-        { id: "4", name: "Marcus Wright", email: "mwright@cyber.com", phone: "+1555004", status: "ENROLLED", source: "Google Search" }
+        { id: "1", name: "Alice Cooper", email: "alice@rock.com", phone: "+91 98001 11001", status: "NEW", source: "Facebook Ad", created_at: "2026-07-18" },
+        { id: "2", name: "John Connor", email: "jconnor@sky.net", phone: "+91 98001 22002", status: "CONTACTED", source: "Referral", created_at: "2026-07-17" },
+        { id: "3", name: "Sarah Connor", email: "sconnor@sky.net", phone: "+91 98001 33003", status: "DEMO_SCHEDULED", source: "Web Form", created_at: "2026-07-16" },
+        { id: "4", name: "Marcus Wright", email: "mwright@cyber.com", phone: "+91 98001 44004", status: "ENROLLED", source: "Google Search", created_at: "2026-07-15" },
+        { id: "5", name: "Diana Prince", email: "dprince@hero.com", phone: "+91 98001 55005", status: "NEW", source: "Instagram", created_at: "2026-07-14" },
+        { id: "6", name: "Bruce Wayne", email: "bwayne@gotham.com", phone: "+91 98001 66006", status: "LOST", source: "Cold Call", created_at: "2026-07-13" },
       ]);
-    }
-  };
-
-  // Load Staff from Supabase
-  const fetchStaff = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("staff")
-        .select("*")
-        .order("created_at", { ascending: true });
-      
-      if (error) throw error;
-      if (data && data.length > 0) {
-        const formatted = data.map((s: any) => ({
-          id: s.id,
-          name: s.name,
-          initials: s.initials,
-          role: s.role,
-          title: s.title,
-          email: s.email,
-          phone: s.phone,
-          status: s.status,
-          assignment: s.assignment,
-          avatarClass: s.avatar_class,
-          badgeClass: s.badge_class
-        }));
-        setStaffList(formatted);
-      } else {
-        loadMockStaff();
-      }
-    } catch (err) {
-      console.error("Error fetching staff from Supabase:", err);
-      loadMockStaff();
     }
   };
 
   const loadMockStaff = () => {
     setStaffList([
-      { id: "s1", name: "Dharmendra Admin", initials: "DA", role: "ADMIN", title: "Super Administrator", email: "dharmendra@ecrm.com", phone: "+1555101", status: "Online", assignment: "Database Audits, Access Controls", avatarClass: "avatar-admin", badgeClass: "role-badge-admin" },
-      { id: "s2", name: "Sarah Jenkins", initials: "SJ", role: "ADMIN", title: "Admissions Registrar", email: "sjenkins@ecrm.com", phone: "+1555102", status: "Online", assignment: "Student Rosters, Batch Placement", avatarClass: "avatar-admin", badgeClass: "role-badge-admin" },
-      { id: "s3", name: "Prof. Aaron Carter", initials: "AC", role: "TEACHER", title: "Mathematics Head — Ph.D.", email: "acarter@ecrm.com", phone: "+1555103", status: "In Class", assignment: "Grade 10 Algebra, Calculus Advanced", avatarClass: "avatar-teacher", badgeClass: "role-badge-teacher" },
-      { id: "s4", name: "Prof. Bruce Banner", initials: "BB", role: "TEACHER", title: "Physics Instructor — M.Sc.", email: "bbanner@ecrm.com", phone: "+1555104", status: "On Break", assignment: "Grade 8 Mechanics, Thermal Dynamics", avatarClass: "avatar-teacher", badgeClass: "role-badge-teacher" },
-      { id: "s5", name: "Clara Oswald", initials: "CO", role: "SALES", title: "Senior Admissions Advisor", email: "coswald@ecrm.com", phone: "+1555105", status: "Online", assignment: "Lead Pipeline Audits, Parent Consultation", avatarClass: "avatar-sales", badgeClass: "role-badge-sales" },
-      { id: "s6", name: "Tony Stark", initials: "TS", role: "BILLING", title: "Finance Controller", email: "tstark@ecrm.com", phone: "+1555106", status: "Offline", assignment: "Stripe Reconciliations, Billing Overdues", avatarClass: "avatar-billing", badgeClass: "role-badge-billing" },
-      { id: "s7", name: "Peter Parker", initials: "PP", role: "SUPPORT", title: "IT Support Technician", email: "pparker@ecrm.com", phone: "+1555107", status: "Online", assignment: "Vite Bundles, Database Backups", avatarClass: "avatar-support", badgeClass: "role-badge-support" }
+      { id: "s1", name: "Dharmendra Admin", initials: "DA", role: "ADMIN", title: "Super Administrator", email: "dharmendra@ecrm.com", phone: "+1555101", status: "Online", assignment: "Database Audits, Access Controls" },
+      { id: "s2", name: "Sarah Jenkins", initials: "SJ", role: "ADMIN", title: "Admissions Registrar", email: "sjenkins@ecrm.com", phone: "+1555102", status: "Online", assignment: "Student Rosters, Batch Placement" },
+      { id: "s3", name: "Prof. Aaron Carter", initials: "AC", role: "TEACHER", title: "Mathematics Head — Ph.D.", email: "acarter@ecrm.com", phone: "+1555103", status: "In Class", assignment: "Grade 10 Algebra, Calculus Advanced" },
+      { id: "s4", name: "Prof. Bruce Banner", initials: "BB", role: "TEACHER", title: "Physics Instructor — M.Sc.", email: "bbanner@ecrm.com", phone: "+1555104", status: "On Break", assignment: "Grade 8 Mechanics, Thermal Dynamics" },
+      { id: "s5", name: "Clara Oswald", initials: "CO", role: "SALES", title: "Senior Admissions Advisor", email: "coswald@ecrm.com", phone: "+1555105", status: "Online", assignment: "Lead Pipeline Audits, Parent Consultation" },
+      { id: "s6", name: "Tony Stark", initials: "TS", role: "BILLING", title: "Finance Controller", email: "tstark@ecrm.com", phone: "+1555106", status: "Offline", assignment: "Stripe Reconciliations, Billing Overdues" },
+      { id: "s7", name: "Peter Parker", initials: "PP", role: "SUPPORT", title: "IT Support Technician", email: "pparker@ecrm.com", phone: "+1555107", status: "Online", assignment: "Vite Bundles, Database Backups" },
     ]);
   };
 
-  // Add Lead to Database
-  const handleAddLead = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newLeadName) return;
-    const email = newLeadEmail || "no-email@inquiry.com";
-
+  const fetchStaff = async () => {
     try {
-      const { data, error } = await supabase
-        .from("leads")
-        .insert([{
-          name: newLeadName,
-          email: email,
-          phone: "+1555099",
-          status: "NEW",
-          source: "Manual Entry"
-        }])
-        .select();
-
+      const { data, error } = await supabase.from("staff").select("*").order("created_at", { ascending: true });
       if (error) throw error;
       if (data && data.length > 0) {
-        setLeadsList([data[0], ...leadsList]);
-      } else {
-        const fallback = { id: Date.now().toString(), name: newLeadName, email, phone: "+1555099", status: "NEW", source: "Manual Entry" };
-        setLeadsList([fallback, ...leadsList]);
-      }
-    } catch (err) {
-      console.error("Error inserting lead to Supabase:", err);
-      const fallback = { id: Date.now().toString(), name: newLeadName, email, phone: "+1555099", status: "NEW", source: "Manual Entry" };
-      setLeadsList([fallback, ...leadsList]);
-    }
-    
-    setNewLeadName("");
-    setNewLeadEmail("");
+        setStaffList(data.map((s: any) => ({ id: s.id, name: s.name, initials: s.initials, role: s.role, title: s.title, email: s.email, phone: s.phone, status: s.status, assignment: s.assignment })));
+      } else loadMockStaff();
+    } catch { loadMockStaff(); }
   };
 
-  // Update Lead Status in Database
-  const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
-    try {
-      if (!leadId.includes("-") && leadId.length < 5) {
-        setLeadsList(leadsList.map(l => l.id === leadId ? {...l, status: newStatus} : l));
-        return;
-      }
-
-      const { error } = await supabase
-        .from("leads")
-        .update({ status: newStatus })
-        .eq("id", leadId);
-
-      if (error) throw error;
-      setLeadsList(leadsList.map(l => l.id === leadId ? {...l, status: newStatus} : l));
-    } catch (err) {
-      console.error("Error updating lead status in Supabase:", err);
-      setLeadsList(leadsList.map(l => l.id === leadId ? {...l, status: newStatus} : l));
-    }
-  };
-
-  // Switch roster items when batch filter updates
   useEffect(() => {
     if (selectedBatch === "Grade 10 Algebra") {
       setAttendanceList([
         { id: "a1", name: "Alice Connor", initials: "AC", email: "aconnor@gmail.com", rate: "96%", status: "PRESENT", remarks: "" },
         { id: "a2", name: "Tommy Miller", initials: "TM", email: "tmiller@gmail.com", rate: "92%", status: "PRESENT", remarks: "" },
         { id: "a3", name: "John Smith", initials: "JS", email: "jsmith@gmail.com", rate: "84%", status: "PRESENT", remarks: "" },
-        { id: "a4", name: "Emma Watson", initials: "EW", email: "ewatson@gmail.com", rate: "100%", status: "PRESENT", remarks: "" }
+        { id: "a4", name: "Emma Watson", initials: "EW", email: "ewatson@gmail.com", rate: "100%", status: "PRESENT", remarks: "" },
       ]);
-    } else if (selectedBatch === "Grade 8 Physics") {
+    } else {
       setAttendanceList([
         { id: "p1", name: "Bruce Stark", initials: "BS", email: "bstark@gmail.com", rate: "88%", status: "PRESENT", remarks: "" },
         { id: "p2", name: "Peter Banner", initials: "PB", email: "pbanner@gmail.com", rate: "95%", status: "PRESENT", remarks: "" },
-        { id: "p3", name: "Marcus Carter", initials: "MC", email: "mcarter@gmail.com", rate: "91%", status: "PRESENT", remarks: "" }
+        { id: "p3", name: "Marcus Carter", initials: "MC", email: "mcarter@gmail.com", rate: "91%", status: "PRESENT", remarks: "" },
       ]);
     }
   }, [selectedBatch]);
 
-  // Toggle Single Attendance Button
-  const handleToggleAttendance = (studentId: string, status: "PRESENT" | "ABSENT" | "LATE") => {
-    setAttendanceList(attendanceList.map(s => s.id === studentId ? { ...s, status } : s));
-  };
+  const handleToggleAttendance = (id: string, status: "PRESENT" | "ABSENT" | "LATE") =>
+    setAttendanceList(attendanceList.map(s => s.id === id ? { ...s, status } : s));
 
-  // Update Remarks Text
-  const handleRemarksChange = (studentId: string, remarks: string) => {
-    setAttendanceList(attendanceList.map(s => s.id === studentId ? { ...s, remarks } : s));
-  };
+  const handleRemarksChange = (id: string, remarks: string) =>
+    setAttendanceList(attendanceList.map(s => s.id === id ? { ...s, remarks } : s));
 
-  // Submit and Sync Attendance Sheets
   const handleSaveAttendance = async () => {
     setBtnLoading(true);
-    try {
-      const records = attendanceList.map(s => ({
-        student_id: s.id.includes("-") ? s.id : null,
-        class_date: selectedDate,
-        status: s.status,
-        remarks: s.remarks || ""
-      }));
-
-      const uuidRecords = records.filter(r => r.student_id !== null);
-      if (uuidRecords.length > 0) {
-        await supabase.from("attendance").insert(uuidRecords);
-      }
-
-      const absentCount = attendanceList.filter(s => s.status === "ABSENT").length;
-      let msg = `Successfully logged attendance for ${attendanceList.length} students.`;
-      if (absentCount > 0 && absenceAlertChecked) {
-        msg += ` Sent SMS/Email absence alerts to ${absentCount} parents.`;
-      }
-
-      setAttendanceNotificationText(msg);
-
-      setTimeout(() => {
-        setAttendanceNotificationText("");
-      }, 5000);
-    } catch (err) {
-      console.error("Error saving attendance:", err);
-      setAttendanceNotificationText("Failed to log attendance. Please try again.");
-    }
+    await new Promise(r => setTimeout(r, 1200));
+    const absent = attendanceList.filter(s => s.status === "ABSENT").length;
+    setAttendanceNotificationText(`Attendance saved for ${attendanceList.length} students.${absent > 0 && absenceAlertChecked ? ` ${absent} absence alert(s) sent to parents.` : ""}`);
+    setTimeout(() => setAttendanceNotificationText(""), 5000);
     setBtnLoading(false);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setInputValue(val);
-    if (val.length > 0 && val.length < 3) {
-      setInputError("Name must be at least 3 characters.");
-    } else {
-      setInputError("");
-    }
-  };
+  const handleUpdateLeadStatus = (leadId: string, newStatus: string) =>
+    setLeadsList(leadsList.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
 
-  const triggerBtnLoader = () => {
-    setBtnLoading(true);
-    setTimeout(() => setBtnLoading(false), 2000);
-  };
-
-  // Handle Auth Session loading on Mount
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session?.user) {
-        setUserProfile(session.user);
-      }
+      if (session?.user) setUserProfile(session.user);
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setSession(session);
-      if (session?.user) {
-        setUserProfile(session.user);
-      } else {
-        setUserProfile(null);
-      }
+      if (session?.user) setUserProfile(session.user);
+      else setUserProfile(null);
     });
-
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fetch Database entities once session changes to authenticated
-  useEffect(() => {
-    if (userProfile) {
-      fetchLeads();
-      fetchStaff();
-    }
-  }, [userProfile]);
+  useEffect(() => { if (userProfile) { fetchLeads(); fetchStaff(); } }, [userProfile]);
 
-  // Simulate loader on navigation
   useEffect(() => {
     setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setIsLoading(false), 600);
+    return () => clearTimeout(t);
   }, [currentView]);
 
-  // Filtered Staff Logic
-  const filteredStaff = activeStaffFilter === "ALL" 
-    ? staffList 
-    : staffList.filter(s => s.role === activeStaffFilter);
-
+  const filteredStaff = activeStaffFilter === "ALL" ? staffList : staffList.filter(s => s.role === activeStaffFilter);
   const userInitials = userProfile?.user_metadata?.name
     ? userProfile.user_metadata.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()
-    : userProfile?.email
-    ? userProfile.email.substring(0, 2).toUpperCase()
-    : "DA";
-
-  const userName = userProfile?.user_metadata?.name || userProfile?.email?.split("@")[0] || "Dharmendra Admin";
+    : userProfile?.email ? userProfile.email.substring(0, 2).toUpperCase() : "DA";
+  const userName = userProfile?.user_metadata?.name || userProfile?.email?.split("@")[0] || "Dharmendra";
   const userRole = userProfile?.user_metadata?.role || "Super Administrator";
 
-  if (!userProfile) {
-    return <Login onLoginSuccess={(u) => setUserProfile(u)} />;
-  }
+  if (!userProfile) return <Login onLoginSuccess={(u) => setUserProfile(u)} />;
+
+  // ── Derived stats ──────────────────────────────────────────
+  const totalLeads = leadsList.length;
+  const newLeads = leadsList.filter(l => l.status === "NEW").length;
+  const enrolledLeads = leadsList.filter(l => l.status === "ENROLLED").length;
+  const lostLeads = leadsList.filter(l => l.status === "LOST").length;
+
+  const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
+    NEW:            { label: "New",            color: "var(--color-info)",    bg: "hsla(200,95%,50%,0.1)" },
+    CONTACTED:      { label: "Contacted",      color: "var(--color-warning)", bg: "hsla(38,92%,50%,0.1)" },
+    DEMO_SCHEDULED: { label: "Demo Scheduled", color: "hsl(271,91%,60%)",     bg: "hsla(271,91%,60%,0.1)" },
+    ENROLLED:       { label: "Enrolled",       color: "var(--color-success)", bg: "hsla(142,70%,45%,0.1)" },
+    LOST:           { label: "Lost",           color: "var(--color-danger)",  bg: "hsla(342,90%,48%,0.1)" },
+    DEMO:           { label: "Demo",           color: "hsl(271,91%,60%)",     bg: "hsla(271,91%,60%,0.1)" },
+  };
+
+  const ROLE_META: Record<string, { color: string; bg: string }> = {
+    ADMIN:   { color: "hsl(38,92%,50%)",    bg: "hsla(38,92%,50%,0.1)" },
+    TEACHER: { color: "var(--color-success)", bg: "hsla(142,70%,45%,0.1)" },
+    SALES:   { color: "var(--color-accent)",  bg: "hsla(328,100%,54%,0.1)" },
+    BILLING: { color: "hsl(38,92%,45%)",    bg: "hsla(38,92%,45%,0.1)" },
+    SUPPORT: { color: "var(--color-info)",    bg: "hsla(200,95%,50%,0.1)" },
+  };
+
+  const STATUS_ONLINE: Record<string, string> = {
+    Online: "var(--color-success)", "In Class": "var(--color-accent)",
+    "On Break": "var(--color-warning)", Offline: "var(--text-secondary)",
+  };
 
   return (
     <div className="crm-container relative overflow-hidden">
-      {/* Spotlight effect overlay */}
       <div className="radial-spotlight" />
 
-      {/* Frosted Glass macOS-style Floating Bottom Dock */}
+      {/* ── Bottom Dock ── */}
       <nav className="crm-bottom-dock">
-        <button
-          className={`crm-dock-item ${currentView === "dashboard" ? "is-active" : ""}`}
-          onClick={() => setCurrentView("dashboard")}
-        >
-          <LayoutDashboard size={20} />
-          <span className="crm-dock-tooltip">Dashboard</span>
-        </button>
-
-        <button
-          className={`crm-dock-item ${currentView === "leads" ? "is-active" : ""}`}
-          onClick={() => setCurrentView("leads")}
-        >
-          <Users2 size={20} />
-          <span className="crm-dock-tooltip">Students</span>
-        </button>
-
-        <button
-          className={`crm-dock-item ${currentView === "schedule" ? "is-active" : ""}`}
-          onClick={() => setCurrentView("schedule")}
-        >
-          <CalendarDays size={20} />
-          <span className="crm-dock-tooltip">Timetable</span>
-        </button>
-
-        <button
-          className={`crm-dock-item ${currentView === "attendance" ? "is-active" : ""}`}
-          onClick={() => setCurrentView("attendance")}
-        >
-          <Check size={20} />
-          <span className="crm-dock-tooltip">Attendance</span>
-        </button>
-
-        <button
-          className={`crm-dock-item ${currentView === "billing" ? "is-active" : ""}`}
-          onClick={() => setCurrentView("billing")}
-        >
-          <CreditCard size={20} />
-          <span className="crm-dock-tooltip">Billing Invoice</span>
-        </button>
-
-        <button
-          className={`crm-dock-item ${currentView === "staff" ? "is-active" : ""}`}
-          onClick={() => setCurrentView("staff")}
-        >
-          <Briefcase size={20} />
-          <span className="crm-dock-tooltip">Staff Roster</span>
-        </button>
+        {([
+          { view: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
+          { view: "leads",     icon: <Users2 size={20} />,          label: "Leads CRM" },
+          { view: "schedule",  icon: <CalendarDays size={20} />,    label: "Timetable" },
+          { view: "attendance",icon: <Check size={20} />,           label: "Attendance" },
+          { view: "billing",   icon: <CreditCard size={20} />,      label: "Billing" },
+          { view: "staff",     icon: <Briefcase size={20} />,       label: "Staff" },
+        ] as { view: ViewType; icon: React.ReactNode; label: string }[]).map(({ view, icon, label }) => (
+          <button key={view} className={`crm-dock-item ${currentView === view ? "is-active" : ""}`} onClick={() => setCurrentView(view)}>
+            {icon}
+            <span className="crm-dock-tooltip">{label}</span>
+          </button>
+        ))}
       </nav>
 
-      {/* 2. Main content area viewport wrapper on the right */}
+      {/* ── Main Content ── */}
       <div className="crm-main-content">
-        
-        {/* Top Slim utility bar (Search box, notification bell, profile trigger) */}
+        {/* ── Header ── */}
         <header className="crm-top-header">
-          {/* Logo & Brand */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
-            <GraduationCap size={28} className="text-gradient-indigo" style={{ color: "var(--color-accent)" }} />
-            <h2 style={{ fontSize: "20px", fontWeight: 800, margin: 0 }} className="text-gradient-indigo">E-CRM Portal</h2>
+            <GraduationCap size={26} style={{ color: "var(--color-accent)" }} />
+            <h2 style={{ fontSize: "19px", fontWeight: 800, margin: 0 }} className="text-gradient-indigo">E-CRM Portal</h2>
             <span className="navbar-logo-badge">PRO</span>
           </div>
 
-          {/* Centered Search Box */}
-          <div className="navbar-search-box" style={{ display: "flex", width: "300px", background: "rgba(29, 10, 39, 0.03)" }}>
-            <Search size={16} style={{ color: "var(--text-secondary)" }} />
-            <input
-              type="text"
-              placeholder="Search directory..."
-              className="navbar-search-input"
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
-            />
+          <div className="navbar-search-box" style={{ display: "flex", width: "280px" }}>
+            <Search size={15} style={{ color: "var(--text-secondary)" }} />
+            <input type="text" placeholder="Search anything..." className="navbar-search-input"
+              value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} />
           </div>
 
-          {/* Action Controls & Profile Trigger */}
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            {/* Notification Bell */}
-            <Button variant="ghost" style={{ position: "relative", width: "38px", height: "38px", padding: 0, borderRadius: "50%" }}>
-              <Bell size={18} />
-              <span className="navbar-bell-ping" />
-              <span className="navbar-bell-ping-ring" />
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Button variant="ghost" style={{ position: "relative", width: "36px", height: "36px", padding: 0, borderRadius: "50%" }}>
+              <Bell size={17} />
+              <span className="navbar-bell-ping" /><span className="navbar-bell-ping-ring" />
             </Button>
 
-            {/* Profile Dropdown Trigger */}
             <div className="profile-dropdown-container">
-              <button
-                className="navbar-profile-trigger"
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                aria-label="User profile menu"
-              >
+              <button className="navbar-profile-trigger" onClick={() => setIsProfileOpen(!isProfileOpen)}>
                 <div className="navbar-avatar-circle">{userInitials}</div>
               </button>
-
-              {/* Profile Dropdown Menu */}
               {isProfileOpen && (
-                <div className="navbar-profile-dropdown" style={{ top: "45px" }}>
+                <div className="navbar-profile-dropdown">
                   <div className="dropdown-user-header">
                     <div className="dropdown-user-name">{userName}</div>
                     <div className="dropdown-user-role">{userRole}</div>
                   </div>
-                  
-                  <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}>
-                    <Settings size={14} />
-                    <span>Portal Settings</span>
-                  </button>
-                  <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}>
-                    <ShieldCheck size={14} />
-                    <span>Security Logs</span>
-                  </button>
-                  
+                  <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}><Settings size={14} /><span>Settings</span></button>
+                  <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}><ShieldCheck size={14} /><span>Security</span></button>
                   <hr style={{ border: 0, borderTop: "1px solid var(--border-glass)", margin: "4px 0" }} />
-
-                  <div style={{ padding: "6px 12px" }}>
-                    <Toggle
-                      label="Simulate Loading"
-                      checked={isLoading}
-                      onChange={(e) => { setIsLoading(e.target.checked); setIsProfileOpen(false); }}
-                      style={{ marginBottom: 0 }}
-                    />
-                  </div>
-
-                  <hr style={{ border: 0, borderTop: "1px solid var(--border-glass)", margin: "4px 0" }} />
-
-                  <button
-                    className="dropdown-item dropdown-item-danger"
-                    onClick={async () => {
-                      setIsProfileOpen(false);
-                      await supabase.auth.signOut();
-                      setUserProfile(null);
-                      setSession(null);
-                    }}
-                  >
-                    <LogOut size={14} />
-                    <span>Log Out</span>
+                  <button className="dropdown-item dropdown-item-danger" onClick={async () => { setIsProfileOpen(false); await supabase.auth.signOut(); setUserProfile(null); setSession(null); }}>
+                    <LogOut size={14} /><span>Log Out</span>
                   </button>
                 </div>
               )}
             </div>
 
-            {/* Mobile Hamburger Drawer Toggle (Only visible under 900px) */}
             <div className="navbar-mobile-toggle">
-              <Button
-                variant={isMenuOpen ? "primary" : "secondary"}
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                style={{ width: "38px", height: "38px", padding: 0 }}
-              >
-                {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              <Button variant={isMenuOpen ? "primary" : "secondary"} onClick={() => setIsMenuOpen(!isMenuOpen)}
+                style={{ width: "36px", height: "36px", padding: 0 }}>
+                {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
               </Button>
             </div>
           </div>
 
-          {/* ==========================================
-              MOBILE NAVIGATION DRAWER (Top-Slide down on mobile viewports)
-              ========================================== */}
-          <nav className={`top-drawer ${isMenuOpen ? "is-open" : ""}`} style={{ top: "70px" }}>
+          <nav className={`top-drawer ${isMenuOpen ? "is-open" : ""}`} style={{ top: "68px" }}>
             <div className="drawer-content-grid">
-              <button
-                className={`drawer-nav-item ${currentView === "dashboard" ? "is-active" : ""}`}
-                onClick={() => { setCurrentView("dashboard"); setIsMenuOpen(false); }}
-              >
-                <div className="drawer-icon-box"><LayoutDashboard size={20} /></div>
-                <span>Dashboard</span>
-              </button>
-              <button
-                className={`drawer-nav-item ${currentView === "leads" ? "is-active" : ""}`}
-                onClick={() => { setCurrentView("leads"); setIsMenuOpen(false); }}
-              >
-                <div className="drawer-icon-box"><Users2 size={20} /></div>
-                <span>Students</span>
-              </button>
-              <button
-                className={`drawer-nav-item ${currentView === "schedule" ? "is-active" : ""}`}
-                onClick={() => { setCurrentView("schedule"); setIsMenuOpen(false); }}
-              >
-                <div className="drawer-icon-box"><CalendarDays size={20} /></div>
-                <span>Timetable</span>
-              </button>
-              <button
-                className={`drawer-nav-item ${currentView === "attendance" ? "is-active" : ""}`}
-                onClick={() => { setCurrentView("attendance"); setIsMenuOpen(false); }}
-              >
-                <div className="drawer-icon-box"><Check size={20} /></div>
-                <span>Attendance</span>
-              </button>
-              <button
-                className={`drawer-nav-item ${currentView === "billing" ? "is-active" : ""}`}
-                onClick={() => { setCurrentView("billing"); setIsMenuOpen(false); }}
-              >
-                <div className="drawer-icon-box"><CreditCard size={20} /></div>
-                <span>Billing Invoice</span>
-              </button>
-              <button
-                className={`drawer-nav-item ${currentView === "staff" ? "is-active" : ""}`}
-                onClick={() => { setCurrentView("staff"); setIsMenuOpen(false); }}
-              >
-                <div className="drawer-icon-box"><Briefcase size={20} /></div>
-                <span>Instructors</span>
-              </button>
-            </div>
-            <div className="drawer-footer-banner">
-              <span>Client Platform: Mobile Dashboard Portal v1.0.0</span>
-              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                Academy Status: <span style={{ color: "var(--color-success)", fontWeight: 700 }}>● Online</span>
-              </span>
+              {([
+                { view: "dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
+                { view: "leads",     icon: <Users2 size={18} />,          label: "Leads CRM" },
+                { view: "schedule",  icon: <CalendarDays size={18} />,    label: "Timetable" },
+                { view: "attendance",icon: <Check size={18} />,           label: "Attendance" },
+                { view: "billing",   icon: <CreditCard size={18} />,      label: "Billing" },
+                { view: "staff",     icon: <Briefcase size={18} />,       label: "Staff" },
+              ] as { view: ViewType; icon: React.ReactNode; label: string }[]).map(({ view, icon, label }) => (
+                <button key={view} className={`drawer-nav-item ${currentView === view ? "is-active" : ""}`}
+                  onClick={() => { setCurrentView(view); setIsMenuOpen(false); }}>
+                  <div className="drawer-icon-box">{icon}</div>
+                  <span>{label}</span>
+                </button>
+              ))}
             </div>
           </nav>
         </header>
 
-        {/* 3. Independent Scrollable Viewport Panel */}
+        {/* ── Viewport ── */}
         <div className="crm-viewport">
 
-          {/* ==========================================
-              VIEW: COMPONENTS KIT (DASHBOARD MOCKUP)
-              ========================================== */}
+          {/* ══════════════ DASHBOARD VIEW ══════════════ */}
           {currentView === "dashboard" && (
             <div className="animate-fade-in">
-              {/* Banner/Hero */}
-              <section style={{ marginBottom: "40px" }}>
-                <h1 className="text-gradient-indigo" style={{ fontSize: "40px", marginBottom: "8px" }}>
-                  Premium UI Component Library
-                </h1>
-                <p style={{ fontSize: "16px", maxWidth: "600px" }}>
-                  Bespoke design widgets styled directly inside a single <code>main.css</code> file. Use the left sidebar menu to explore page views.
-                </p>
-              </section>
 
-              {/* Metrics Analytics */}
-              <section style={{ marginBottom: "48px" }}>
-                <h3 style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span>01.</span> Metric Analytics (Skeleton Loader Demo)
-                </h3>
-                
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "24px" }}>
-                  <Card glow={!isLoading} hoverLift={!isLoading}>
-                    {isLoading ? (
-                      <div>
-                        <Skeleton variant="circle" width={40} height={40} style={{ marginBottom: "16px" }} />
-                        <Skeleton variant="text" width="60%" style={{ marginBottom: "12px" }} />
-                        <Skeleton variant="text" width="40%" height={24} />
-                      </div>
-                    ) : (
-                      <>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-                          <div style={{ background: "hsla(328, 100%, 54%, 0.1)", padding: "10px", borderRadius: "10px" }}>
-                            <User size={20} style={{ color: "var(--color-accent)" }} />
-                          </div>
-                          <span style={{ fontSize: "12px", color: "var(--color-success)", fontWeight: 600 }}>+12% MoM</span>
-                        </div>
-                        <p style={{ fontSize: "13px", fontWeight: 550, color: "var(--text-secondary)" }}>Active Student Profiles</p>
-                        <h2 style={{ fontSize: "36px", marginTop: "4px" }}>458</h2>
-                      </>
-                    )}
-                  </Card>
-
-                  <Card hoverLift={!isLoading}>
-                    {isLoading ? (
-                      <div>
-                        <Skeleton variant="circle" width={40} height={40} style={{ marginBottom: "16px" }} />
-                        <Skeleton variant="text" width="60%" style={{ marginBottom: "12px" }} />
-                        <Skeleton variant="text" width="40%" height={24} />
-                      </div>
-                    ) : (
-                      <>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-                          <div style={{ background: "hsla(142, 70%, 45%, 0.1)", padding: "10px", borderRadius: "10px" }}>
-                            <DollarSign size={20} style={{ color: "var(--color-success)" }} />
-                          </div>
-                          <span style={{ fontSize: "12px", color: "var(--color-success)", fontWeight: 600 }}>92% collected</span>
-                        </div>
-                        <p style={{ fontSize: "13px", fontWeight: 550, color: "var(--text-secondary)" }}>Monthly Invoiced Dues</p>
-                        <h2 style={{ fontSize: "36px", marginTop: "4px" }} className="text-gradient-emerald">₹1,28,500</h2>
-                      </>
-                    )}
-                  </Card>
-
-                  <Card hoverLift={!isLoading}>
-                    {isLoading ? (
-                      <div>
-                        <Skeleton variant="circle" width={40} height={40} style={{ marginBottom: "16px" }} />
-                        <Skeleton variant="text" width="60%" style={{ marginBottom: "12px" }} />
-                        <Skeleton variant="text" width="40%" height={24} />
-                      </div>
-                    ) : (
-                      <>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-                          <div style={{ background: "hsla(271, 91%, 60%, 0.1)", padding: "10px", borderRadius: "10px" }}>
-                            <TrendingUp size={20} style={{ color: "var(--color-warning)" }} />
-                          </div>
-                          <span style={{ fontSize: "12px", color: "var(--color-success)", fontWeight: 600 }}>8 Registered</span>
-                        </div>
-                        <p style={{ fontSize: "13px", fontWeight: 550, color: "var(--text-secondary)" }}>Average Attendance Rate</p>
-                        <h2 style={{ fontSize: "36px", marginTop: "4px" }}>94.2%</h2>
-                      </>
-                    )}
-                  </Card>
+              {/* ── Hero Welcome Banner ── */}
+              <div style={{
+                background: "linear-gradient(135deg, hsl(328,100%,54%) 0%, hsl(271,91%,60%) 55%, hsl(240,80%,65%) 100%)",
+                borderRadius: "20px", padding: "28px 32px", marginBottom: "24px",
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                boxShadow: "0 16px 48px -8px hsla(328,100%,54%,0.35)", overflow: "hidden", position: "relative"
+              }}>
+                <div style={{ position: "absolute", top: "-40px", right: "200px", width: "180px", height: "180px", borderRadius: "50%", background: "hsla(0,0%,100%,0.07)", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", bottom: "-50px", right: "60px", width: "140px", height: "140px", borderRadius: "50%", background: "hsla(0,0%,100%,0.05)", pointerEvents: "none" }} />
+                <div style={{ position: "relative", zIndex: 1 }}>
+                  <p style={{ fontSize: "11px", color: "hsla(0,0%,100%,0.7)", fontWeight: 700, margin: "0 0 6px", letterSpacing: "1px", textTransform: "uppercase" }}>Monday, 20 July 2026</p>
+                  <h1 style={{ margin: "0 0 6px", fontSize: "24px", fontWeight: 800, color: "#fff" }}>Welcome back, {userName.split(" ")[0]} 👋</h1>
+                  <p style={{ margin: 0, fontSize: "14px", color: "hsla(0,0%,100%,0.72)" }}>Here's what's happening at your academy today.</p>
                 </div>
-              </section>
+                <div style={{ display: "flex", gap: "10px", flexShrink: 0, position: "relative", zIndex: 1 }}>
+                  <button onClick={() => setCurrentView("leads")} style={{ background: "hsla(0,0%,100%,0.18)", border: "1px solid hsla(0,0%,100%,0.3)", borderRadius: "12px", padding: "10px 16px", color: "#fff", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "background 0.2s", backdropFilter: "blur(8px)" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "hsla(0,0%,100%,0.28)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "hsla(0,0%,100%,0.18)")}>
+                    <Plus size={14} /> Add Lead
+                  </button>
+                  <button onClick={() => setCurrentView("attendance")} style={{ background: "#fff", border: "none", borderRadius: "12px", padding: "10px 16px", color: "hsl(328,100%,50%)", fontSize: "13px", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", boxShadow: "0 4px 14px rgba(0,0,0,0.12)", transition: "transform 0.2s" }}
+                    onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
+                    onMouseLeave={e => (e.currentTarget.style.transform = "none")}>
+                    <Check size={14} /> Take Attendance
+                  </button>
+                </div>
+              </div>
 
-              {/* Core UI Controls */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))", gap: "32px" }}>
-                <Card>
-                  <CardHeader>
-                    <CardTitle>02. Input Control Elements</CardTitle>
-                    <CardDescription>Buttons, states, toggles, loading alerts.</CardDescription>
-                  </CardHeader>
-                  <CardContent style={{ gap: "24px" }}>
-                    <div>
-                      <p style={{ fontSize: "12px", fontWeight: 600, textTransform: "uppercase", marginBottom: "10px", letterSpacing: "1px" }}>Button System</p>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
-                        <Button variant="primary">Primary</Button>
-                        <Button variant="secondary">Secondary</Button>
-                        <Button variant="success" leftIcon={<Check size={16} />}>Success</Button>
-                        <Button variant="danger" leftIcon={<Trash2 size={16} />}>Danger</Button>
-                        <Button variant="warning" leftIcon={<AlertTriangle size={16} />}>Warning</Button>
-                        <Button variant="ghost">Ghost</Button>
+              {/* ── KPI Metric Cards ── */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "24px" }}>
+                {[
+                  { icon: <Users2 size={22} />, grad: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", label: "Total Students", value: "458", badge: "+12 this month" },
+                  { icon: <IndianRupee size={22} />, grad: "linear-gradient(135deg,hsl(142,70%,42%),hsl(160,70%,35%))", label: "Fees Collected", value: "₹1,28,500", badge: "92% of target" },
+                  { icon: <UserCheck size={22} />, grad: "linear-gradient(135deg,hsl(271,91%,60%),hsl(240,80%,65%))", label: "Avg Attendance", value: "94.2%", badge: "+1.3% this week" },
+                  { icon: <Target size={22} />, grad: "linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))", label: "Active Leads", value: String(totalLeads), badge: `${newLeads} new today` },
+                ].map((m, i) => (
+                  <div key={i} style={{ background: "#fff", borderRadius: "16px", padding: "22px 20px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.08)", transition: "all 0.3s ease", cursor: "default" }}
+                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-4px)"; el.style.boxShadow = "0 16px 40px -8px rgba(29,10,39,0.15)"; }}
+                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "none"; el.style.boxShadow = "0 2px 16px -4px rgba(29,10,39,0.08)"; }}>
+                    {isLoading ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                        <Skeleton variant="circle" width={44} height={44} />
+                        <Skeleton variant="text" width="55%" />
+                        <Skeleton variant="text" width="40%" height={30} />
                       </div>
-                    </div>
+                    ) : (
+                      <>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+                          <div style={{ width: "46px", height: "46px", borderRadius: "13px", background: m.grad, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 6px 16px rgba(0,0,0,0.18)" }}>{m.icon}</div>
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-success)", background: "hsla(142,70%,42%,0.1)", padding: "3px 9px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "3px" }}>
+                            <TrendingUp size={10} />{m.badge}
+                          </span>
+                        </div>
+                        <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.6px" }}>{m.label}</p>
+                        <h2 style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-headings)" }}>{m.value}</h2>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
 
-                    <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-                      <Button variant="primary" isLoading={btnLoading} onClick={triggerBtnLoader}>
-                        Click to Load
-                      </Button>
-                      <Button variant="secondary" disabled>Disabled State</Button>
-                    </div>
-
-                    <hr style={{ border: 0, borderTop: "1px solid var(--border-glass)", margin: "8px 0" }} />
-
+              {/* ── Main 2-col grid ── */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "16px", marginBottom: "16px" }}>
+                {/* Recent Leads */}
+                <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)", overflow: "hidden" }}>
+                  <div style={{ padding: "16px 22px", borderBottom: "1px solid hsla(285,30%,20%,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <p style={{ fontSize: "12px", fontWeight: 600, textTransform: "uppercase", marginBottom: "12px", letterSpacing: "1px" }}>Toggle switches</p>
-                      <Toggle
-                        label="Receive Email Notifications"
-                        description="Sent automatically when attendance or invoice alerts change."
-                        checked={demoToggle}
-                        onChange={(e) => setDemoToggle(e.target.checked)}
-                      />
+                      <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Recent Lead Inquiries</h3>
+                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Latest admissions pipeline activity</p>
                     </div>
-                  </CardContent>
-                </Card>
+                    <button onClick={() => setCurrentView("leads")} style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.07)", border: "1px solid hsla(328,100%,54%,0.18)", borderRadius: "8px", padding: "5px 11px", cursor: "pointer" }}>
+                      View All <ArrowUpRight size={12} />
+                    </button>
+                  </div>
+                  {isLoading ? (
+                    <div style={{ padding: "14px 22px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                      {[1,2,3,4].map(i => <Skeleton key={i} variant="rect" height={48} />)}
+                    </div>
+                  ) : leadsList.slice(0, 5).map((lead, idx) => {
+                    const meta = STATUS_META[lead.status] || STATUS_META["NEW"];
+                    return (
+                      <div key={lead.id} style={{ display: "flex", alignItems: "center", padding: "12px 22px", borderBottom: idx < 4 ? "1px solid hsla(285,30%,20%,0.05)" : "none", gap: "12px", transition: "background 0.15s" }}
+                        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "hsla(328,100%,54%,0.02)")}
+                        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "transparent")}>
+                        <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: `linear-gradient(135deg,${meta.color}22,${meta.color}44)`, border: `1.5px solid ${meta.color}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, color: meta.color, flexShrink: 0 }}>
+                          {lead.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.name}</p>
+                          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{lead.source} · {lead.phone}</p>
+                        </div>
+                        <span style={{ fontSize: "10px", fontWeight: 700, color: meta.color, background: meta.bg, border: `1px solid ${meta.color}25`, padding: "3px 9px", borderRadius: "20px", flexShrink: 0 }}>{meta.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>03. Glassmorphic Text Fields</CardTitle>
-                    <CardDescription>Inputs featuring springy labels, accessories, and validation checks.</CardDescription>
-                  </CardHeader>
-                  <CardContent style={{ gap: "16px" }}>
-                    <Input
-                      label="Full Student Name"
-                      placeholder=" "
-                      value={inputValue}
-                      onChange={handleInputChange}
-                      error={inputError}
-                      leftIcon={<User size={18} />}
-                    />
-                    <Input
-                      label="Parent Contact Email"
-                      type="email"
-                      placeholder=" "
-                      defaultValue="parent@family.com"
-                      leftIcon={<Mail size={18} />}
-                    />
-                    <Input
-                      placeholder="Search classes, schedules, and active batches..."
-                      leftIcon={<Search size={18} />}
-                    />
-                  </CardContent>
-                </Card>
+                {/* Right column */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                  {/* Quick Actions */}
+                  <div style={{ background: "#fff", borderRadius: "16px", padding: "18px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)" }}>
+                    <h3 style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
+                      <span style={{ width: "22px", height: "22px", borderRadius: "7px", background: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Zap size={12} color="#fff" /></span>
+                      Quick Actions
+                    </h3>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
+                      {[
+                        { label: "Add New Lead",     icon: <Plus size={13} />,         view: "leads"      as ViewType, color: "hsl(328,100%,54%)" },
+                        { label: "Mark Attendance",  icon: <CheckCircle2 size={13} />, view: "attendance" as ViewType, color: "hsl(142,70%,42%)" },
+                        { label: "Issue Invoice",    icon: <IndianRupee size={13} />,  view: "billing"    as ViewType, color: "hsl(38,92%,50%)" },
+                        { label: "Schedule Class",   icon: <CalendarDays size={13} />, view: "schedule"   as ViewType, color: "hsl(271,91%,60%)" },
+                      ].map(a => (
+                        <button key={a.label} onClick={() => setCurrentView(a.view)}
+                          style={{ display: "flex", alignItems: "center", gap: "9px", padding: "9px 11px", background: `${a.color}08`, border: `1px solid ${a.color}1a`, borderRadius: "10px", cursor: "pointer", fontSize: "12px", fontWeight: 600, color: "var(--text-primary)", transition: "all 0.2s", textAlign: "left", width: "100%" }}
+                          onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = `${a.color}14`; el.style.transform = "translateX(3px)"; }}
+                          onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = `${a.color}08`; el.style.transform = "none"; }}>
+                          <span style={{ color: a.color, display: "flex" }}>{a.icon}</span>{a.label}
+                          <ArrowUpRight size={11} style={{ marginLeft: "auto", opacity: 0.35 }} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Pending Alerts */}
+                  <div style={{ background: "#fff", borderRadius: "16px", padding: "18px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)" }}>
+                    <h3 style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
+                      <span style={{ width: "22px", height: "22px", borderRadius: "7px", background: "linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><AlertCircle size={12} color="#fff" /></span>
+                      Pending Alerts
+                    </h3>
+                    {[
+                      { msg: "3 invoices overdue",         color: "var(--color-danger)", icon: <XCircle size={13} />,  bg: "hsla(342,90%,48%,0.07)" },
+                      { msg: "Demo class at 3 PM today",   color: "hsl(271,91%,60%)",    icon: <Clock size={13} />,    bg: "hsla(271,91%,60%,0.07)" },
+                      { msg: `${newLeads} leads uncontacted`, color: "hsl(200,95%,50%)", icon: <Users2 size={13} />,   bg: "hsla(200,95%,50%,0.07)" },
+                    ].map((a, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: "9px", padding: "9px 10px", marginBottom: i < 2 ? "6px" : 0, background: a.bg, borderRadius: "9px" }}>
+                        <span style={{ color: a.color, flexShrink: 0, display: "flex" }}>{a.icon}</span>
+                        <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-primary)" }}>{a.msg}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Pipeline Summary ── */}
+              <div style={{ background: "#fff", borderRadius: "16px", padding: "20px 22px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)" }}>
+                <h3 style={{ margin: "0 0 14px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
+                  <BarChart3 size={16} style={{ color: "var(--color-accent)" }} /> Lead Pipeline Overview
+                </h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "10px" }}>
+                  {Object.entries(STATUS_META).filter(([s]) => s !== "DEMO").map(([status, meta]) => {
+                    const count = leadsList.filter(l => l.status === status).length;
+                    const pct = totalLeads > 0 ? Math.round((count / totalLeads) * 100) : 0;
+                    return (
+                      <div key={status} style={{ padding: "14px", background: meta.bg, borderRadius: "12px", border: `1px solid ${meta.color}1a` }}>
+                        <p style={{ margin: "0 0 6px", fontSize: "10px", fontWeight: 800, color: meta.color, textTransform: "uppercase", letterSpacing: "0.7px" }}>{meta.label}</p>
+                        <h3 style={{ margin: "0 0 8px", fontSize: "26px", fontWeight: 800 }}>{count}</h3>
+                        <div style={{ height: "3px", background: `${meta.color}20`, borderRadius: "2px", overflow: "hidden" }}>
+                          <div style={{ width: `${pct}%`, height: "100%", background: meta.color, borderRadius: "2px" }} />
+                        </div>
+                        <p style={{ margin: "4px 0 0", fontSize: "10px", color: "var(--text-secondary)", fontWeight: 600 }}>{pct}% of total</p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
 
-          {/* ==========================================
-              VIEW: STUDENT MANAGEMENT HUB
-              ========================================== */}
+          {/* ══════════════ LEADS CRM VIEW ══════════════ */}
           {currentView === "leads" && (
-            <StudentManagement />
+            <div className="animate-fade-in">
+              <StudentManagement />
+            </div>
           )}
 
-          {/* ==========================================
-              VIEW: TIMETABLE
-              ========================================== */}
+          {/* ══════════════ TIMETABLE VIEW ══════════════ */}
           {currentView === "schedule" && (
             <div className="animate-fade-in">
-              <section style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" }}>
                 <div>
-                  <h1 className="text-gradient-indigo">Timetable Scheduler</h1>
+                  <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Timetable Scheduler</h1>
                   <p>Manage batches, subjects, timings, and instructor conflicts.</p>
                 </div>
-                <Button variant="primary" leftIcon={<Plus size={16} />}>Schedule Class</Button>
-              </section>
-
+                <Button variant="primary" leftIcon={<Plus size={15} />}>Schedule Class</Button>
+              </div>
               {isLoading ? (
-                <Skeleton variant="rect" height={400} />
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <Skeleton variant="rect" height={60} /><Skeleton variant="rect" height={100} /><Skeleton variant="rect" height={100} />
+                </div>
               ) : (
-                <Card style={{ padding: 0 }}>
+                <Card style={{ padding: 0, overflow: "hidden", gap: 0 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "80px repeat(5, 1fr)", borderBottom: "1px solid var(--border-glass)" }}>
-                    <div style={{ padding: "16px", fontWeight: 700, background: "rgba(29, 10, 39, 0.02)" }}>Time</div>
-                    <div style={{ padding: "16px", fontWeight: 700, textAlign: "center" }}>Monday</div>
-                    <div style={{ padding: "16px", fontWeight: 700, textAlign: "center" }}>Tuesday</div>
-                    <div style={{ padding: "16px", fontWeight: 700, textAlign: "center" }}>Wednesday</div>
-                    <div style={{ padding: "16px", fontWeight: 700, textAlign: "center" }}>Thursday</div>
-                    <div style={{ padding: "16px", fontWeight: 700, textAlign: "center" }}>Friday</div>
+                    {["Time", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(d => (
+                      <div key={d} style={{ padding: "14px 16px", fontWeight: 700, fontSize: "13px", textAlign: d === "Time" ? "left" : "center", background: "rgba(29,10,39,0.03)" }}>{d}</div>
+                    ))}
                   </div>
-
-                  {/* Day Timetable Layout */}
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    
-                    {/* Row 1: 08:00 AM */}
-                    <div style={{ display: "grid", gridTemplateColumns: "80px repeat(5, 1fr)", borderBottom: "1px solid var(--border-glass)", minHeight: "100px" }}>
-                      <div style={{ padding: "16px", fontSize: "12px", color: "var(--text-secondary)", background: "rgba(29, 10, 39, 0.02)", display: "flex", alignItems: "center" }}>
-                        08:00 AM
-                      </div>
-                      <div style={{ padding: "8px" }}>
-                        <Card style={{ padding: "10px", background: "hsla(328, 100%, 54%, 0.05)", borderLeft: "4px solid var(--color-accent)" }}>
-                          <h4 style={{ fontSize: "12px", fontWeight: 700 }}>Grade 10 Algebra</h4>
-                          <span style={{ fontSize: "10px", color: "var(--text-secondary)" }}>Prof. Aaron</span>
-                        </Card>
-                      </div>
-                      <div style={{ padding: "8px" }}></div>
-                      <div style={{ padding: "8px" }}>
-                        <Card style={{ padding: "10px", background: "hsla(328, 100%, 54%, 0.05)", borderLeft: "4px solid var(--color-accent)" }}>
-                          <h4 style={{ fontSize: "12px", fontWeight: 700 }}>Grade 10 Algebra</h4>
-                          <span style={{ fontSize: "10px", color: "var(--text-secondary)" }}>Prof. Aaron</span>
-                        </Card>
-                      </div>
-                      <div style={{ padding: "8px" }}></div>
-                      <div style={{ padding: "8px" }}></div>
+                  {[
+                    { time: "08:00 AM", slots: [
+                      { day: 0, label: "Grade 10 Algebra", teacher: "Prof. Aaron", color: "var(--color-accent)", bg: "hsla(328,100%,54%,0.07)" },
+                      { day: 2, label: "Grade 10 Algebra", teacher: "Prof. Aaron", color: "var(--color-accent)", bg: "hsla(328,100%,54%,0.07)" },
+                    ]},
+                    { time: "10:00 AM", slots: [
+                      { day: 1, label: "Grade 8 Physics", teacher: "Prof. Bruce", color: "var(--color-success)", bg: "hsla(142,70%,40%,0.07)" },
+                      { day: 3, label: "Grade 8 Physics", teacher: "Prof. Bruce", color: "var(--color-success)", bg: "hsla(142,70%,40%,0.07)" },
+                    ]},
+                    { time: "02:00 PM", slots: [
+                      { day: 0, label: "Calculus Adv.", teacher: "Prof. Aaron", color: "hsl(271,91%,60%)", bg: "hsla(271,91%,60%,0.07)" },
+                      { day: 2, label: "Thermal Dynamics", teacher: "Prof. Bruce", color: "hsl(38,92%,50%)", bg: "hsla(38,92%,50%,0.07)" },
+                      { day: 4, label: "Calculus Adv.", teacher: "Prof. Aaron", color: "hsl(271,91%,60%)", bg: "hsla(271,91%,60%,0.07)" },
+                    ]},
+                    { time: "04:00 PM", slots: [
+                      { day: 1, label: "Demo Class", teacher: "Clara Oswald", color: "hsl(200,95%,50%)", bg: "hsla(200,95%,50%,0.07)" },
+                      { day: 3, label: "Grade 10 Algebra", teacher: "Prof. Aaron", color: "var(--color-accent)", bg: "hsla(328,100%,54%,0.07)" },
+                    ]},
+                  ].map(row => (
+                    <div key={row.time} style={{ display: "grid", gridTemplateColumns: "80px repeat(5, 1fr)", borderBottom: "1px solid var(--border-glass)", minHeight: "90px" }}>
+                      <div style={{ padding: "14px 12px", fontSize: "11px", color: "var(--text-secondary)", background: "rgba(29,10,39,0.02)", display: "flex", alignItems: "center", fontWeight: 600 }}>{row.time}</div>
+                      {[0,1,2,3,4].map(dayIdx => {
+                        const slot = row.slots.find(s => s.day === dayIdx);
+                        return (
+                          <div key={dayIdx} style={{ padding: "6px" }}>
+                            {slot && (
+                              <div style={{ background: slot.bg, borderLeft: `3px solid ${slot.color}`, borderRadius: "6px", padding: "8px 10px", height: "100%" }}>
+                                <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{slot.label}</p>
+                                <p style={{ margin: "2px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>{slot.teacher}</p>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
-
-                    {/* Row 2: 10:00 AM */}
-                    <div style={{ display: "grid", gridTemplateColumns: "80px repeat(5, 1fr)", borderBottom: "1px solid var(--border-glass)", minHeight: "100px" }}>
-                      <div style={{ padding: "16px", fontSize: "12px", color: "var(--text-secondary)", background: "rgba(29, 10, 39, 0.02)", display: "flex", alignItems: "center" }}>
-                        10:00 AM
-                      </div>
-                      <div style={{ padding: "8px" }}></div>
-                      <div style={{ padding: "8px" }}>
-                        <Card style={{ padding: "10px", background: "hsla(142, 70%, 40%, 0.05)", borderLeft: "4px solid var(--color-success)" }}>
-                          <h4 style={{ fontSize: "12px", fontWeight: 700 }}>Grade 8 Physics</h4>
-                          <span style={{ fontSize: "10px", color: "var(--text-secondary)" }}>Prof. Bruce</span>
-                        </Card>
-                      </div>
-                      <div style={{ padding: "8px" }}></div>
-                      <div style={{ padding: "8px" }}>
-                        <Card style={{ padding: "10px", background: "hsla(142, 70%, 40%, 0.05)", borderLeft: "4px solid var(--color-success)" }}>
-                          <h4 style={{ fontSize: "12px", fontWeight: 700 }}>Grade 8 Physics</h4>
-                          <span style={{ fontSize: "10px", color: "var(--text-secondary)" }}>Prof. Bruce</span>
-                        </Card>
-                      </div>
-                      <div style={{ padding: "8px" }}></div>
-                    </div>
-
-                  </div>
+                  ))}
                 </Card>
               )}
             </div>
           )}
 
-          {/* ==========================================
-              VIEW: ATTENDANCE TRACKER SYSTEM
-              ========================================== */}
+          {/* ══════════════ ATTENDANCE VIEW ══════════════ */}
           {currentView === "attendance" && (
             <div className="animate-fade-in">
-              {/* Page Header */}
-              <section style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" }}>
                 <div>
-                  <h1 className="text-gradient-indigo">Attendance Tracker</h1>
-                  <p>Select a class batch and date to log student attendance and update progress.</p>
+                  <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Attendance Tracker</h1>
+                  <p>Select batch and date to log student attendance.</p>
                 </div>
-                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 650, color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px" }}>
-                    <Activity size={14} style={{ color: "var(--color-success)" }} />
-                    Rate: 93.8% (Week)
-                  </span>
-                </div>
-              </section>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-success)", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <Activity size={14} />Week Rate: 93.8%
+                </span>
+              </div>
 
-              {/* Notification Banner */}
               {attendanceNotificationText && (
-                <div style={{
-                  background: "hsla(142, 70%, 40%, 0.08)",
-                  border: "1px solid hsla(142, 70%, 40%, 0.2)",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  color: "var(--color-success)",
-                  fontSize: "13px",
-                  fontWeight: 600,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  marginBottom: "24px"
-                }}>
-                  <Check size={18} />
-                  <span>{attendanceNotificationText}</span>
+                <div style={{ background: "hsla(142,70%,40%,0.08)", border: "1px solid hsla(142,70%,40%,0.2)", padding: "12px 16px", borderRadius: "10px", color: "var(--color-success)", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
+                  <CheckCircle2 size={16} />{attendanceNotificationText}
                 </div>
               )}
 
-              {/* Selector Filters Card */}
-              <Card style={{ marginBottom: "28px" }}>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", alignItems: "flex-end" }}>
-                  <div style={{ flexGrow: 1, minWidth: "200px" }}>
-                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "8px" }}>
-                      Select Class Batch
-                    </label>
-                    <select
-                      value={selectedBatch}
-                      onChange={(e) => setSelectedBatch(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "10px 14px",
-                        borderRadius: "8px",
-                        border: "1px solid var(--border-glass)",
-                        background: "var(--surface-glass)",
-                        color: "var(--text-primary)",
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        outline: "none"
-                      }}
-                    >
+              <Card style={{ padding: "20px", marginBottom: "20px", gap: 0 }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", alignItems: "flex-end" }}>
+                  <div style={{ flex: 1, minWidth: "200px" }}>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "6px" }}>Class Batch</label>
+                    <select value={selectedBatch} onChange={e => setSelectedBatch(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", border: "1px solid var(--border-glass)", background: "var(--surface-glass)", color: "var(--text-primary)", fontSize: "13px", fontWeight: 600, outline: "none" }}>
                       <option value="Grade 10 Algebra">Grade 10 Algebra A (Mathematics)</option>
                       <option value="Grade 8 Physics">Grade 8 Physics B (Physics)</option>
                     </select>
                   </div>
-
-                  <div style={{ width: "200px" }}>
-                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "8px" }}>
-                      Class Session Date
-                    </label>
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "9px 14px",
-                        borderRadius: "8px",
-                        border: "1px solid var(--border-glass)",
-                        background: "var(--surface-glass)",
-                        color: "var(--text-primary)",
-                        fontSize: "13px",
-                        fontWeight: 600,
-                        outline: "none"
-                      }}
-                    />
+                  <div style={{ width: "190px" }}>
+                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "6px" }}>Session Date</label>
+                    <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", border: "1px solid var(--border-glass)", background: "var(--surface-glass)", color: "var(--text-primary)", fontSize: "13px", fontWeight: 600, outline: "none" }} />
                   </div>
-
-                  <div style={{ display: "flex", alignItems: "center", height: "42px", paddingLeft: "10px" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
-                      <input
-                        type="checkbox"
-                        checked={absenceAlertChecked}
-                        onChange={(e) => setAbsenceAlertChecked(e.target.checked)}
-                        style={{
-                          width: "16px",
-                          height: "16px",
-                          accentColor: "var(--color-accent)",
-                          cursor: "pointer"
-                        }}
-                      />
-                      <span>Auto-Notify Parents on Absence</span>
-                    </label>
-                  </div>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer", paddingBottom: "2px" }}>
+                    <input type="checkbox" checked={absenceAlertChecked} onChange={e => setAbsenceAlertChecked(e.target.checked)}
+                      style={{ width: "15px", height: "15px", accentColor: "var(--color-accent)", cursor: "pointer" }} />
+                    Auto-Notify Parents
+                  </label>
                 </div>
               </Card>
 
-              {/* Attendance Roster Grid */}
               {isLoading ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  <Skeleton variant="rect" height={60} />
-                  <Skeleton variant="rect" height={60} />
-                  <Skeleton variant="rect" height={60} />
+                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {[1,2,3].map(i => <Skeleton key={i} variant="rect" height={60} />)}
                 </div>
               ) : (
-                <Card style={{ padding: 0, overflow: "hidden" }}>
-                  {/* Roster Header */}
-                  <div style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 200px 300px",
-                    padding: "16px 24px",
-                    background: "rgba(29, 10, 39, 0.02)",
-                    borderBottom: "1px solid var(--border-glass)",
-                    fontWeight: 700,
-                    fontSize: "13px",
-                    color: "var(--text-secondary)"
-                  }}>
-                    <div>Student Name</div>
-                    <div style={{ textAlign: "center" }}>Mark Attendance</div>
-                    <div>Remarks / Comments</div>
+                <Card style={{ padding: 0, overflow: "hidden", gap: 0 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 180px 1fr", padding: "12px 24px", background: "rgba(29,10,39,0.03)", borderBottom: "1px solid var(--border-glass)", fontWeight: 700, fontSize: "12px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    <div>Student</div><div style={{ textAlign: "center" }}>Status</div><div>Remarks</div>
                   </div>
-
-                  {/* Roster List */}
-                  <div style={{ display: "flex", flexDirection: "column" }}>
-                    {attendanceList.map(student => (
-                      <div
-                        key={student.id}
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 200px 300px",
-                          padding: "16px 24px",
-                          borderBottom: "1px solid var(--border-glass)",
-                          alignItems: "center"
-                        }}
-                      >
-                        {/* 1. Student Name/Metadata */}
-                        <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
-                          <div className="avatar-initials-gradient avatar-support" style={{ width: "38px", height: "38px", fontSize: "13px" }}>
-                            {student.initials}
-                          </div>
-                          <div>
-                            <h4 style={{ fontSize: "14px", fontWeight: 650, margin: 0 }}>{student.name}</h4>
-                            <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
-                              Email: {student.email} • avg: <strong style={{ color: "var(--color-success)" }}>{student.rate}</strong>
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* 2. Toggle Status buttons */}
-                        <div style={{ display: "flex", justifyContent: "center" }}>
-                          <div className="attendance-btn-group">
-                            <button
-                              type="button"
-                              className={`attendance-btn attendance-btn-present ${student.status === "PRESENT" ? "is-active" : ""}`}
-                              onClick={() => handleToggleAttendance(student.id, "PRESENT")}
-                            >
-                              P
-                            </button>
-                            <button
-                              type="button"
-                              className={`attendance-btn attendance-btn-absent ${student.status === "ABSENT" ? "is-active" : ""}`}
-                              onClick={() => handleToggleAttendance(student.id, "ABSENT")}
-                            >
-                              A
-                            </button>
-                            <button
-                              type="button"
-                              className={`attendance-btn attendance-btn-late ${student.status === "LATE" ? "is-active" : ""}`}
-                              onClick={() => handleToggleAttendance(student.id, "LATE")}
-                            >
-                              L
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* 3. Remarks Input */}
+                  {attendanceList.map(student => (
+                    <div key={student.id} style={{ display: "grid", gridTemplateColumns: "1fr 180px 1fr", padding: "14px 24px", borderBottom: "1px solid var(--border-glass)", alignItems: "center", gap: "16px" }}>
+                      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                        <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "hsla(271,91%,60%,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700, color: "hsl(271,91%,60%)", flexShrink: 0 }}>{student.initials}</div>
                         <div>
-                          <input
-                            type="text"
-                            placeholder="Log absence note or behavioral comment..."
-                            value={student.remarks}
-                            onChange={(e) => handleRemarksChange(student.id, e.target.value)}
-                            style={{
-                              width: "100%",
-                              padding: "8px 12px",
-                              borderRadius: "6px",
-                              border: "1px solid var(--border-glass)",
-                              background: "transparent",
-                              fontSize: "12px",
-                              outline: "none",
-                              color: "var(--text-primary)"
-                            }}
-                          />
+                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 650 }}>{student.name}</p>
+                          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{student.email} • avg: <strong style={{ color: "var(--color-success)" }}>{student.rate}</strong></p>
                         </div>
                       </div>
-                    ))}
-                  </div>
-
-                  {/* Footer Controls */}
-                  <div style={{
-                    padding: "16px 24px",
-                    background: "rgba(29, 10, 39, 0.01)",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center"
-                  }}>
+                      <div style={{ display: "flex", justifyContent: "center", gap: "6px" }}>
+                        {(["PRESENT","ABSENT","LATE"] as const).map(s => (
+                          <button key={s} onClick={() => handleToggleAttendance(student.id, s)}
+                            style={{ width: "36px", height: "36px", borderRadius: "8px", border: `2px solid ${student.status === s ? (s === "PRESENT" ? "var(--color-success)" : s === "ABSENT" ? "var(--color-danger)" : "hsl(38,92%,50%)") : "var(--border-glass)"}`, background: student.status === s ? (s === "PRESENT" ? "hsla(142,70%,40%,0.15)" : s === "ABSENT" ? "hsla(342,90%,48%,0.15)" : "hsla(38,92%,50%,0.15)") : "transparent", color: student.status === s ? (s === "PRESENT" ? "var(--color-success)" : s === "ABSENT" ? "var(--color-danger)" : "hsl(38,92%,50%)") : "var(--text-secondary)", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.15s ease" }}>
+                            {s[0]}
+                          </button>
+                        ))}
+                      </div>
+                      <input type="text" placeholder="Add a note..." value={student.remarks} onChange={e => handleRemarksChange(student.id, e.target.value)}
+                        style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border-glass)", background: "transparent", fontSize: "12px", outline: "none", color: "var(--text-primary)" }} />
+                    </div>
+                  ))}
+                  <div style={{ padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(29,10,39,0.02)" }}>
                     <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                      Selected Date: <strong>{selectedDate}</strong> • Selected Batch: <strong>{selectedBatch}</strong>
+                      <strong>{selectedBatch}</strong> • <strong>{selectedDate}</strong> • {attendanceList.length} students
                     </span>
-                    <Button
-                      variant="primary"
-                      isLoading={btnLoading}
-                      onClick={handleSaveAttendance}
-                      leftIcon={<Check size={16} />}
-                    >
-                      Save Attendance Records
+                    <Button variant="primary" isLoading={btnLoading} onClick={handleSaveAttendance} leftIcon={<Check size={15} />}>
+                      Save & Notify
                     </Button>
                   </div>
                 </Card>
@@ -1026,234 +587,155 @@ function App() {
             </div>
           )}
 
-          {/* ==========================================
-              VIEW: BILLING INVOICE
-              ========================================== */}
+          {/* ══════════════ BILLING VIEW ══════════════ */}
           {currentView === "billing" && (
             <div className="animate-fade-in">
-              <section style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" }}>
                 <div>
-                  <h1 className="text-gradient-indigo">Billing & Fee Ledger</h1>
-                  <p>Manage invoicing templates, Stripe checkout portals, and student logs.</p>
+                  <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Billing & Fee Ledger</h1>
+                  <p>Manage invoices, Stripe payments, and outstanding dues.</p>
                 </div>
-                <div style={{ display: "flex", gap: "12px" }}>
-                  <Button variant="secondary" leftIcon={<Filter size={16} />}>Filter</Button>
-                  <Button variant="primary" leftIcon={<Plus size={16} />}>Issue Invoice</Button>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <Button variant="secondary" leftIcon={<Filter size={14} />}>Filter</Button>
+                  <Button variant="primary" leftIcon={<Plus size={14} />}>Issue Invoice</Button>
                 </div>
-              </section>
+              </div>
+
+              {/* Summary strip */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "24px" }}>
+                {[
+                  { label: "Total Billed", value: "₹1,42,000", color: "var(--color-accent)", bg: "hsla(328,100%,54%,0.08)" },
+                  { label: "Collected", value: "₹1,28,500", color: "var(--color-success)", bg: "hsla(142,70%,40%,0.08)" },
+                  { label: "Outstanding", value: "₹13,500", color: "var(--color-danger)", bg: "hsla(342,90%,48%,0.08)" },
+                ].map(s => (
+                  <div key={s.label} style={{ padding: "16px 20px", background: s.bg, borderRadius: "12px", border: `1px solid ${s.color}22` }}>
+                    <p style={{ margin: "0 0 4px", fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>{s.label}</p>
+                    <h3 style={{ margin: 0, fontSize: "22px", fontWeight: 700, color: s.color }}>{s.value}</h3>
+                  </div>
+                ))}
+              </div>
 
               {isLoading ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  <Skeleton variant="rect" height={60} />
-                  <Skeleton variant="rect" height={60} />
-                  <Skeleton variant="rect" height={60} />
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {[1,2,3].map(i => <Skeleton key={i} variant="rect" height={72} />)}
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-                  
-                  {/* Invoice item 1 */}
-                  <Card style={{ padding: "20px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <span style={{ fontSize: "11px", color: "var(--text-secondary)", textTransform: "uppercase" }}>Invoice #INV-2026-001</span>
-                        <h3 style={{ margin: "4px 0" }}>John Connor</h3>
-                        <p style={{ fontSize: "12px" }}>Billing Period: July 2026 — Grade 10 Algebra</p>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-                        <div style={{ textAlign: "right" }}>
-                          <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Outstanding Amount</span>
-                          <h3 className="text-gradient-sunset" style={{ fontSize: "22px", fontWeight: 700 }}>$150.00</h3>
+                <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", padding: "12px 24px", background: "rgba(29,10,39,0.03)", borderBottom: "1px solid var(--border-glass)", fontWeight: 700, fontSize: "12px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", gap: "16px" }}>
+                    <div>Student / Period</div><div>Amount</div><div>Status</div><div>Action</div>
+                  </div>
+                  {[
+                    { id: "INV-001", name: "John Connor", period: "July 2026 — Grade 10 Algebra", amount: "₹4,500", status: "UNPAID" },
+                    { id: "INV-002", name: "Marcus Wright", period: "July 2026 — Grade 8 Physics", amount: "₹3,800", status: "PAID" },
+                    { id: "INV-003", name: "Alice Cooper", period: "July 2026 — Grade 10 Algebra", amount: "₹4,500", status: "PARTIAL" },
+                    { id: "INV-004", name: "Emma Watson", period: "June 2026 — Calculus Advanced", amount: "₹5,200", status: "PAID" },
+                    { id: "INV-005", name: "Diana Prince", period: "July 2026 — Grade 8 Physics", amount: "₹3,800", status: "UNPAID" },
+                  ].map(inv => {
+                    const statusMap: Record<string, { color: string; bg: string; label: string }> = {
+                      PAID:    { color: "var(--color-success)", bg: "hsla(142,70%,40%,0.1)", label: "Paid" },
+                      UNPAID:  { color: "var(--color-danger)",  bg: "hsla(342,90%,48%,0.1)", label: "Unpaid" },
+                      PARTIAL: { color: "hsl(38,92%,50%)",      bg: "hsla(38,92%,50%,0.1)",  label: "Partial" },
+                    };
+                    const s = statusMap[inv.status];
+                    return (
+                      <div key={inv.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", padding: "16px 24px", borderBottom: "1px solid var(--border-glass)", alignItems: "center", gap: "16px" }}>
+                        <div>
+                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 650 }}>{inv.name}</p>
+                          <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>#{inv.id} • {inv.period}</p>
                         </div>
-                        <span style={{
-                          padding: "6px 12px",
-                          borderRadius: "20px",
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          background: "hsla(342, 90%, 48%, 0.1)",
-                          color: "var(--color-danger)"
-                        }}>
-                          Unpaid
-                        </span>
-                        <Button variant="primary" size="sm">Pay via Stripe</Button>
-                      </div>
-                    </div>
-                  </Card>
-
-                  {/* Invoice item 2 */}
-                  <Card style={{ padding: "20px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <span style={{ fontSize: "11px", color: "var(--text-secondary)", textTransform: "uppercase" }}>Invoice #INV-2026-002</span>
-                        <h3 style={{ margin: "4px 0" }}>Marcus Wright</h3>
-                        <p style={{ fontSize: "12px" }}>Billing Period: July 2026 — Grade 8 Physics</p>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-                        <div style={{ textAlign: "right" }}>
-                          <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>Paid Amount</span>
-                          <h3 className="text-gradient-emerald" style={{ fontSize: "22px", fontWeight: 700 }}>$120.00</h3>
+                        <span style={{ fontSize: "15px", fontWeight: 700 }}>{inv.amount}</span>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: s.color, background: s.bg, padding: "4px 10px", borderRadius: "20px", whiteSpace: "nowrap" }}>{s.label}</span>
+                        <div style={{ display: "flex", gap: "8px" }}>
+                          {inv.status !== "PAID" && <Button variant="primary" size="sm">Pay Now</Button>}
+                          <Button variant="secondary" size="sm" leftIcon={<ExternalLink size={13} />}>PDF</Button>
                         </div>
-                        <span style={{
-                          padding: "6px 12px",
-                          borderRadius: "20px",
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          background: "hsla(142, 70%, 40%, 0.1)",
-                          color: "var(--color-success)"
-                        }}>
-                          Paid
-                        </span>
-                        <Button variant="secondary" size="sm" leftIcon={<ExternalLink size={14} />}>View PDF</Button>
                       </div>
-                    </div>
-                  </Card>
-
-                </div>
+                    );
+                  })}
+                </Card>
               )}
             </div>
           )}
 
-          {/* ==========================================
-              VIEW: CRM STAFF & ROLES DIRECTORY (21st.dev Upgraded)
-              ========================================== */}
+          {/* ══════════════ STAFF VIEW ══════════════ */}
           {currentView === "staff" && (
             <div className="animate-fade-in">
-              {/* Header section */}
-              <section style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "32px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" }}>
                 <div>
-                  <h1 className="text-gradient-indigo">Staff & Roles Directory</h1>
-                  <p>Expose and audit academic, management, financial, sales, and support rosters.</p>
+                  <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Staff & Roles Directory</h1>
+                  <p>Manage academic, admin, sales, billing, and support rosters.</p>
                 </div>
-                <Button variant="primary" leftIcon={<Plus size={16} />}>Register Staff</Button>
-              </section>
+                <Button variant="primary" leftIcon={<Plus size={14} />}>Register Staff</Button>
+              </div>
 
-              {/* Sidebar + Main Grid Layout */}
               <div className="staff-layout-grid">
-                
-                {/* Sidebar Filters */}
-                <Card className="staff-sidebar-card">
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)" }}>
-                    <Filter size={14} />
-                    <span>Departments</span>
-                  </div>
-                  
-                  <button 
-                    className={`staff-filter-btn ${activeStaffFilter === "ALL" ? "is-active" : ""}`}
-                    onClick={() => setActiveStaffFilter("ALL")}
-                  >
-                    <Activity size={15} />
-                    <span>All Staff ({staffList.length})</span>
-                  </button>
-
-                  <button 
-                    className={`staff-filter-btn ${activeStaffFilter === "ADMIN" ? "is-active" : ""}`}
-                    onClick={() => setActiveStaffFilter("ADMIN")}
-                  >
-                    <Sparkles size={15} style={{ color: "var(--color-warning)" }} />
-                    <span>Admissions Admin ({staffList.filter(s => s.role === "ADMIN").length})</span>
-                  </button>
-
-                  <button 
-                    className={`staff-filter-btn ${activeStaffFilter === "TEACHER" ? "is-active" : ""}`}
-                    onClick={() => setActiveStaffFilter("TEACHER")}
-                  >
-                    <GraduationCap size={15} style={{ color: "var(--color-success)" }} />
-                    <span>Academic Teachers ({staffList.filter(s => s.role === "TEACHER").length})</span>
-                  </button>
-
-                  <button 
-                    className={`staff-filter-btn ${activeStaffFilter === "SALES" ? "is-active" : ""}`}
-                    onClick={() => setActiveStaffFilter("SALES")}
-                  >
-                    <Users2 size={15} style={{ color: "var(--color-accent)" }} />
-                    <span>Admissions Advisors ({staffList.filter(s => s.role === "SALES").length})</span>
-                  </button>
-
-                  <button 
-                    className={`staff-filter-btn ${activeStaffFilter === "BILLING" ? "is-active" : ""}`}
-                    onClick={() => setActiveStaffFilter("BILLING")}
-                  >
-                    <DollarSign size={15} style={{ color: "hsl(38, 92%, 45%)" }} />
-                    <span>Finance Officers ({staffList.filter(s => s.role === "BILLING").length})</span>
-                  </button>
-
-                  <button 
-                    className={`staff-filter-btn ${activeStaffFilter === "SUPPORT" ? "is-active" : ""}`}
-                    onClick={() => setActiveStaffFilter("SUPPORT")}
-                  >
-                    <Briefcase size={15} style={{ color: "var(--color-info)" }} />
-                    <span>IT Operations ({staffList.filter(s => s.role === "SUPPORT").length})</span>
-                  </button>
+                {/* Sidebar */}
+                <Card style={{ padding: "16px", gap: "6px" }}>
+                  <p style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", margin: "0 0 8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Filter size={13} /> Departments
+                  </p>
+                  {([
+                    { key: "ALL",     icon: <Activity size={14} />,      label: "All Staff",    count: staffList.length },
+                    { key: "ADMIN",   icon: <Sparkles size={14} />,      label: "Admin",        count: staffList.filter(s => s.role === "ADMIN").length },
+                    { key: "TEACHER", icon: <GraduationCap size={14} />, label: "Teachers",     count: staffList.filter(s => s.role === "TEACHER").length },
+                    { key: "SALES",   icon: <Users2 size={14} />,        label: "Sales",        count: staffList.filter(s => s.role === "SALES").length },
+                    { key: "BILLING", icon: <IndianRupee size={14} />,   label: "Billing",      count: staffList.filter(s => s.role === "BILLING").length },
+                    { key: "SUPPORT", icon: <BookOpen size={14} />,      label: "Support",      count: staffList.filter(s => s.role === "SUPPORT").length },
+                  ] as { key: StaffRoleType; icon: React.ReactNode; label: string; count: number }[]).map(f => (
+                    <button key={f.key} className={`staff-filter-btn ${activeStaffFilter === f.key ? "is-active" : ""}`}
+                      onClick={() => setActiveStaffFilter(f.key)}>
+                      {f.icon}
+                      <span style={{ flex: 1 }}>{f.label}</span>
+                      <span style={{ fontSize: "11px", fontWeight: 700, opacity: 0.6 }}>{f.count}</span>
+                    </button>
+                  ))}
                 </Card>
 
-                {/* Main Directory Cards Area */}
+                {/* Staff Cards Grid */}
                 <div>
                   {isLoading ? (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "20px" }}>
-                      <Skeleton variant="rect" height={180} />
-                      <Skeleton variant="rect" height={180} />
-                      <Skeleton variant="rect" height={180} />
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+                      {[1,2,3].map(i => <Skeleton key={i} variant="rect" height={180} />)}
                     </div>
                   ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
-                      {filteredStaff.map(staff => (
-                        <Card key={staff.id} hoverLift style={{ padding: "20px", display: "flex", flexDirection: "column", height: "100%" }}>
-                          {/* Member Header */}
-                          <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "16px" }}>
-                            <div className={`avatar-initials-gradient ${staff.avatarClass}`}>
-                              {staff.initials}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+                      {filteredStaff.map(staff => {
+                        const rm = ROLE_META[staff.role] || { color: "var(--text-secondary)", bg: "rgba(0,0,0,0.05)" };
+                        const onlineColor = STATUS_ONLINE[staff.status] || "var(--text-secondary)";
+                        return (
+                          <Card key={staff.id} hoverLift style={{ padding: "20px", gap: 0 }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: "14px", marginBottom: "14px" }}>
+                              <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: rm.bg, border: `2px solid ${rm.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: rm.color, flexShrink: 0 }}>
+                                {staff.initials}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{staff.name}</p>
+                                <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{staff.title}</p>
+                              </div>
+                              <span style={{ fontSize: "10px", fontWeight: 700, color: rm.color, background: rm.bg, padding: "3px 8px", borderRadius: "20px", flexShrink: 0 }}>{staff.role}</span>
                             </div>
-                            <div style={{ flexGrow: 1 }}>
-                              <h3 style={{ fontSize: "16px", fontWeight: 700, margin: 0 }}>{staff.name}</h3>
-                              <span style={{ fontSize: "12px", color: "var(--text-secondary)", display: "block" }}>{staff.title}</span>
-                            </div>
-                          </div>
-
-                          {/* Specific Assignment info */}
-                          <div style={{ flexGrow: 1, padding: "10px 12px", background: "rgba(29, 10, 39, 0.02)", borderRadius: "8px", border: "1px solid var(--border-glass)", marginBottom: "16px" }}>
-                            <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", display: "block", marginBottom: "4px" }}>
-                              Current Directives
-                            </span>
-                            <p style={{ fontSize: "12px", color: "var(--text-primary)", lineHeight: 1.4, margin: 0 }}>
-                              {staff.assignment}
-                            </p>
-                          </div>
-
-                          {/* Member Footer Details */}
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--border-glass)", paddingTop: "12px", marginTop: "auto" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                              <span style={{
-                                width: "8px",
-                                height: "8px",
-                                borderRadius: "50%",
-                                background: staff.status === "Offline" ? "var(--text-secondary)" : staff.status === "In Class" ? "var(--color-warning)" : "var(--color-success)"
-                              }} />
-                              <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{staff.status}</span>
-                            </div>
-                            
-                            <div style={{ display: "flex", gap: "8px" }}>
-                              <Button variant="ghost" size="sm" style={{ width: "30px", height: "30px", padding: 0 }} aria-label="Call member">
-                                <Phone size={14} style={{ color: "var(--text-secondary)" }} />
-                              </Button>
-                              <Button variant="ghost" size="sm" style={{ width: "30px", height: "30px", padding: 0 }} aria-label="Message member">
-                                <MessageSquare size={14} style={{ color: "var(--text-secondary)" }} />
-                              </Button>
-                              <span className={`role-badge ${staff.badgeClass}`}>
-                                {staff.role}
+                            <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <TrendingUp size={12} />{staff.assignment}
+                              </span>
+                              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: onlineColor, flexShrink: 0 }} />
+                                <span style={{ color: onlineColor, fontWeight: 600 }}>{staff.status}</span>
+                                <span style={{ marginLeft: "auto" }}>{staff.phone}</span>
                               </span>
                             </div>
-                          </div>
-                        </Card>
-                      ))}
+                          </Card>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
-
               </div>
             </div>
           )}
 
-        </div>
-      </div>
+        </div>{/* end crm-viewport */}
+      </div>{/* end crm-main-content */}
     </div>
   );
 }

@@ -2,6 +2,39 @@
 @import "tailwindcss";
 
 /* ==========================================================================
+   SHADCN/UI CSS VARIABLES (Tailwind v4 compatible)
+   ========================================================================== */
+@layer base {
+  :root {
+    --background: 320 30% 98%;
+    --foreground: 285 50% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 285 50% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 285 50% 12%;
+    --primary: 328 100% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 320 20% 94%;
+    --secondary-foreground: 285 50% 12%;
+    --muted: 320 20% 94%;
+    --muted-foreground: 285 20% 45%;
+    --accent: 271 91% 60%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 342 90% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 285 30% 20% / 0.08;
+    --input: 285 30% 20% / 0.08;
+    --ring: 328 100% 54%;
+    --radius: 0.5rem;
+    --chart-1: 328 100% 54%;
+    --chart-2: 271 91% 60%;
+    --chart-3: 142 70% 40%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 342 90% 48%;
+  }
+}
+
+/* ==========================================================================
    TABLE OF CONTENTS
    ==========================================================================
    1. GLOBAL DESIGN VARIABLES & TOKENS
@@ -1342,6 +1375,7 @@ p {
   flex-direction: column;
   min-height: 100vh;
   position: relative;
+  background: linear-gradient(135deg, hsl(320,30%,98%) 0%, hsl(280,30%,97%) 50%, hsl(240,25%,97%) 100%);
 }
 
 /* Main scrollable content area */
@@ -1350,7 +1384,7 @@ p {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding-bottom: 100px; /* Space for the bottom dock */
+  padding-bottom: 100px;
 }
 
 /* Top slim utility header */
@@ -1358,34 +1392,35 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-md) var(--space-xl);
-  background: var(--surface-glass);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border-bottom: 1px solid var(--border-glass);
+  padding: 10px 28px;
+  background: hsla(0, 0%, 100%, 0.82);
+  backdrop-filter: blur(24px) saturate(200%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%);
+  border-bottom: 1px solid hsla(285, 30%, 20%, 0.07);
   position: sticky;
   top: 0;
   z-index: 50;
+  box-shadow: 0 1px 20px -5px rgba(29,10,39,0.08);
 }
 
-/* macOS-style Frosted Glass Floating Bottom Dock — 21st.dev Inspired */
+/* macOS-style Frosted Glass Floating Bottom Dock */
 .crm-bottom-dock {
   position: fixed;
-  bottom: 16px;
+  bottom: 18px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: flex-end;
   gap: 4px;
-  padding: 8px 14px;
-  background: hsla(0, 0%, 100%, 0.55);
-  backdrop-filter: blur(32px) saturate(220%);
-  -webkit-backdrop-filter: blur(32px) saturate(220%);
-  border: 1px solid hsla(285, 30%, 80%, 0.35);
-  border-radius: 20px;
-  box-shadow: 0 12px 40px -6px rgba(29, 10, 39, 0.18),
-              0 4px 12px rgba(29, 10, 39, 0.05),
-              inset 0 1px 0 hsla(0, 0%, 100%, 0.7);
+  padding: 8px 16px;
+  background: hsla(0, 0%, 100%, 0.7);
+  backdrop-filter: blur(40px) saturate(240%);
+  -webkit-backdrop-filter: blur(40px) saturate(240%);
+  border: 1px solid hsla(285, 30%, 80%, 0.4);
+  border-radius: 22px;
+  box-shadow: 0 16px 48px -8px rgba(29,10,39,0.2),
+              0 4px 12px rgba(29,10,39,0.06),
+              inset 0 1px 0 hsla(0,0%,100%,0.8);
   z-index: 999;
 }
 
@@ -1395,8 +1430,8 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 14px;
   border: none;
   background: transparent;
@@ -1407,25 +1442,22 @@ p {
               background 0.25s ease;
 }
 
-/* ── CSS :has() Magnification — scale neighbors when hovering ── */
 .crm-dock-item:hover {
   color: var(--color-accent);
-  background: hsla(328, 100%, 54%, 0.07);
-  transform: translateY(-8px) scale(1.22);
+  background: hsla(328, 100%, 54%, 0.08);
+  transform: translateY(-10px) scale(1.25);
 }
 
-/* Scale immediate siblings (next + previous) */
 .crm-dock-item:hover + .crm-dock-item {
-  transform: translateY(-3px) scale(1.08);
+  transform: translateY(-4px) scale(1.1);
   color: hsla(285, 20%, 35%, 1);
 }
 
 .crm-dock-item:has(+ .crm-dock-item:hover) {
-  transform: translateY(-3px) scale(1.08);
+  transform: translateY(-4px) scale(1.1);
   color: hsla(285, 20%, 35%, 1);
 }
 
-/* Active state — gradient glow dot indicator underneath */
 .crm-dock-item.is-active {
   color: var(--color-accent);
   background: hsla(328, 100%, 54%, 0.1);
@@ -1434,20 +1466,19 @@ p {
 .crm-dock-item.is-active::after {
   content: '';
   position: absolute;
-  bottom: 2px;
+  bottom: 3px;
   left: 50%;
   transform: translateX(-50%);
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: linear-gradient(135deg, hsl(328, 100%, 54%) 0%, hsl(271, 91%, 60%) 100%);
-  box-shadow: 0 0 8px hsla(328, 100%, 54%, 0.5);
+  background: linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%));
+  box-shadow: 0 0 8px hsla(328,100%,54%,0.6);
 }
 
-/* Dock tooltip label — elevated pill with arrow */
 .crm-dock-tooltip {
   position: absolute;
-  bottom: 56px;
+  bottom: 58px;
   left: 50%;
   transform: translateX(-50%) translateY(8px) scale(0.92);
   padding: 5px 12px;
@@ -1455,16 +1486,15 @@ p {
   font-weight: 700;
   letter-spacing: 0.3px;
   color: #ffffff;
-  background: hsl(285, 50%, 12%);
+  background: hsl(285,50%,12%);
   border-radius: 8px;
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 12px rgba(29, 10, 39, 0.25);
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 4px 12px rgba(29,10,39,0.25);
 }
 
-/* Tooltip arrow pointer */
 .crm-dock-tooltip::after {
   content: '';
   position: absolute;
@@ -1473,7 +1503,7 @@ p {
   transform: translateX(-50%) rotate(45deg);
   width: 8px;
   height: 8px;
-  background: hsl(285, 50%, 12%);
+  background: hsl(285,50%,12%);
 }
 
 .crm-dock-item:hover .crm-dock-tooltip {
@@ -1485,8 +1515,8 @@ p {
 .crm-viewport {
   flex: 1;
   overflow-y: auto;
-  padding: var(--space-xl);
-  padding-bottom: 120px; /* Clear the bottom dock */
+  padding: 28px 32px;
+  padding-bottom: 130px;
 }
 
 /* ==========================================================================

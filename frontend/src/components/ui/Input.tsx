@@ -1,83 +1,76 @@
-import React, { useState } from "react";
+import * as React from "react"
+import { cn } from "@/lib/utils"
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  error?: string;
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  containerClassName?: string;
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string
+  error?: string
+  leftIcon?: React.ReactNode
+  rightIcon?: React.ReactNode
 }
 
-export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  (
-    {
-      className = "",
-      containerClassName = "",
-      label,
-      error,
-      leftIcon,
-      rightIcon,
-      id,
-      onFocus,
-      onBlur,
-      value,
-      onChange,
-      placeholder,
-      ...props
-    },
-    ref
-  ) => {
-    const [isFocused, setIsFocused] = useState(false);
-    const inputId = id || `glass-input-${Math.random().toString(36).substring(2, 9)}`;
+function Input({ className, type, label, error, leftIcon, rightIcon, id, ...props }: InputProps) {
+  const inputId = id ?? label?.toLowerCase().replace(/\s+/g, "-")
 
-    // Check if the input is "active" (has value or is focused or has default placeholder)
-    const hasValue = value !== undefined && value !== null && value !== "";
-    const isActive = isFocused || hasValue || placeholder;
-
-    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-      setIsFocused(true);
-      if (onFocus) onFocus(e);
-    };
-
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-      setIsFocused(false);
-      if (onBlur) onBlur(e);
-    };
-
+  // Simple native input (no label/icon) — shadcn compatible
+  if (!label && !leftIcon && !rightIcon) {
     return (
-      <div className={`glass-input-container ${error ? "has-error" : ""} ${isActive ? "is-active" : ""} ${isFocused ? "is-focused" : ""} ${containerClassName}`}>
-        <div className="glass-input-wrapper">
-          {leftIcon && <span className="glass-input-icon-left">{leftIcon}</span>}
-          
-          <input
-            id={inputId}
-            ref={ref}
-            value={value}
-            onChange={onChange}
-            placeholder={placeholder}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-            className={`glass-input-field ${leftIcon ? "has-left-icon" : ""} ${rightIcon ? "has-right-icon" : ""} ${className}`}
-            {...props}
-          />
-          
-          {label && (
-            <label htmlFor={inputId} className="glass-input-label">
-              {label}
-            </label>
+      <div className="flex flex-col gap-1 w-full">
+        <input
+          type={type}
+          id={inputId}
+          data-slot="input"
+          className={cn(
+            "file:text-foreground placeholder:text-muted-foreground border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none",
+            "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+            "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+            error && "border-destructive focus-visible:ring-destructive/20",
+            className
           )}
+          {...props}
+        />
+        {error && <p className="text-xs text-destructive">{error}</p>}
+      </div>
+    )
+  }
 
-          {rightIcon && <span className="glass-input-icon-right">{rightIcon}</span>}
-        </div>
-        
-        {error && (
-          <p className="glass-input-error-msg animate-fade-in">
-            {error}
-          </p>
+  // Enhanced input with label + icons
+  return (
+    <div className="flex flex-col gap-1 w-full">
+      {label && (
+        <label htmlFor={inputId} className="text-sm font-medium text-foreground">
+          {label}
+        </label>
+      )}
+      <div className="relative flex items-center w-full">
+        {leftIcon && (
+          <span className="pointer-events-none absolute left-3 flex items-center text-muted-foreground">
+            {leftIcon}
+          </span>
+        )}
+        <input
+          type={type}
+          id={inputId}
+          data-slot="input"
+          className={cn(
+            "file:text-foreground placeholder:text-muted-foreground border-input flex h-9 w-full min-w-0 rounded-md border bg-transparent py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none",
+            "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+            "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+            leftIcon ? "pl-9 pr-3" : "px-3",
+            rightIcon ? "pr-9" : "",
+            error && "border-destructive focus-visible:ring-destructive/20",
+            className
+          )}
+          {...props}
+        />
+        {rightIcon && (
+          <span className="absolute right-3 flex items-center text-muted-foreground">
+            {rightIcon}
+          </span>
         )}
       </div>
-    );
-  }
-);
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
+  )
+}
 
-Input.displayName = "Input";
+export { Input }

@@ -32,7 +32,8 @@ import {
   XCircle,
   FileText,
   Activity,
-  Eye
+  Eye,
+  X
 } from "lucide-react";
 
 // ─────────────────────────── Types ───────────────────────────
