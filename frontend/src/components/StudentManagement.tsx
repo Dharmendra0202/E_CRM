@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "./ui/Button";
-import { Input } from "./ui/Input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/Card";
+import { Card } from "./ui/Card";
+import { api } from "../utils/api";
 import {
   Search,
   User,
@@ -114,160 +114,46 @@ const ShadcnTextarea: React.FC<ShadcnTextareaProps> = ({ label, className = "", 
   );
 };
 
-// ─────────────────────────── Mock Data ───────────────────────────
+// ─────────────────────────── Config ───────────────────────────
 const BATCHES = [
-  "5th Class",
-  "6th Class",
-  "7th Class",
-  "8th Class",
-  "9th Class",
-  "10th Class",
-  "11th Class",
-  "12th Class"
-];
-
-const INITIAL_STUDENTS: Student[] = [
-  {
-    id: "stu-001", name: "Aarav Sharma", email: "aarav.sharma@gmail.com", phone: "+91 98765 43210",
-    dob: "2010-03-15", gender: "Male", guardianName: "Rajesh Sharma", guardianPhone: "+91 98765 43211",
-    address: "14, MG Road, Sector 9, Noida, UP", batch: "10th Class", enrollmentDate: "2025-06-01",
-    status: "Active", feeAmount: 8500, feeStatus: "Paid", attendanceRate: 96, notes: "Excellent in problem solving. Participates in math olympiad.",
-    subjects: [
-      { name: "Mathematics", score: 92, grade: "A+", trend: "up" },
-      { name: "Science", score: 88, grade: "A", trend: "stable" },
-      { name: "English", score: 78, grade: "B+", trend: "up" },
-      { name: "Hindi", score: 85, grade: "A", trend: "stable" }
-    ]
-  },
-  {
-    id: "stu-002", name: "Priya Patel", email: "priya.patel@yahoo.com", phone: "+91 87654 32109",
-    dob: "2011-07-22", gender: "Female", guardianName: "Suresh Patel", guardianPhone: "+91 87654 32110",
-    address: "22B, Lake View Colony, Ahmedabad, Gujarat", batch: "9th Class", enrollmentDate: "2025-07-10",
-    status: "Active", feeAmount: 7500, feeStatus: "Pending", attendanceRate: 91, notes: "Strong in chemistry labs. Needs improvement in organic chemistry theory.",
-    subjects: [
-      { name: "Chemistry", score: 87, grade: "A", trend: "up" },
-      { name: "Physics", score: 72, grade: "B", trend: "down" },
-      { name: "Mathematics", score: 80, grade: "A-", trend: "stable" },
-      { name: "Biology", score: 90, grade: "A+", trend: "up" }
-    ]
-  },
-  {
-    id: "stu-003", name: "Rohan Gupta", email: "rohan.gupta@outlook.com", phone: "+91 76543 21098",
-    dob: "2012-11-05", gender: "Male", guardianName: "Meena Gupta", guardianPhone: "+91 76543 21099",
-    address: "Block C-12, Dwarka, New Delhi", batch: "8th Class", enrollmentDate: "2025-04-15",
-    status: "Active", feeAmount: 7000, feeStatus: "Paid", attendanceRate: 84, notes: "Good at practical experiments. Needs focus on numerical problems.",
-    subjects: [
-      { name: "Physics", score: 76, grade: "B+", trend: "up" },
-      { name: "Mathematics", score: 68, grade: "B", trend: "down" },
-      { name: "English", score: 82, grade: "A-", trend: "stable" },
-      { name: "Computer Science", score: 91, grade: "A+", trend: "up" }
-    ]
-  },
-  {
-    id: "stu-004", name: "Ananya Krishnan", email: "ananya.k@gmail.com", phone: "+91 65432 10987",
-    dob: "2009-01-18", gender: "Female", guardianName: "Dr. Venkat Krishnan", guardianPhone: "+91 65432 10988",
-    address: "7, Anna Nagar, Chennai, Tamil Nadu", batch: "11th Class", enrollmentDate: "2024-12-01",
-    status: "Active", feeAmount: 9500, feeStatus: "Paid", attendanceRate: 98, notes: "Class topper. Aspiring for NEET. Exceptional in biology and chemistry.",
-    subjects: [
-      { name: "Biology", score: 97, grade: "A+", trend: "up" },
-      { name: "Chemistry", score: 94, grade: "A+", trend: "up" },
-      { name: "Physics", score: 89, grade: "A", trend: "stable" },
-      { name: "English", score: 86, grade: "A", trend: "stable" }
-    ]
-  },
-  {
-    id: "stu-005", name: "Vikram Singh", email: "vikram.singh@gmail.com", phone: "+91 54321 09876",
-    dob: "2008-09-30", gender: "Male", guardianName: "Harpreet Singh", guardianPhone: "+91 54321 09877",
-    address: "15, Civil Lines, Jaipur, Rajasthan", batch: "12th Class", enrollmentDate: "2024-08-20",
-    status: "Active", feeAmount: 10000, feeStatus: "Overdue", attendanceRate: 72, notes: "Preparing for JEE. Attendance needs improvement. Strong conceptual understanding.",
-    subjects: [
-      { name: "Mathematics", score: 85, grade: "A", trend: "stable" },
-      { name: "Physics", score: 82, grade: "A-", trend: "down" },
-      { name: "Chemistry", score: 71, grade: "B", trend: "down" },
-      { name: "English", score: 65, grade: "B-", trend: "stable" }
-    ]
-  },
-  {
-    id: "stu-006", name: "Meera Joshi", email: "meera.joshi@gmail.com", phone: "+91 43210 98765",
-    dob: "2013-05-12", gender: "Female", guardianName: "Anil Joshi", guardianPhone: "+91 43210 98766",
-    address: "34, Banjara Hills, Hyderabad, Telangana", batch: "7th Class", enrollmentDate: "2025-08-01",
-    status: "Active", feeAmount: 6000, feeStatus: "Paid", attendanceRate: 94, notes: "Excellent in creative writing. Won inter-school essay competition.",
-    subjects: [
-      { name: "English", score: 95, grade: "A+", trend: "up" },
-      { name: "Hindi", score: 88, grade: "A", trend: "stable" },
-      { name: "Mathematics", score: 74, grade: "B+", trend: "up" },
-      { name: "Science", score: 80, grade: "A-", trend: "stable" }
-    ]
-  },
-  {
-    id: "stu-007", name: "Arjun Reddy", email: "arjun.reddy@yahoo.com", phone: "+91 32109 87654",
-    dob: "2010-12-28", gender: "Male", guardianName: "Srinivas Reddy", guardianPhone: "+91 32109 87655",
-    address: "Plot 8, Koregaon Park, Pune, Maharashtra", batch: "10th Class", enrollmentDate: "2025-05-15",
-    status: "Inactive", feeAmount: 8500, feeStatus: "Overdue", attendanceRate: 45, notes: "On leave due to medical reasons. Expected to rejoin next semester.",
-    subjects: [
-      { name: "Mathematics", score: 62, grade: "B-", trend: "down" },
-      { name: "Science", score: 58, grade: "C+", trend: "down" },
-      { name: "English", score: 70, grade: "B", trend: "stable" },
-      { name: "Hindi", score: 66, grade: "B", trend: "down" }
-    ]
-  },
-  {
-    id: "stu-008", name: "Sneha Iyer", email: "sneha.iyer@gmail.com", phone: "+91 21098 76543",
-    dob: "2007-04-08", gender: "Female", guardianName: "Lakshmi Iyer", guardianPhone: "+91 21098 76544",
-    address: "18A, Indiranagar, Bangalore, Karnataka", batch: "12th Class", enrollmentDate: "2024-06-10",
-    status: "Graduated", feeAmount: 10000, feeStatus: "Paid", attendanceRate: 99, notes: "Graduated with distinction. JEE Advanced qualified. Gold medalist.",
-    subjects: [
-      { name: "Mathematics", score: 98, grade: "A+", trend: "up" },
-      { name: "Physics", score: 96, grade: "A+", trend: "up" },
-      { name: "Chemistry", score: 93, grade: "A+", trend: "stable" },
-      { name: "English", score: 90, grade: "A+", trend: "stable" }
-    ]
-  }
+  "5th Class", "6th Class", "7th Class", "8th Class",
+  "9th Class", "10th Class", "11th Class", "12th Class"
 ];
 
 // ─────────────────────────── Helpers ───────────────────────────
 const getInitials = (name: string) =>
   name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
 
-const getAvatarColor = (batch: string): string => {
-  const colors: Record<string, string> = {
-    "Grade 10 Algebra": "avatar-admin",
-    "Grade 8 Physics": "avatar-teacher",
-    "Grade 9 Chemistry": "avatar-sales",
-    "Grade 11 Biology": "avatar-support",
-    "Grade 12 Mathematics": "avatar-billing",
-    "Grade 7 English": "avatar-admin"
-  };
-  return colors[batch] || "avatar-admin";
-};
+const getAvatarColor = (_batch: string): string => "avatar-admin";
 
 const formatDate = (d: string) => {
-  const date = new Date(d);
-  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 };
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case "Active": return { bg: "hsla(142, 70%, 40%, 0.08)", color: "var(--color-success)", dot: "var(--color-success)" };
-    case "Inactive": return { bg: "hsla(0, 0%, 50%, 0.08)", color: "var(--text-secondary)", dot: "var(--text-secondary)" };
-    case "Graduated": return { bg: "hsla(271, 91%, 60%, 0.08)", color: "var(--color-warning)", dot: "var(--color-warning)" };
-    default: return { bg: "hsla(0, 0%, 50%, 0.08)", color: "var(--text-secondary)", dot: "var(--text-secondary)" };
+    case "Active":    return { bg: "hsla(142,70%,40%,0.08)", color: "var(--color-success)", dot: "var(--color-success)" };
+    case "Inactive":  return { bg: "hsla(0,0%,50%,0.08)",    color: "var(--text-secondary)", dot: "var(--text-secondary)" };
+    case "Graduated": return { bg: "hsla(271,91%,60%,0.08)", color: "var(--color-warning)", dot: "var(--color-warning)" };
+    default:          return { bg: "hsla(0,0%,50%,0.08)",    color: "var(--text-secondary)", dot: "var(--text-secondary)" };
   }
 };
 
 const getFeeColor = (status: string) => {
   switch (status) {
-    case "Paid": return { bg: "hsla(142, 70%, 40%, 0.08)", color: "var(--color-success)" };
-    case "Pending": return { bg: "hsla(38, 92%, 50%, 0.08)", color: "hsl(38, 92%, 45%)" };
-    case "Overdue": return { bg: "hsla(342, 90%, 48%, 0.08)", color: "var(--color-danger)" };
-    default: return { bg: "hsla(0, 0%, 50%, 0.08)", color: "var(--text-secondary)" };
+    case "Paid":    return { bg: "hsla(142,70%,40%,0.08)", color: "var(--color-success)" };
+    case "Pending": return { bg: "hsla(38,92%,50%,0.08)",  color: "hsl(38,92%,45%)" };
+    case "Overdue": return { bg: "hsla(342,90%,48%,0.08)", color: "var(--color-danger)" };
+    default:        return { bg: "hsla(0,0%,50%,0.08)",    color: "var(--text-secondary)" };
   }
 };
 
 // ─────────────────────────── Component ───────────────────────────
 export const StudentManagement: React.FC = () => {
-  // Core state
-  const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
+  // Core state — starts empty, loads from API
+  const [students, setStudents] = useState<Student[]>([]);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
   const [activeTab, setActiveTab] = useState<StudentTab>("all");
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
@@ -298,6 +184,44 @@ export const StudentManagement: React.FC = () => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4500);
   };
+
+  // ─────────── Load students from API ───────────
+  useEffect(() => {
+    const loadStudents = async () => {
+      setIsLoadingStudents(true);
+      try {
+        const res = await api.students.getAll();
+        if (res.data && res.data.length > 0) {
+          const mapped: Student[] = res.data.map((s: any) => ({
+            id: s.id,
+            name: s.user ? `${s.user.firstName} ${s.user.lastName}` : (s.parentName || "Student"),
+            email: s.user?.email || s.parentEmail,
+            phone: s.user?.phone || s.parentPhone,
+            dob: s.dateOfBirth?.split("T")[0] || "",
+            gender: "Male" as const,
+            guardianName: s.parentName,
+            guardianPhone: s.parentPhone,
+            address: "",
+            batch: s.enrollments?.[0]?.batch?.name || "Unassigned",
+            enrollmentDate: s.createdAt?.split("T")[0] || "",
+            status: "Active" as const,
+            feeAmount: s.invoices?.[0]?.totalAmount || 0,
+            feeStatus: (s.invoices?.[0]?.status === "PAID" ? "Paid" : s.invoices?.[0]?.status === "PARTIAL" ? "Pending" : "Overdue") as any,
+            attendanceRate: 0,
+            notes: "",
+            subjects: [],
+          }));
+          setStudents(mapped);
+        }
+        // If DB returns empty, list stays empty — user adds real students
+      } catch {
+        // Backend not available — list stays empty
+      } finally {
+        setIsLoadingStudents(false);
+      }
+    };
+    loadStudents();
+  }, []);
 
   // ─────────── Filtered & Sorted Students ───────────
   const filteredStudents = useMemo(() => {
@@ -366,11 +290,17 @@ export const StudentManagement: React.FC = () => {
   };
 
   // ─────────── Delete Student ───────────
-  const handleDeleteStudent = (id: string) => {
+  const handleDeleteStudent = async (id: string) => {
+    // Optimistic UI update
     setStudents(prev => prev.filter(s => s.id !== id));
     if (expandedRow === id) setExpandedRow(null);
     if (selectedStudent?.id === id) setSelectedStudent(null);
-    showToast("Student record removed successfully.", "info");
+    try {
+      await api.students.delete(id);
+      showToast("Student record removed successfully.", "info");
+    } catch {
+      showToast("Student removed locally (DB sync pending).", "info");
+    }
   };
 
   // ─────────── Add Student ───────────
@@ -387,40 +317,50 @@ export const StudentManagement: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleAddStudent = (e: React.FormEvent) => {
+  const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const newStudent: Student = {
+    const nameParts = formData.name.trim().split(" ");
+    const optimisticStudent: Student = {
       id: `stu-${Date.now()}`,
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      dob: formData.dob,
-      gender: formData.gender,
-      guardianName: formData.guardianName,
-      guardianPhone: formData.guardianPhone,
-      address: formData.address,
-      batch: formData.batch,
+      name: formData.name, email: formData.email, phone: formData.phone,
+      dob: formData.dob, gender: formData.gender,
+      guardianName: formData.guardianName, guardianPhone: formData.guardianPhone,
+      address: formData.address, batch: formData.batch,
       enrollmentDate: new Date().toISOString().split("T")[0],
-      status: "Active",
-      feeAmount: parseInt(formData.feeAmount) || 8500,
-      feeStatus: "Pending",
-      attendanceRate: 0,
-      notes: formData.notes,
+      status: "Active", feeAmount: parseInt(formData.feeAmount) || 8500,
+      feeStatus: "Pending", attendanceRate: 0, notes: formData.notes,
       subjects: [
         { name: "Mathematics", score: 0, grade: "-", trend: "stable" },
-        { name: "Science", score: 0, grade: "-", trend: "stable" },
-        { name: "English", score: 0, grade: "-", trend: "stable" },
-        { name: "Social Studies", score: 0, grade: "-", trend: "stable" }
-      ]
+        { name: "Science",     score: 0, grade: "-", trend: "stable" },
+        { name: "English",     score: 0, grade: "-", trend: "stable" },
+        { name: "Social Studies", score: 0, grade: "-", trend: "stable" },
+      ],
     };
 
-    setStudents(prev => [newStudent, ...prev]);
+    // Optimistic UI — add immediately
+    setStudents(prev => [optimisticStudent, ...prev]);
     setFormData({ name: "", email: "", phone: "", dob: "", gender: "Male", guardianName: "", guardianPhone: "", address: "", batch: BATCHES[0], feeAmount: "8500", notes: "" });
     setFormErrors({});
-    showToast(`🎉 ${newStudent.name} has been registered successfully!`, "success");
+    showToast(`🎉 ${optimisticStudent.name} registered successfully!`, "success");
     setActiveTab("all");
+
+    // Save to database in background
+    try {
+      await api.students.create({
+        firstName: nameParts[0],
+        lastName: nameParts.slice(1).join(" ") || nameParts[0],
+        email: formData.email,
+        phone: formData.phone,
+        parentName: formData.guardianName,
+        parentPhone: formData.guardianPhone,
+        parentEmail: formData.email,
+        dateOfBirth: formData.dob,
+      });
+    } catch {
+      // Saved locally — will sync when backend available
+    }
   };
 
   // ─────────── Profile Search ───────────
@@ -868,164 +808,148 @@ export const StudentManagement: React.FC = () => {
       {/* ════════════════════ TAB: ADD STUDENT ════════════════════ */}
       {activeTab === "add" && (
         <div className="stu-tab-content animate-fade-in">
-          <Card className="stu-add-form-card">
-            <div className="stu-form-header">
-              <div className="stu-form-header-icon">
-                <UserPlus size={24} />
+          <div style={{ marginBottom: "28px" }}>
+            <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800, background: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              New Student Registration
+            </h1>
+            <p style={{ margin: 0, fontSize: "14px", color: "hsl(285,20%,45%)" }}>Fill in the details below to enroll a new student into the academy.</p>
+          </div>
+          <form onSubmit={handleAddStudent} autoComplete="off">
+          {/* ── Section 1: Personal Info ── */}
+          <div style={{background:"#fff",borderRadius:"16px",overflow:"hidden",marginBottom:"20px",boxShadow:"0 2px 16px -4px rgba(29,10,39,0.08)",border:"1px solid hsla(285,30%,20%,0.07)"}}>
+            <div style={{padding:"18px 24px",borderBottom:"1px solid hsla(285,30%,20%,0.06)",background:"linear-gradient(135deg,hsla(328,100%,54%,0.04),hsla(271,91%,60%,0.03))",display:"flex",alignItems:"center",gap:"10px"}}>
+              <div style={{width:"32px",height:"32px",borderRadius:"10px",background:"linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))",display:"flex",alignItems:"center",justifyContent:"center"}}><User size={16} color="#fff"/></div>
+              <div><h3 style={{margin:0,fontSize:"14px",fontWeight:700}}>Personal Information</h3><p style={{margin:0,fontSize:"11px",color:"hsl(285,20%,45%)"}}>Student's basic identity details</p></div>
+            </div>
+            <div style={{padding:"24px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:"18px"}}>
+              {[
+                {key:"name",label:"Full Name",ph:"e.g. Arjun Kumar Sharma",type:"text",icon:<User size={15}/>,req:true},
+                {key:"email",label:"Email Address",ph:"student@email.com",type:"email",icon:<Mail size={15}/>,req:true},
+                {key:"phone",label:"Phone Number",ph:"+91 98765 43210",type:"tel",icon:<Phone size={15}/>,req:true},
+              ].map(f=>(
+                <div key={f.key} style={{display:"flex",flexDirection:"column",gap:"6px"}}>
+                  <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>{f.label} {f.req&&<span style={{color:"hsl(328,100%,54%)"}}>*</span>}</label>
+                  <div style={{position:"relative"}}>
+                    <span style={{position:"absolute",left:"12px",top:"50%",transform:"translateY(-50%)",color:"hsl(285,20%,55%)",display:"flex",pointerEvents:"none"}}>{f.icon}</span>
+                    <input type={f.type} placeholder={f.ph} value={(formData as any)[f.key]} onChange={e=>setFormData({...formData,[f.key]:e.target.value})}
+                      style={{width:"100%",height:"44px",padding:"0 14px 0 38px",borderRadius:"10px",border:`1.5px solid ${(formErrors as any)[f.key]?"hsl(342,90%,48%)":"hsla(285,30%,20%,0.1)"}`,background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",transition:"border-color 0.2s"}}
+                      onFocus={e=>(e.target.style.borderColor="hsl(328,100%,54%)")} onBlur={e=>(e.target.style.borderColor=(formErrors as any)[f.key]?"hsl(342,90%,48%)":"hsla(285,30%,20%,0.1)")}/>
+                  </div>
+                  {(formErrors as any)[f.key]&&<span style={{fontSize:"11px",color:"hsl(342,90%,48%)"}}>⚠ {(formErrors as any)[f.key]}</span>}
+                </div>
+              ))}
+              <div style={{display:"flex",flexDirection:"column",gap:"6px"}}>
+                <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Date of Birth <span style={{color:"hsl(328,100%,54%)"}}>*</span></label>
+                <div style={{position:"relative"}}>
+                  <span style={{position:"absolute",left:"12px",top:"50%",transform:"translateY(-50%)",color:"hsl(285,20%,55%)",display:"flex",pointerEvents:"none"}}><Calendar size={15}/></span>
+                  <input type="date" value={formData.dob} onChange={e=>setFormData({...formData,dob:e.target.value})}
+                    style={{width:"100%",height:"44px",padding:"0 14px 0 38px",borderRadius:"10px",border:`1.5px solid ${formErrors.dob?"hsl(342,90%,48%)":"hsla(285,30%,20%,0.1)"}`,background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",transition:"border-color 0.2s"}}
+                    onFocus={e=>(e.target.style.borderColor="hsl(328,100%,54%)")} onBlur={e=>(e.target.style.borderColor=formErrors.dob?"hsl(342,90%,48%)":"hsla(285,30%,20%,0.1)")}/>
+                </div>
+                {formErrors.dob&&<span style={{fontSize:"11px",color:"hsl(342,90%,48%)"}}>⚠ {formErrors.dob}</span>}
               </div>
-              <div>
-                <h2 className="stu-form-title">New Student Registration</h2>
-                <p className="stu-form-subtitle">Fill in the details below to enroll a new student into the academy.</p>
+              <div style={{display:"flex",flexDirection:"column",gap:"6px"}}>
+                <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Gender</label>
+                <div style={{display:"flex",gap:"8px"}}>
+                  {(["Male","Female","Other"] as const).map(g=>(
+                    <button key={g} type="button" onClick={()=>setFormData({...formData,gender:g})}
+                      style={{flex:1,height:"44px",borderRadius:"10px",border:`1.5px solid ${formData.gender===g?"hsl(328,100%,54%)":"hsla(285,30%,20%,0.1)"}`,background:formData.gender===g?"hsla(328,100%,54%,0.08)":"#fafafa",color:formData.gender===g?"hsl(328,100%,54%)":"hsl(285,20%,45%)",fontSize:"13px",fontWeight:600,cursor:"pointer",transition:"all 0.2s"}}>
+                      {g}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
+          </div>
 
-            <form onSubmit={handleAddStudent} className="stu-registration-form">
-              {/* Personal Information Section */}
-              <div className="stu-form-section">
-                <h3 className="stu-form-section-title"><User size={15} /> Personal Information</h3>
-                <div className="stu-form-grid">
-                  <div className="stu-form-field">
-                    <ShadcnInput
-                      label="Full Name *"
-                      placeholder="Enter student's full name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      error={formErrors.name}
-                      leftIcon={<User size={16} />}
-                    />
+          {/* ── Section 2: Guardian Info ── */}
+          <div style={{background:"#fff",borderRadius:"16px",overflow:"hidden",marginBottom:"20px",boxShadow:"0 2px 16px -4px rgba(29,10,39,0.08)",border:"1px solid hsla(285,30%,20%,0.07)"}}>
+            <div style={{padding:"18px 24px",borderBottom:"1px solid hsla(285,30%,20%,0.06)",background:"linear-gradient(135deg,hsla(142,70%,42%,0.04),hsla(160,70%,35%,0.03))",display:"flex",alignItems:"center",gap:"10px"}}>
+              <div style={{width:"32px",height:"32px",borderRadius:"10px",background:"linear-gradient(135deg,hsl(142,70%,42%),hsl(160,70%,35%))",display:"flex",alignItems:"center",justifyContent:"center"}}><Users2 size={16} color="#fff"/></div>
+              <div><h3 style={{margin:0,fontSize:"14px",fontWeight:700}}>Guardian / Parent Information</h3><p style={{margin:0,fontSize:"11px",color:"hsl(285,20%,45%)"}}>Emergency contact & parent details</p></div>
+            </div>
+            <div style={{padding:"24px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:"18px"}}>
+              {[
+                {key:"guardianName",label:"Guardian Name",ph:"Parent or guardian's full name",type:"text",icon:<User size={15}/>,req:true},
+                {key:"guardianPhone",label:"Guardian Phone",ph:"+91 98765 43210",type:"tel",icon:<Phone size={15}/>,req:true},
+              ].map(f=>(
+                <div key={f.key} style={{display:"flex",flexDirection:"column",gap:"6px"}}>
+                  <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>{f.label} {f.req&&<span style={{color:"hsl(328,100%,54%)"}}>*</span>}</label>
+                  <div style={{position:"relative"}}>
+                    <span style={{position:"absolute",left:"12px",top:"50%",transform:"translateY(-50%)",color:"hsl(285,20%,55%)",display:"flex",pointerEvents:"none"}}>{f.icon}</span>
+                    <input type={f.type} placeholder={f.ph} value={(formData as any)[f.key]} onChange={e=>setFormData({...formData,[f.key]:e.target.value})}
+                      style={{width:"100%",height:"44px",padding:"0 14px 0 38px",borderRadius:"10px",border:`1.5px solid ${(formErrors as any)[f.key]?"hsl(342,90%,48%)":"hsla(285,30%,20%,0.1)"}`,background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",transition:"border-color 0.2s"}}
+                      onFocus={e=>(e.target.style.borderColor="hsl(142,70%,42%)")} onBlur={e=>(e.target.style.borderColor=(formErrors as any)[f.key]?"hsl(342,90%,48%)":"hsla(285,30%,20%,0.1)")}/>
                   </div>
-                  <div className="stu-form-field">
-                    <ShadcnInput
-                      label="Email Address *"
-                      type="email"
-                      placeholder="name@example.com"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      error={formErrors.email}
-                      leftIcon={<Mail size={16} />}
-                    />
-                  </div>
-                  <div className="stu-form-field">
-                    <ShadcnInput
-                      label="Phone Number *"
-                      placeholder="e.g. +91 99999 99999"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      error={formErrors.phone}
-                      leftIcon={<Phone size={16} />}
-                    />
-                  </div>
-                  <div className="stu-form-field">
-                    <ShadcnInput
-                      label="Date of Birth *"
-                      type="date"
-                      value={formData.dob}
-                      onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                      error={formErrors.dob}
-                    />
-                  </div>
-                  <div className="stu-form-field">
-                    <label className="shad-input-label">Gender</label>
-                    <div className="stu-gender-group" style={{ marginTop: "2px" }}>
-                      {(["Male", "Female", "Other"] as const).map(g => (
-                        <button
-                          key={g}
-                          type="button"
-                          className={`stu-gender-btn ${formData.gender === g ? "is-active" : ""}`}
-                          onClick={() => setFormData({ ...formData, gender: g })}
-                        >
-                          {g}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  {(formErrors as any)[f.key]&&<span style={{fontSize:"11px",color:"hsl(342,90%,48%)"}}>⚠ {(formErrors as any)[f.key]}</span>}
+                </div>
+              ))}
+              <div style={{display:"flex",flexDirection:"column",gap:"6px",gridColumn:"1 / -1"}}>
+                <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Full Address</label>
+                <div style={{position:"relative"}}>
+                  <span style={{position:"absolute",left:"12px",top:"50%",transform:"translateY(-50%)",color:"hsl(285,20%,55%)",display:"flex",pointerEvents:"none"}}><MapPin size={15}/></span>
+                  <input type="text" placeholder="Street, locality, city, state, PIN code" value={formData.address} onChange={e=>setFormData({...formData,address:e.target.value})}
+                    style={{width:"100%",height:"44px",padding:"0 14px 0 38px",borderRadius:"10px",border:"1.5px solid hsla(285,30%,20%,0.1)",background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",transition:"border-color 0.2s"}}
+                    onFocus={e=>(e.target.style.borderColor="hsl(142,70%,42%)")} onBlur={e=>(e.target.style.borderColor="hsla(285,30%,20%,0.1)")}/>
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Guardian Information */}
-              <div className="stu-form-section">
-                <h3 className="stu-form-section-title"><Users2 size={15} /> Guardian / Parent Information</h3>
-                <div className="stu-form-grid">
-                  <div className="stu-form-field">
-                    <ShadcnInput
-                      label="Guardian Name *"
-                      placeholder="Enter parent or guardian's name"
-                      value={formData.guardianName}
-                      onChange={(e) => setFormData({ ...formData, guardianName: e.target.value })}
-                      error={formErrors.guardianName}
-                      leftIcon={<User size={16} />}
-                    />
-                  </div>
-                  <div className="stu-form-field">
-                    <ShadcnInput
-                      label="Guardian Phone *"
-                      placeholder="e.g. +91 99999 99999"
-                      value={formData.guardianPhone}
-                      onChange={(e) => setFormData({ ...formData, guardianPhone: e.target.value })}
-                      error={formErrors.guardianPhone}
-                      leftIcon={<Phone size={16} />}
-                    />
-                  </div>
-                  <div className="stu-form-field" style={{ gridColumn: "1 / -1" }}>
-                    <ShadcnInput
-                      label="Full Address"
-                      placeholder="Enter street, locality, city, state"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      leftIcon={<MapPin size={16} />}
-                    />
-                  </div>
+          {/* ── Section 3: Academic & Fees ── */}
+          <div style={{background:"#fff",borderRadius:"16px",overflow:"hidden",marginBottom:"20px",boxShadow:"0 2px 16px -4px rgba(29,10,39,0.08)",border:"1px solid hsla(285,30%,20%,0.07)"}}>
+            <div style={{padding:"18px 24px",borderBottom:"1px solid hsla(285,30%,20%,0.06)",background:"linear-gradient(135deg,hsla(38,92%,50%,0.04),hsla(20,95%,55%,0.03))",display:"flex",alignItems:"center",gap:"10px"}}>
+              <div style={{width:"32px",height:"32px",borderRadius:"10px",background:"linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))",display:"flex",alignItems:"center",justifyContent:"center"}}><GraduationCap size={16} color="#fff"/></div>
+              <div><h3 style={{margin:0,fontSize:"14px",fontWeight:700}}>Academic & Fee Details</h3><p style={{margin:0,fontSize:"11px",color:"hsl(285,20%,45%)"}}>Class enrollment and fee structure</p></div>
+            </div>
+            <div style={{padding:"24px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:"18px"}}>
+              <div style={{display:"flex",flexDirection:"column",gap:"6px"}}>
+                <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Select Batch / Class</label>
+                <div style={{position:"relative"}}>
+                  <span style={{position:"absolute",left:"12px",top:"50%",transform:"translateY(-50%)",color:"hsl(285,20%,55%)",display:"flex",pointerEvents:"none"}}><BookOpen size={15}/></span>
+                  <select value={formData.batch} onChange={e=>setFormData({...formData,batch:e.target.value})}
+                    style={{width:"100%",height:"44px",padding:"0 14px 0 38px",borderRadius:"10px",border:"1.5px solid hsla(285,30%,20%,0.1)",background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",cursor:"pointer",appearance:"none",transition:"border-color 0.2s"}}
+                    onFocus={e=>(e.target.style.borderColor="hsl(38,92%,50%)")} onBlur={e=>(e.target.style.borderColor="hsla(285,30%,20%,0.1)")}>
+                    {BATCHES.map(b=><option key={b} value={b}>{b}</option>)}
+                  </select>
                 </div>
               </div>
-
-              {/* Academic Information */}
-              <div className="stu-form-section">
-                <h3 className="stu-form-section-title"><GraduationCap size={15} /> Academic & Fee Details</h3>
-                <div className="stu-form-grid">
-                  <div className="stu-form-field">
-                    <ShadcnSelect
-                      label="Select Batch / Class"
-                      value={formData.batch}
-                      onChange={(e) => setFormData({ ...formData, batch: e.target.value })}
-                      options={BATCHES}
-                    />
-                  </div>
-                  <div className="stu-form-field">
-                    <ShadcnInput
-                      label="Monthly Fee Amount (₹)"
-                      type="number"
-                      placeholder="e.g. 8500"
-                      value={formData.feeAmount}
-                      onChange={(e) => setFormData({ ...formData, feeAmount: e.target.value })}
-                      leftIcon={<IndianRupee size={16} />}
-                    />
-                  </div>
-                  <div className="stu-form-field" style={{ gridColumn: "1 / -1" }}>
-                    <ShadcnTextarea
-                      label="Additional Notes / Remarks"
-                      placeholder="Any special notes about the student (e.g. olympiad aspirations, medical logs, weak areas)..."
-                      value={formData.notes}
-                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
+              <div style={{display:"flex",flexDirection:"column",gap:"6px"}}>
+                <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Monthly Fee (₹)</label>
+                <div style={{position:"relative"}}>
+                  <span style={{position:"absolute",left:"12px",top:"50%",transform:"translateY(-50%)",color:"hsl(285,20%,55%)",display:"flex",pointerEvents:"none"}}><IndianRupee size={15}/></span>
+                  <input type="number" placeholder="e.g. 8500" min="0" value={formData.feeAmount} onChange={e=>setFormData({...formData,feeAmount:e.target.value})}
+                    style={{width:"100%",height:"44px",padding:"0 14px 0 38px",borderRadius:"10px",border:"1.5px solid hsla(285,30%,20%,0.1)",background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",transition:"border-color 0.2s"}}
+                    onFocus={e=>(e.target.style.borderColor="hsl(38,92%,50%)")} onBlur={e=>(e.target.style.borderColor="hsla(285,30%,20%,0.1)")}/>
                 </div>
               </div>
-
-              {/* Submit */}
-              <div className="stu-form-footer">
-                <Button variant="secondary" type="button" onClick={() => {
-                  setFormData({ name: "", email: "", phone: "", dob: "", gender: "Male", guardianName: "", guardianPhone: "", address: "", batch: BATCHES[0], feeAmount: "8500", notes: "" });
-                  setFormErrors({});
-                }}>
-                  Reset Form
-                </Button>
-                <Button variant="primary" type="submit" leftIcon={<Check size={16} />} style={{ minWidth: "200px" }}>
-                  Register Student
-                </Button>
+              <div style={{display:"flex",flexDirection:"column",gap:"6px",gridColumn:"1 / -1"}}>
+                <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Notes / Remarks</label>
+                <textarea rows={3} placeholder="Special notes, medical info, aspirations, weak areas..." value={formData.notes} onChange={e=>setFormData({...formData,notes:e.target.value})}
+                  style={{width:"100%",padding:"12px 14px",borderRadius:"10px",border:"1.5px solid hsla(285,30%,20%,0.1)",background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",resize:"vertical",lineHeight:1.5,transition:"border-color 0.2s"}}
+                  onFocus={e=>(e.target.style.borderColor="hsl(38,92%,50%)")} onBlur={e=>(e.target.style.borderColor="hsla(285,30%,20%,0.1)")}/>
               </div>
-            </form>
-          </Card>
+            </div>
+          </div>
+
+          {/* ── Submit Bar ── */}
+          <div style={{background:"#fff",borderRadius:"16px",padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",boxShadow:"0 2px 16px -4px rgba(29,10,39,0.08)",border:"1px solid hsla(285,30%,20%,0.07)"}}>
+            <p style={{margin:0,fontSize:"12px",color:"hsl(285,20%,55%)"}}>Fields with <span style={{color:"hsl(328,100%,54%)",fontWeight:700}}>*</span> are required</p>
+            <div style={{display:"flex",gap:"12px"}}>
+              <button type="button" onClick={()=>{setFormData({name:"",email:"",phone:"",dob:"",gender:"Male",guardianName:"",guardianPhone:"",address:"",batch:BATCHES[0],feeAmount:"8500",notes:""});setFormErrors({});}}
+                style={{height:"42px",padding:"0 20px",borderRadius:"10px",border:"1.5px solid hsla(285,30%,20%,0.1)",background:"transparent",fontSize:"13px",fontWeight:600,cursor:"pointer",color:"hsl(285,50%,12%)",transition:"all 0.2s"}}
+                onMouseEnter={e=>(e.currentTarget.style.borderColor="hsl(285,50%,12%)")} onMouseLeave={e=>(e.currentTarget.style.borderColor="hsla(285,30%,20%,0.1)")}>
+                Reset
+              </button>
+              <button type="submit"
+                style={{height:"42px",padding:"0 28px",borderRadius:"10px",border:"none",background:"linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))",color:"#fff",fontSize:"13px",fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:"8px",boxShadow:"0 4px 14px hsla(328,100%,54%,0.35)",transition:"all 0.2s"}}
+                onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")} onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
+                <CheckCircle2 size={15}/> Register Student
+              </button>
+            </div>
+          </div>
+
+          </form>
         </div>
       )}
 

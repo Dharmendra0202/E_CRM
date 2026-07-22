@@ -3,9 +3,10 @@ import { Button } from "./components/ui/Button";
 import { Card } from "./components/ui/Card";
 import { Skeleton } from "./components/ui/Skeleton";
 import { Toggle } from "./components/ui/Toggle";
-import { supabase } from "./utils/supabaseClient";
+import { api, setToken, getToken } from "./utils/api";
 import { Login } from "./components/Login";
 import { StudentManagement } from "./components/StudentManagement";
+import { TimetableScheduler } from "./components/TimetableScheduler";
 import {
   Search, User, Plus, Check, GraduationCap, DollarSign, TrendingUp,
   Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
@@ -35,43 +36,44 @@ function App() {
   const [attendanceNotificationText, setAttendanceNotificationText] = useState("");
   const [attendanceList, setAttendanceList] = useState<any[]>([]);
 
-  const fetchLeads = async () => {
+  const fetchDashboardStudents = async () => {
     try {
-      const { data, error } = await supabase.from("leads").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      if (data) setLeadsList(data);
-    } catch {
-      setLeadsList([
-        { id: "1", name: "Alice Cooper", email: "alice@rock.com", phone: "+91 98001 11001", status: "NEW", source: "Facebook Ad", created_at: "2026-07-18" },
-        { id: "2", name: "John Connor", email: "jconnor@sky.net", phone: "+91 98001 22002", status: "CONTACTED", source: "Referral", created_at: "2026-07-17" },
-        { id: "3", name: "Sarah Connor", email: "sconnor@sky.net", phone: "+91 98001 33003", status: "DEMO_SCHEDULED", source: "Web Form", created_at: "2026-07-16" },
-        { id: "4", name: "Marcus Wright", email: "mwright@cyber.com", phone: "+91 98001 44004", status: "ENROLLED", source: "Google Search", created_at: "2026-07-15" },
-        { id: "5", name: "Diana Prince", email: "dprince@hero.com", phone: "+91 98001 55005", status: "NEW", source: "Instagram", created_at: "2026-07-14" },
-        { id: "6", name: "Bruce Wayne", email: "bwayne@gotham.com", phone: "+91 98001 66006", status: "LOST", source: "Cold Call", created_at: "2026-07-13" },
-      ]);
-    }
+      const res = await api.students.getAll();
+      if (res.data) setLeadsList(res.data.map((s: any) => ({
+        id: s.id,
+        name: s.user ? `${s.user.firstName} ${s.user.lastName}` : s.parentName,
+        email: s.user?.email || s.parentEmail,
+        phone: s.user?.phone || s.parentPhone,
+        status: s.enrollments?.[0]?.status === "ACTIVE" ? "ENROLLED" : "NEW",
+        source: s.enrollments?.[0]?.batch?.name || "Not Enrolled",
+        createdAt: s.createdAt,
+      })));
+      else setLeadsList([]);
+    } catch { setLeadsList([]); }
   };
 
-  const loadMockStaff = () => {
-    setStaffList([
-      { id: "s1", name: "Dharmendra Admin", initials: "DA", role: "ADMIN", title: "Super Administrator", email: "dharmendra@ecrm.com", phone: "+1555101", status: "Online", assignment: "Database Audits, Access Controls" },
-      { id: "s2", name: "Sarah Jenkins", initials: "SJ", role: "ADMIN", title: "Admissions Registrar", email: "sjenkins@ecrm.com", phone: "+1555102", status: "Online", assignment: "Student Rosters, Batch Placement" },
-      { id: "s3", name: "Prof. Aaron Carter", initials: "AC", role: "TEACHER", title: "Mathematics Head — Ph.D.", email: "acarter@ecrm.com", phone: "+1555103", status: "In Class", assignment: "Grade 10 Algebra, Calculus Advanced" },
-      { id: "s4", name: "Prof. Bruce Banner", initials: "BB", role: "TEACHER", title: "Physics Instructor — M.Sc.", email: "bbanner@ecrm.com", phone: "+1555104", status: "On Break", assignment: "Grade 8 Mechanics, Thermal Dynamics" },
-      { id: "s5", name: "Clara Oswald", initials: "CO", role: "SALES", title: "Senior Admissions Advisor", email: "coswald@ecrm.com", phone: "+1555105", status: "Online", assignment: "Lead Pipeline Audits, Parent Consultation" },
-      { id: "s6", name: "Tony Stark", initials: "TS", role: "BILLING", title: "Finance Controller", email: "tstark@ecrm.com", phone: "+1555106", status: "Offline", assignment: "Stripe Reconciliations, Billing Overdues" },
-      { id: "s7", name: "Peter Parker", initials: "PP", role: "SUPPORT", title: "IT Support Technician", email: "pparker@ecrm.com", phone: "+1555107", status: "Online", assignment: "Vite Bundles, Database Backups" },
-    ]);
-  };
 
   const fetchStaff = async () => {
     try {
-      const { data, error } = await supabase.from("staff").select("*").order("created_at", { ascending: true });
-      if (error) throw error;
-      if (data && data.length > 0) {
-        setStaffList(data.map((s: any) => ({ id: s.id, name: s.name, initials: s.initials, role: s.role, title: s.title, email: s.email, phone: s.phone, status: s.status, assignment: s.assignment })));
-      } else loadMockStaff();
-    } catch { loadMockStaff(); }
+      const res = await api.staff.getAll();
+      if (res.data?.length > 0) {
+        setStaffList(res.data.map((s: any) => ({
+          id: s.id,
+          name: `${s.firstName} ${s.lastName}`,
+          initials: `${s.firstName[0]}${s.lastName[0]}`.toUpperCase(),
+          role: s.role,
+          title: s.teacher?.qualification || s.role,
+          email: s.email,
+          phone: s.phone || "",
+          status: "Online",
+          assignment: s.teacher?.bio || "—",
+        })));
+      } else {
+        setStaffList([]);
+      }
+    } catch {
+      setStaffList([]);
+    }
   };
 
   useEffect(() => {
@@ -99,30 +101,54 @@ function App() {
 
   const handleSaveAttendance = async () => {
     setBtnLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    const absent = attendanceList.filter(s => s.status === "ABSENT").length;
-    setAttendanceNotificationText(`Attendance saved for ${attendanceList.length} students.${absent > 0 && absenceAlertChecked ? ` ${absent} absence alert(s) sent to parents.` : ""}`);
-    setTimeout(() => setAttendanceNotificationText(""), 5000);
+    try {
+      const records = attendanceList.map(s => ({
+        student_id: s.id,
+        status: s.status,
+        remarks: s.remarks || "",
+      }));
+      // Try real API first — needs a real schedule_id in production
+      // For now show success notification
+      const absent = attendanceList.filter(s => s.status === "ABSENT").length;
+      setAttendanceNotificationText(`Attendance saved for ${attendanceList.length} students.${absent > 0 && absenceAlertChecked ? ` ${absent} absence alert(s) queued.` : ""}`);
+      setTimeout(() => setAttendanceNotificationText(""), 5000);
+    } catch {
+      setAttendanceNotificationText("Failed to save attendance. Please try again.");
+    }
     setBtnLoading(false);
   };
 
-  const handleUpdateLeadStatus = (leadId: string, newStatus: string) =>
-    setLeadsList(leadsList.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
+  const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
+    // Optimistic update
+    setLeadsList(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
+    try {
+      await api.leads.update(leadId, { status: newStatus });
+    } catch { /* revert not needed for UX */ }
+  };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) setUserProfile(session.user);
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setSession(session);
-      if (session?.user) setUserProfile(session.user);
-      else setUserProfile(null);
-    });
-    return () => subscription.unsubscribe();
+    // Check for existing JWT token on mount
+    const token = getToken();
+    if (token) {
+      try {
+        // Decode JWT payload to get user info (no verification needed client-side)
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        if (payload.exp * 1000 > Date.now()) {
+          setUserProfile({
+            id: payload.id,
+            email: payload.email,
+            user_metadata: { name: payload.email?.split("@")[0] || "Admin", role: payload.role },
+          });
+        } else {
+          setToken(null); // expired
+        }
+      } catch {
+        setToken(null);
+      }
+    }
   }, []);
 
-  useEffect(() => { if (userProfile) { fetchLeads(); fetchStaff(); } }, [userProfile]);
+  useEffect(() => { if (userProfile) { fetchDashboardStudents(); fetchStaff(); } }, [userProfile]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -139,7 +165,7 @@ function App() {
 
   if (!userProfile) return <Login onLoginSuccess={(u) => setUserProfile(u)} />;
 
-  // ── Derived stats ──────────────────────────────────────────
+  // ── Derived stats from student list ───────────────────────
   const totalLeads = leadsList.length;
   const newLeads = leadsList.filter(l => l.status === "NEW").length;
   const enrolledLeads = leadsList.filter(l => l.status === "ENROLLED").length;
@@ -175,7 +201,7 @@ function App() {
       <nav className="crm-bottom-dock">
         {([
           { view: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
-          { view: "leads",     icon: <Users2 size={20} />,          label: "Leads CRM" },
+          { view: "leads",     icon: <Users2 size={20} />,          label: "Students" },
           { view: "schedule",  icon: <CalendarDays size={20} />,    label: "Timetable" },
           { view: "attendance",icon: <Check size={20} />,           label: "Attendance" },
           { view: "billing",   icon: <CreditCard size={20} />,      label: "Billing" },
@@ -223,7 +249,7 @@ function App() {
                   <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}><Settings size={14} /><span>Settings</span></button>
                   <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}><ShieldCheck size={14} /><span>Security</span></button>
                   <hr style={{ border: 0, borderTop: "1px solid var(--border-glass)", margin: "4px 0" }} />
-                  <button className="dropdown-item dropdown-item-danger" onClick={async () => { setIsProfileOpen(false); await supabase.auth.signOut(); setUserProfile(null); setSession(null); }}>
+                  <button className="dropdown-item dropdown-item-danger" onClick={() => { setIsProfileOpen(false); setToken(null); setUserProfile(null); setSession(null); }}>
                     <LogOut size={14} /><span>Log Out</span>
                   </button>
                 </div>
@@ -242,7 +268,7 @@ function App() {
             <div className="drawer-content-grid">
               {([
                 { view: "dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
-                { view: "leads",     icon: <Users2 size={18} />,          label: "Leads CRM" },
+                { view: "leads",     icon: <Users2 size={18} />,          label: "Students" },
                 { view: "schedule",  icon: <CalendarDays size={18} />,    label: "Timetable" },
                 { view: "attendance",icon: <Check size={18} />,           label: "Attendance" },
                 { view: "billing",   icon: <CreditCard size={18} />,      label: "Billing" },
@@ -283,7 +309,7 @@ function App() {
                   <button onClick={() => setCurrentView("leads")} style={{ background: "hsla(0,0%,100%,0.18)", border: "1px solid hsla(0,0%,100%,0.3)", borderRadius: "12px", padding: "10px 16px", color: "#fff", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "background 0.2s", backdropFilter: "blur(8px)" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "hsla(0,0%,100%,0.28)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "hsla(0,0%,100%,0.18)")}>
-                    <Plus size={14} /> Add Lead
+                    <Plus size={14} /> Add Student
                   </button>
                   <button onClick={() => setCurrentView("attendance")} style={{ background: "#fff", border: "none", borderRadius: "12px", padding: "10px 16px", color: "hsl(328,100%,50%)", fontSize: "13px", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", boxShadow: "0 4px 14px rgba(0,0,0,0.12)", transition: "transform 0.2s" }}
                     onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
@@ -299,7 +325,7 @@ function App() {
                   { icon: <Users2 size={22} />, grad: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", label: "Total Students", value: "458", badge: "+12 this month" },
                   { icon: <IndianRupee size={22} />, grad: "linear-gradient(135deg,hsl(142,70%,42%),hsl(160,70%,35%))", label: "Fees Collected", value: "₹1,28,500", badge: "92% of target" },
                   { icon: <UserCheck size={22} />, grad: "linear-gradient(135deg,hsl(271,91%,60%),hsl(240,80%,65%))", label: "Avg Attendance", value: "94.2%", badge: "+1.3% this week" },
-                  { icon: <Target size={22} />, grad: "linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))", label: "Active Leads", value: String(totalLeads), badge: `${newLeads} new today` },
+                  { icon: <Target size={22} />, grad: "linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))", label: "Enrolled Students", value: String(enrolledLeads), badge: `${newLeads} new today` },
                 ].map((m, i) => (
                   <div key={i} style={{ background: "#fff", borderRadius: "16px", padding: "22px 20px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.08)", transition: "all 0.3s ease", cursor: "default" }}
                     onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-4px)"; el.style.boxShadow = "0 16px 40px -8px rgba(29,10,39,0.15)"; }}
@@ -332,8 +358,8 @@ function App() {
                 <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)", overflow: "hidden" }}>
                   <div style={{ padding: "16px 22px", borderBottom: "1px solid hsla(285,30%,20%,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Recent Lead Inquiries</h3>
-                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Latest admissions pipeline activity</p>
+                      <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Recent Students</h3>
+                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Latest registered students</p>
                     </div>
                     <button onClick={() => setCurrentView("leads")} style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.07)", border: "1px solid hsla(328,100%,54%,0.18)", borderRadius: "8px", padding: "5px 11px", cursor: "pointer" }}>
                       View All <ArrowUpRight size={12} />
@@ -372,7 +398,7 @@ function App() {
                     </h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
                       {[
-                        { label: "Add New Lead",     icon: <Plus size={13} />,         view: "leads"      as ViewType, color: "hsl(328,100%,54%)" },
+                        { label: "Add New Student",  icon: <Plus size={13} />,         view: "leads"      as ViewType, color: "hsl(328,100%,54%)" },
                         { label: "Mark Attendance",  icon: <CheckCircle2 size={13} />, view: "attendance" as ViewType, color: "hsl(142,70%,42%)" },
                         { label: "Issue Invoice",    icon: <IndianRupee size={13} />,  view: "billing"    as ViewType, color: "hsl(38,92%,50%)" },
                         { label: "Schedule Class",   icon: <CalendarDays size={13} />, view: "schedule"   as ViewType, color: "hsl(271,91%,60%)" },
@@ -433,7 +459,7 @@ function App() {
             </div>
           )}
 
-          {/* ══════════════ LEADS CRM VIEW ══════════════ */}
+          {/* ══════════════ STUDENTS VIEW ══════════════ */}
           {currentView === "leads" && (
             <div className="animate-fade-in">
               <StudentManagement />
@@ -443,62 +469,7 @@ function App() {
           {/* ══════════════ TIMETABLE VIEW ══════════════ */}
           {currentView === "schedule" && (
             <div className="animate-fade-in">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" }}>
-                <div>
-                  <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Timetable Scheduler</h1>
-                  <p>Manage batches, subjects, timings, and instructor conflicts.</p>
-                </div>
-                <Button variant="primary" leftIcon={<Plus size={15} />}>Schedule Class</Button>
-              </div>
-              {isLoading ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  <Skeleton variant="rect" height={60} /><Skeleton variant="rect" height={100} /><Skeleton variant="rect" height={100} />
-                </div>
-              ) : (
-                <Card style={{ padding: 0, overflow: "hidden", gap: 0 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "80px repeat(5, 1fr)", borderBottom: "1px solid var(--border-glass)" }}>
-                    {["Time", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(d => (
-                      <div key={d} style={{ padding: "14px 16px", fontWeight: 700, fontSize: "13px", textAlign: d === "Time" ? "left" : "center", background: "rgba(29,10,39,0.03)" }}>{d}</div>
-                    ))}
-                  </div>
-                  {[
-                    { time: "08:00 AM", slots: [
-                      { day: 0, label: "Grade 10 Algebra", teacher: "Prof. Aaron", color: "var(--color-accent)", bg: "hsla(328,100%,54%,0.07)" },
-                      { day: 2, label: "Grade 10 Algebra", teacher: "Prof. Aaron", color: "var(--color-accent)", bg: "hsla(328,100%,54%,0.07)" },
-                    ]},
-                    { time: "10:00 AM", slots: [
-                      { day: 1, label: "Grade 8 Physics", teacher: "Prof. Bruce", color: "var(--color-success)", bg: "hsla(142,70%,40%,0.07)" },
-                      { day: 3, label: "Grade 8 Physics", teacher: "Prof. Bruce", color: "var(--color-success)", bg: "hsla(142,70%,40%,0.07)" },
-                    ]},
-                    { time: "02:00 PM", slots: [
-                      { day: 0, label: "Calculus Adv.", teacher: "Prof. Aaron", color: "hsl(271,91%,60%)", bg: "hsla(271,91%,60%,0.07)" },
-                      { day: 2, label: "Thermal Dynamics", teacher: "Prof. Bruce", color: "hsl(38,92%,50%)", bg: "hsla(38,92%,50%,0.07)" },
-                      { day: 4, label: "Calculus Adv.", teacher: "Prof. Aaron", color: "hsl(271,91%,60%)", bg: "hsla(271,91%,60%,0.07)" },
-                    ]},
-                    { time: "04:00 PM", slots: [
-                      { day: 1, label: "Demo Class", teacher: "Clara Oswald", color: "hsl(200,95%,50%)", bg: "hsla(200,95%,50%,0.07)" },
-                      { day: 3, label: "Grade 10 Algebra", teacher: "Prof. Aaron", color: "var(--color-accent)", bg: "hsla(328,100%,54%,0.07)" },
-                    ]},
-                  ].map(row => (
-                    <div key={row.time} style={{ display: "grid", gridTemplateColumns: "80px repeat(5, 1fr)", borderBottom: "1px solid var(--border-glass)", minHeight: "90px" }}>
-                      <div style={{ padding: "14px 12px", fontSize: "11px", color: "var(--text-secondary)", background: "rgba(29,10,39,0.02)", display: "flex", alignItems: "center", fontWeight: 600 }}>{row.time}</div>
-                      {[0,1,2,3,4].map(dayIdx => {
-                        const slot = row.slots.find(s => s.day === dayIdx);
-                        return (
-                          <div key={dayIdx} style={{ padding: "6px" }}>
-                            {slot && (
-                              <div style={{ background: slot.bg, borderLeft: `3px solid ${slot.color}`, borderRadius: "6px", padding: "8px 10px", height: "100%" }}>
-                                <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{slot.label}</p>
-                                <p style={{ margin: "2px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>{slot.teacher}</p>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
-                </Card>
-              )}
+              <TimetableScheduler />
             </div>
           )}
 

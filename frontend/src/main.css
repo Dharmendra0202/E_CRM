@@ -125,25 +125,33 @@ body {
   overflow-x: hidden;
 }
 
-/* Custom Scrollbar */
+/* Custom Scrollbar for all scrollable containers & select dropdowns */
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 6px;
+  height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: hsla(285, 20%, 45%, 0.35);
-  border-radius: var(--radius-sm);
-  border: 3px solid var(--bg-primary);
+  background: rgba(139, 92, 246, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.6);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
+select {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 92, 246, 0.4) transparent;
+}
+
+select option {
+  padding: 8px 12px;
+  font-size: 13px;
+  background: #ffffff;
+  color: #1e1b4b;
 }
 
 /* ==========================================================================
