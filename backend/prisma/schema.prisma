@@ -1,137 +1,157 @@
-datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model User {
-  id               String       @id @default(uuid())
-  email            String       @unique
-  passwordHash     String
-  role             String       // ADMIN, TEACHER, STUDENT, PARENT
-  firstName        String
-  lastName         String
-  phone            String?
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
-  student          Student?
-  teacher          Teacher?
-  attendanceMarked Attendance[] @relation("markedBy")
-  leadsAssigned    Lead[]       @relation("assignedAdmin")
+  id                  String       @id @default(dbgenerated("(gen_random_uuid())::text"))
+  email               String       @unique
+  passwordHash        String
+  role                String
+  firstName           String
+  lastName            String
+  phone               String?
+  emailVerified       Boolean      @default(false)
+  verificationToken   String?      @unique
+  verificationExpiry  DateTime?    @db.Timestamptz(6)
+  resetToken          String?      @unique
+  resetTokenExpiry    DateTime?    @db.Timestamptz(6)
+  loginAttempts       Int          @default(0)
+  lockedUntil         DateTime?    @db.Timestamptz(6)
+  refreshToken        String?      @unique
+  createdAt           DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt           DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
+  attendanceMarked    Attendance[] @relation("markedBy")
+  leadsAssigned       Lead[]       @relation("assignedAdmin")
+  student             Student?
+  teacher             Teacher?
 }
 
 model Lead {
-  id              String   @id @default(uuid())
+  id              String   @id @default(dbgenerated("(gen_random_uuid())::text"))
   name            String
   email           String
-  phone           String
-  status          String   // NEW, CONTACTED, DEMO_SCHEDULED, ENROLLED, LOST
-  source          String
+  phone           String   @default("")
+  status          String   @default("NEW")
+  source          String   @default("Manual Entry")
   notes           String?
   assignedAdminId String?
-  assignedAdmin   User?    @relation("assignedAdmin", fields: [assignedAdminId], references: [id])
-  createdAt       DateTime @default(now())
+  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  assignedAdmin   User?    @relation("assignedAdmin", fields: [assignedAdminId], references: [id], onUpdate: NoAction)
+
+  @@index([status, createdAt(sort: Desc)])
 }
 
 model Student {
-  id          String            @id @default(uuid())
+  id          String            @id @default(dbgenerated("(gen_random_uuid())::text"))
   userId      String?           @unique
-  user        User?             @relation(fields: [userId], references: [id])
   parentName  String
   parentPhone String
   parentEmail String
-  dateOfBirth DateTime
-  createdAt   DateTime          @default(now())
-  enrollments BatchEnrollment[]
+  dateOfBirth DateTime          @db.Date
+  createdAt   DateTime          @default(now()) @db.Timestamptz(6)
   attendance  Attendance[]
+  enrollments BatchEnrollment[]
   invoices    Invoice[]
+  user        User?             @relation(fields: [userId], references: [id], onUpdate: NoAction)
 }
 
 model Teacher {
-  id            String   @id @default(uuid())
-  userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id])
+  id            String  @id @default(dbgenerated("(gen_random_uuid())::text"))
+  userId        String  @unique
   bio           String?
   qualification String
-  hourlyRate    Float
+  hourlyRate    Decimal @default(0) @db.Decimal(10, 2)
   batches       Batch[]
+  user          User    @relation(fields: [userId], references: [id], onUpdate: NoAction)
 }
 
 model Batch {
-  id           String            @id @default(uuid())
+  id           String            @id @default(dbgenerated("(gen_random_uuid())::text"))
   name         String
   subject      String
-  startDate    DateTime
-  endDate      DateTime
-  capacity     Int
+  startDate    DateTime          @db.Date
+  endDate      DateTime          @db.Date
+  capacity     Int               @default(30)
   teacherId    String
-  teacher      Teacher           @relation(fields: [teacherId], references: [id])
-  feeAmount    Float
-  feeFrequency String            // MONTHLY, TERM, ONETIME
+  feeAmount    Decimal           @default(0) @db.Decimal(10, 2)
+  feeFrequency String
+  teacher      Teacher           @relation(fields: [teacherId], references: [id], onUpdate: NoAction)
   enrollments  BatchEnrollment[]
   schedules    Schedule[]
 }
 
 model BatchEnrollment {
-  id         String   @id @default(uuid())
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
   studentId  String
-  student    Student  @relation(fields: [studentId], references: [id])
   batchId    String
-  batch      Batch    @relation(fields: [batchId], references: [id])
-  enrolledAt DateTime @default(now())
-  status     String   // ACTIVE, COMPLETED, SUSPENDED
+  enrolledAt DateTime @default(now()) @db.Timestamptz(6)
+  status     String   @default("ACTIVE")
+  batch      Batch    @relation(fields: [batchId], references: [id], onUpdate: NoAction)
+  student    Student  @relation(fields: [studentId], references: [id], onUpdate: NoAction)
 
   @@unique([studentId, batchId])
 }
 
 model Schedule {
-  id         String       @id @default(uuid())
+  id         String       @id @default(dbgenerated("(gen_random_uuid())::text"))
   batchId    String
-  batch      Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
-  roomOrLink String
-  dayOfWeek  Int          // 1 (Mon) to 7 (Sun)
-  startTime  String       // e.g. "08:00"
-  endTime    String       // e.g. "09:30"
+  roomOrLink String       @default("")
+  dayOfWeek  Int
+  startTime  String
+  endTime    String
   attendance Attendance[]
+  batch      Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([batchId])
+  @@index([dayOfWeek, startTime, endTime], map: "Schedule_day_time_idx")
 }
 
 model Attendance {
-  id         String   @id @default(uuid())
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
   scheduleId String
-  schedule   Schedule @relation(fields: [scheduleId], references: [id])
   studentId  String
-  student    Student  @relation(fields: [studentId], references: [id])
-  classDate  DateTime
-  status     String   // PRESENT, ABSENT, LATE
+  classDate  DateTime @db.Date
+  status     String
   remarks    String?
   markedById String
-  markedBy   User     @relation("markedBy", fields: [markedById], references: [id])
-  recordedAt DateTime @default(now())
+  recordedAt DateTime @default(now()) @db.Timestamptz(6)
+  markedBy   User     @relation("markedBy", fields: [markedById], references: [id], onUpdate: NoAction)
+  schedule   Schedule @relation(fields: [scheduleId], references: [id], onUpdate: NoAction)
+  student    Student  @relation(fields: [studentId], references: [id], onUpdate: NoAction)
 
   @@unique([scheduleId, studentId, classDate])
+  @@index([scheduleId])
+  @@index([studentId])
 }
 
 model Invoice {
-  id                    String    @id @default(uuid())
+  id                    String    @id @default(dbgenerated("(gen_random_uuid())::text"))
   studentId             String
-  student               Student   @relation(fields: [studentId], references: [id])
-  totalAmount           Float
-  status                String    // UNPAID, PARTIAL, PAID, VOID
-  dueDate               DateTime
-  paidAt                DateTime?
+  totalAmount           Decimal   @db.Decimal(10, 2)
+  status                String    @default("UNPAID")
+  dueDate               DateTime  @db.Date
+  paidAt                DateTime? @db.Timestamptz(6)
   stripePaymentIntentId String?   @unique
+  student               Student   @relation(fields: [studentId], references: [id], onUpdate: NoAction)
   payments              Payment[]
+
+  @@index([status])
+  @@index([studentId])
 }
 
 model Payment {
-  id                   String   @id @default(uuid())
+  id                   String   @id @default(dbgenerated("(gen_random_uuid())::text"))
   invoiceId            String
-  invoice              Invoice  @relation(fields: [invoiceId], references: [id])
-  amount               Float
-  paymentMethod        String   // CARD, CASH, BANK_TRANSFER
+  amount               Decimal  @db.Decimal(10, 2)
+  paymentMethod        String
   transactionReference String?  @unique
-  paidAt               DateTime @default(now())
+  paidAt               DateTime @default(now()) @db.Timestamptz(6)
+  invoice              Invoice  @relation(fields: [invoiceId], references: [id], onUpdate: NoAction)
 }
