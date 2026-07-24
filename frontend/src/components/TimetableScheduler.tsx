@@ -2,11 +2,13 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Plus, Filter, Search, Clock, User, MapPin,
   Sparkles, X, Edit3, Trash2, LayoutGrid, Layers, GraduationCap,
-  Send, Bell, Mail, RefreshCw,
+  Send, Bell, Mail, RefreshCw, History,
   AlertCircle, CheckCircle2
 } from "lucide-react";
 import { Button } from "./ui/Button";
 import { api, getToken } from "../utils/api";
+import { addHistoryItem } from "../utils/history";
+import { HistoryModal } from "./HistoryModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ApiSchedule {
@@ -106,27 +108,42 @@ const ROOM_OPTIONS = [
 ];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
+function parseTimeToMinutes(t: string): number {
+  if (!t) return 0;
+  const m = t.match(/(\d{1,2}):(\d{2})\s?(AM|PM)/i);
+  if (!m) return 0;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  const ap = m[3].toUpperCase();
+  if (ap === "PM" && h < 12) h += 12;
+  if (ap === "AM" && h === 12) h = 0;
+  return h * 60 + min;
+}
+
 function colorForBatch(batchId: string) {
   let hash = 0;
-  for (let i = 0; i < batchId.length; i++) hash = batchId.charCodeAt(i) + ((hash << 5) - hash);
+  const safeId = batchId || "default";
+  for (let i = 0; i < safeId.length; i++) hash = safeId.charCodeAt(i) + ((hash << 5) - hash);
   return COLOR_PALETTE[Math.abs(hash) % COLOR_PALETTE.length];
 }
 
 function toCard(s: ApiSchedule): ScheduleCard {
-  const c = colorForBatch(s.batchId);
+  const c = colorForBatch(s.batchId || "default");
+  const teacherUser = s.batch?.teacher?.user;
+  const teacherName = teacherUser ? `${teacherUser.firstName || ""} ${teacherUser.lastName || ""}`.trim() : "TBD";
   return {
     id: s.id,
-    batchId: s.batchId,
-    batchName: s.batch.name,
-    subject: s.batch.subject,
-    teacherName: `${s.batch.teacher.user.firstName} ${s.batch.teacher.user.lastName}`,
-    teacherEmail: (s.batch.teacher.user as any).email || "",
+    batchId: s.batchId || "default",
+    batchName: s.batch?.name || "Unknown Batch",
+    subject: s.batch?.subject || "General Studies",
+    teacherName: teacherName || "TBD",
+    teacherEmail: teacherUser?.email || "",
     roomOrLink: s.roomOrLink || "TBD",
-    dayOfWeek: s.dayOfWeek,
-    startTime: s.startTime,
-    endTime: s.endTime,
-    enrolledCount: s.batch.enrollments.length,
-    capacity: s.batch.capacity,
+    dayOfWeek: typeof s.dayOfWeek === "number" ? s.dayOfWeek : 0,
+    startTime: s.startTime || "08:00 AM",
+    endTime: s.endTime || "09:00 AM",
+    enrolledCount: s.batch?.enrollments?.length || 0,
+    capacity: s.batch?.capacity || 30,
     color: c.color,
     bg: c.bg,
   };
@@ -353,6 +370,7 @@ export function TimetableScheduler() {
   const [isNotifyOpen, setIsNotifyOpen] = useState(false);
   const [notifyTarget, setNotifyTarget] = useState<ScheduleCard | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
   // Quick Reschedule & Substitute State
   const [isSubModalOpen, setIsSubModalOpen] = useState(false);
@@ -464,13 +482,17 @@ export function TimetableScheduler() {
     const roomOrLink = form.roomNo || "TBD";
 
     // Send to API database even if preset static batch was selected (backend auto-creates batch in DB)
+    const batchName = batch?.name || "Unknown Batch";
+    const subject = batch?.subject || "General Studies";
+    const dayLabel = WEEK_DAYS[Number(form.dayOfWeek)] || "Unknown Day";
+
     if (useLocal) {
       if (form.id) {
         const updated = schedules.map(s => s.id === form.id ? {
           ...s,
           batchId: form.batchId,
-          batchName: batch?.name || s.batchName,
-          subject: batch?.subject || s.subject,
+          batchName,
+          subject,
           dayOfWeek: Number(form.dayOfWeek),
           startTime: form.startTime,
           endTime: form.endTime,
@@ -478,13 +500,20 @@ export function TimetableScheduler() {
         } : s);
         setSchedules(updated);
         saveLocalSchedules(updated);
+        addHistoryItem({
+          category: "Class Schedule",
+          action: "Updated",
+          title: `${batchName} rescheduled`,
+          details: `${dayLabel} ${form.startTime} – ${form.endTime} in ${roomOrLink}`,
+          badgeColor: c.color,
+        });
         showToast("✅ Schedule updated!");
       } else {
         const newCard: ScheduleCard = {
           id: `local-${Date.now()}`,
           batchId: form.batchId,
-          batchName: batch?.name || "Unknown Batch",
-          subject: batch?.subject || "",
+          batchName,
+          subject,
           teacherName: batch ? `${batch.teacher.user.firstName} ${batch.teacher.user.lastName}` : "TBD",
           teacherEmail: "",
           roomOrLink,
@@ -499,6 +528,13 @@ export function TimetableScheduler() {
         const updated = [...schedules, newCard];
         setSchedules(updated);
         saveLocalSchedules(updated);
+        addHistoryItem({
+          category: "Class Schedule",
+          action: "Created",
+          title: `${batchName} scheduled`,
+          details: `${dayLabel} ${form.startTime} – ${form.endTime} · ${subject} · ${roomOrLink}`,
+          badgeColor: c.color,
+        });
         showToast("🎉 Class scheduled successfully!");
       }
       setIsFormOpen(false);
@@ -511,13 +547,27 @@ export function TimetableScheduler() {
       if (form.id) {
         await callApi(`/schedules/${form.id}`, {
           method: "PUT",
-          body: JSON.stringify({ batchId: form.batchId, batchName: batch?.name, subject: batch?.subject, dayOfWeek: Number(form.dayOfWeek), startTime: form.startTime, endTime: form.endTime, roomOrLink }),
+          body: JSON.stringify({ batchId: form.batchId, batchName, subject, dayOfWeek: Number(form.dayOfWeek), startTime: form.startTime, endTime: form.endTime, roomOrLink }),
+        });
+        addHistoryItem({
+          category: "Class Schedule",
+          action: "Updated",
+          title: `${batchName} rescheduled`,
+          details: `${dayLabel} ${form.startTime} – ${form.endTime} in ${roomOrLink}`,
+          badgeColor: c.color,
         });
         showToast("✅ Schedule updated in DB! Teacher & students notified via Email.");
       } else {
         await callApi("/schedules", {
           method: "POST",
-          body: JSON.stringify({ batchId: form.batchId, batchName: batch?.name, subject: batch?.subject, dayOfWeek: Number(form.dayOfWeek), startTime: form.startTime, endTime: form.endTime, roomOrLink }),
+          body: JSON.stringify({ batchId: form.batchId, batchName, subject, dayOfWeek: Number(form.dayOfWeek), startTime: form.startTime, endTime: form.endTime, roomOrLink }),
+        });
+        addHistoryItem({
+          category: "Class Schedule",
+          action: "Created",
+          title: `${batchName} scheduled`,
+          details: `${dayLabel} ${form.startTime} – ${form.endTime} · ${subject} · ${roomOrLink}`,
+          badgeColor: c.color,
         });
         showToast("🎉 Class saved directly to Database! Teacher & students notified.");
       }
@@ -533,16 +583,35 @@ export function TimetableScheduler() {
   // ── Delete ────────────────────────────────────────────────────────────────
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this scheduled class slot?")) return;
+    const targetCard = schedules.find(s => s.id === id);
     if (useLocal) {
       const updated = schedules.filter(s => s.id !== id);
       setSchedules(updated);
       saveLocalSchedules(updated);
+      if (targetCard) {
+        addHistoryItem({
+          category: "Class Schedule",
+          action: "Deleted",
+          title: `${targetCard.batchName} class removed`,
+          details: `${WEEK_DAYS[targetCard.dayOfWeek]} ${targetCard.startTime} – ${targetCard.endTime} · ${targetCard.roomOrLink}`,
+          badgeColor: "#ef4444",
+        });
+      }
       showToast("Class slot deleted.");
       setDetailSession(null);
       return;
     }
     try {
       await callApi(`/schedules/${id}`, { method: "DELETE" });
+      if (targetCard) {
+        addHistoryItem({
+          category: "Class Schedule",
+          action: "Deleted",
+          title: `${targetCard.batchName} class removed`,
+          details: `${WEEK_DAYS[targetCard.dayOfWeek]} ${targetCard.startTime} – ${targetCard.endTime} · ${targetCard.roomOrLink}`,
+          badgeColor: "#ef4444",
+        });
+      }
       showToast("Class slot deleted.");
       setDetailSession(null);
       loadData();
@@ -654,6 +723,14 @@ export function TimetableScheduler() {
             color: "#fff", padding: "10px 14px", borderRadius: "12px", cursor: "pointer"
           }}>
             <RefreshCw size={16} />
+          </button>
+          <button onClick={() => setIsHistoryOpen(true)} style={{
+            display: "flex", alignItems: "center", gap: "6px",
+            background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)",
+            color: "#fff", padding: "10px 16px", borderRadius: "12px", fontSize: "13px",
+            fontWeight: 700, cursor: "pointer"
+          }}>
+            <History size={16} /> History
           </button>
           <button onClick={() => openNew()} style={{
             display: "flex", alignItems: "center", gap: "6px",
@@ -839,7 +916,7 @@ export function TimetableScheduler() {
                     </div>
                   ) : (
                     <>
-                      {[...dayCards].sort((a, b) => TIME_SLOTS.indexOf(a.startTime) - TIME_SLOTS.indexOf(b.startTime)).map((s, i) => (
+                      {[...dayCards].sort((a, b) => parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime)).map((s, i) => (
                         <div key={s.id} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
                           <div style={{ display: "flex", alignItems: "center", padding: "0 10px", gap: "6px" }}>
                             {i > 0 && <div style={{ height: "1px", width: "16px", background: "rgba(0,0,0,0.1)" }} />}
@@ -1259,6 +1336,9 @@ export function TimetableScheduler() {
           </div>
         </div>
       )}
+
+      {/* ── HISTORY MODAL ──────────────────────────────────────────────────── */}
+      <HistoryModal isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 import { api } from "../utils/api";
+import { addHistoryItem } from "../utils/history";
 import {
   Search,
   User,
@@ -343,6 +344,13 @@ export const StudentManagement: React.FC = () => {
     setStudents(prev => [optimisticStudent, ...prev]);
     setFormData({ name: "", email: "", phone: "", dob: "", gender: "Male", guardianName: "", guardianPhone: "", address: "", batch: BATCHES[0], feeAmount: "8500", notes: "" });
     setFormErrors({});
+    addHistoryItem({
+      category: "Student",
+      action: "Created",
+      title: `Student registered: ${optimisticStudent.name}`,
+      details: `Batch: ${optimisticStudent.batch} · Email: ${optimisticStudent.email} · Fee: ₹${optimisticStudent.feeAmount}`,
+      badgeColor: "hsl(328,100%,54%)",
+    });
     showToast(`🎉 ${optimisticStudent.name} registered successfully!`, "success");
     setActiveTab("all");
 

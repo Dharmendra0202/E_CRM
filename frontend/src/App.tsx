@@ -7,12 +7,13 @@ import { api, setToken, getToken } from "./utils/api";
 import { Login } from "./components/Login";
 import { StudentManagement } from "./components/StudentManagement";
 import { TimetableScheduler } from "./components/TimetableScheduler";
+import { HistoryModal } from "./components/HistoryModal";
 import {
   Search, User, Plus, Check, GraduationCap, DollarSign, TrendingUp,
   Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
   ExternalLink, Filter, Settings, LogOut, ShieldCheck, Bell, Sparkles,
   Activity, BookOpen, AlertCircle, ArrowUpRight, Clock, UserCheck,
-  BarChart3, IndianRupee, CheckCircle2, XCircle, Target, Zap
+  BarChart3, IndianRupee, CheckCircle2, XCircle, Target, Zap, History
 } from "lucide-react";
 
 type ViewType = "dashboard" | "leads" | "schedule" | "billing" | "staff" | "attendance";
@@ -24,6 +25,7 @@ function App() {
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [btnLoading, setBtnLoading] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
@@ -231,6 +233,14 @@ function App() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <Button
+              variant="ghost"
+              title="Activity History"
+              onClick={() => setIsHistoryOpen(true)}
+              style={{ position: "relative", width: "36px", height: "36px", padding: 0, borderRadius: "50%" }}
+            >
+              <History size={17} />
+            </Button>
             <Button variant="ghost" style={{ position: "relative", width: "36px", height: "36px", padding: 0, borderRadius: "50%" }}>
               <Bell size={17} />
               <span className="navbar-bell-ping" /><span className="navbar-bell-ping-ring" />
@@ -707,6 +717,9 @@ function App() {
 
         </div>{/* end crm-viewport */}
       </div>{/* end crm-main-content */}
+
+      {/* ── GLOBAL HISTORY MODAL ───────────────────────────────────────── */}
+      <HistoryModal isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
     </div>
   );
 }
