@@ -8,6 +8,7 @@ import { Login } from "./components/Login";
 import { StudentManagement } from "./components/StudentManagement";
 import { TimetableScheduler } from "./components/TimetableScheduler";
 import { HistoryModal } from "./components/HistoryModal";
+import { AttendanceTracker } from "./components/AttendanceTracker";
 import {
   Search, User, Plus, Check, GraduationCap, DollarSign, TrendingUp,
   Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
@@ -32,11 +33,9 @@ function App() {
   const [activeStaffFilter, setActiveStaffFilter] = useState<StaffRoleType>("ALL");
   const [leadsList, setLeadsList] = useState<any[]>([]);
   const [staffList, setStaffList] = useState<any[]>([]);
-  const [selectedBatch, setSelectedBatch] = useState("Grade 10 Algebra");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().substring(0, 10));
-  const [absenceAlertChecked, setAbsenceAlertChecked] = useState(true);
-  const [attendanceNotificationText, setAttendanceNotificationText] = useState("");
+  const [invoicesList, setInvoicesList] = useState<any[]>([]);
   const [attendanceList, setAttendanceList] = useState<any[]>([]);
+  const [studentTab, setStudentTab] = useState<"all" | "add" | "search" | "progress">("all");
 
   const fetchDashboardStudents = async () => {
     try {
@@ -52,6 +51,22 @@ function App() {
       })));
       else setLeadsList([]);
     } catch { setLeadsList([]); }
+  };
+
+  const fetchInvoices = async () => {
+    try {
+      const res = await api.invoices.getAll();
+      if (res.data) setInvoicesList(res.data);
+      else setInvoicesList([]);
+    } catch { setInvoicesList([]); }
+  };
+
+  const fetchAttendance = async () => {
+    try {
+      const res = await api.attendance.getAll();
+      if (res.data) setAttendanceList(res.data);
+      else setAttendanceList([]);
+    } catch { setAttendanceList([]); }
   };
 
 
@@ -76,48 +91,6 @@ function App() {
     } catch {
       setStaffList([]);
     }
-  };
-
-  useEffect(() => {
-    if (selectedBatch === "Grade 10 Algebra") {
-      setAttendanceList([
-        { id: "a1", name: "Alice Connor", initials: "AC", email: "aconnor@gmail.com", rate: "96%", status: "PRESENT", remarks: "" },
-        { id: "a2", name: "Tommy Miller", initials: "TM", email: "tmiller@gmail.com", rate: "92%", status: "PRESENT", remarks: "" },
-        { id: "a3", name: "John Smith", initials: "JS", email: "jsmith@gmail.com", rate: "84%", status: "PRESENT", remarks: "" },
-        { id: "a4", name: "Emma Watson", initials: "EW", email: "ewatson@gmail.com", rate: "100%", status: "PRESENT", remarks: "" },
-      ]);
-    } else {
-      setAttendanceList([
-        { id: "p1", name: "Bruce Stark", initials: "BS", email: "bstark@gmail.com", rate: "88%", status: "PRESENT", remarks: "" },
-        { id: "p2", name: "Peter Banner", initials: "PB", email: "pbanner@gmail.com", rate: "95%", status: "PRESENT", remarks: "" },
-        { id: "p3", name: "Marcus Carter", initials: "MC", email: "mcarter@gmail.com", rate: "91%", status: "PRESENT", remarks: "" },
-      ]);
-    }
-  }, [selectedBatch]);
-
-  const handleToggleAttendance = (id: string, status: "PRESENT" | "ABSENT" | "LATE") =>
-    setAttendanceList(attendanceList.map(s => s.id === id ? { ...s, status } : s));
-
-  const handleRemarksChange = (id: string, remarks: string) =>
-    setAttendanceList(attendanceList.map(s => s.id === id ? { ...s, remarks } : s));
-
-  const handleSaveAttendance = async () => {
-    setBtnLoading(true);
-    try {
-      const records = attendanceList.map(s => ({
-        student_id: s.id,
-        status: s.status,
-        remarks: s.remarks || "",
-      }));
-      // Try real API first — needs a real schedule_id in production
-      // For now show success notification
-      const absent = attendanceList.filter(s => s.status === "ABSENT").length;
-      setAttendanceNotificationText(`Attendance saved for ${attendanceList.length} students.${absent > 0 && absenceAlertChecked ? ` ${absent} absence alert(s) queued.` : ""}`);
-      setTimeout(() => setAttendanceNotificationText(""), 5000);
-    } catch {
-      setAttendanceNotificationText("Failed to save attendance. Please try again.");
-    }
-    setBtnLoading(false);
   };
 
   const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
@@ -150,7 +123,14 @@ function App() {
     }
   }, []);
 
-  useEffect(() => { if (userProfile) { fetchDashboardStudents(); fetchStaff(); } }, [userProfile]);
+  useEffect(() => {
+    if (userProfile) {
+      fetchDashboardStudents();
+      fetchStaff();
+      fetchInvoices();
+      fetchAttendance();
+    }
+  }, [userProfile, currentView]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -209,7 +189,7 @@ function App() {
           { view: "billing",   icon: <CreditCard size={20} />,      label: "Billing" },
           { view: "staff",     icon: <Briefcase size={20} />,       label: "Staff" },
         ] as { view: ViewType; icon: React.ReactNode; label: string }[]).map(({ view, icon, label }) => (
-          <button key={view} className={`crm-dock-item ${currentView === view ? "is-active" : ""}`} onClick={() => setCurrentView(view)}>
+          <button key={view} className={`crm-dock-item ${currentView === view ? "is-active" : ""}`} onClick={() => { setCurrentView(view); if (view === "leads") setStudentTab("all"); }}>
             {icon}
             <span className="crm-dock-tooltip">{label}</span>
           </button>
@@ -316,7 +296,7 @@ function App() {
                   <p style={{ margin: 0, fontSize: "14px", color: "hsla(0,0%,100%,0.72)" }}>Here's what's happening at your academy today.</p>
                 </div>
                 <div style={{ display: "flex", gap: "10px", flexShrink: 0, position: "relative", zIndex: 1 }}>
-                  <button onClick={() => setCurrentView("leads")} style={{ background: "hsla(0,0%,100%,0.18)", border: "1px solid hsla(0,0%,100%,0.3)", borderRadius: "12px", padding: "10px 16px", color: "#fff", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "background 0.2s", backdropFilter: "blur(8px)" }}
+                  <button onClick={() => { setCurrentView("leads"); setStudentTab("add"); }} style={{ background: "hsla(0,0%,100%,0.18)", border: "1px solid hsla(0,0%,100%,0.3)", borderRadius: "12px", padding: "10px 16px", color: "#fff", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "background 0.2s", backdropFilter: "blur(8px)" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "hsla(0,0%,100%,0.28)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "hsla(0,0%,100%,0.18)")}>
                     <Plus size={14} /> Add Student
@@ -331,12 +311,29 @@ function App() {
 
               {/* ── KPI Metric Cards ── */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "24px" }}>
-                {[
-                  { icon: <Users2 size={22} />, grad: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", label: "Total Students", value: "458", badge: "+12 this month" },
-                  { icon: <IndianRupee size={22} />, grad: "linear-gradient(135deg,hsl(142,70%,42%),hsl(160,70%,35%))", label: "Fees Collected", value: "₹1,28,500", badge: "92% of target" },
-                  { icon: <UserCheck size={22} />, grad: "linear-gradient(135deg,hsl(271,91%,60%),hsl(240,80%,65%))", label: "Avg Attendance", value: "94.2%", badge: "+1.3% this week" },
-                  { icon: <Target size={22} />, grad: "linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))", label: "Enrolled Students", value: String(enrolledLeads), badge: `${newLeads} new today` },
-                ].map((m, i) => (
+                {(() => {
+                  const studentsThisMonth = leadsList.filter(s => {
+                    const d = new Date(s.createdAt);
+                    const now = new Date();
+                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                  }).length;
+                  const totalFeesCollected = invoicesList.reduce((sum, inv) => {
+                    const paid = inv.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0;
+                    return sum + paid;
+                  }, 0);
+                  const totalBilled = invoicesList.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+                  const collectionRate = totalBilled > 0 ? Math.round((totalFeesCollected / totalBilled) * 100) : 0;
+                  const avgAttendance = attendanceList.length > 0
+                    ? (attendanceList.filter(a => a.status === "PRESENT" || a.status === "LATE").length / attendanceList.length) * 100
+                    : 0;
+
+                  return [
+                    { icon: <Users2 size={22} />, grad: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", label: "Total Students", value: String(leadsList.length), badge: `+${studentsThisMonth} this month` },
+                    { icon: <IndianRupee size={22} />, grad: "linear-gradient(135deg,hsl(142,70%,42%),hsl(160,70%,35%))", label: "Fees Collected", value: `₹${totalFeesCollected.toLocaleString("en-IN")}`, badge: `${collectionRate}% of target` },
+                    { icon: <UserCheck size={22} />, grad: "linear-gradient(135deg,hsl(271,91%,60%),hsl(240,80%,65%))", label: "Avg Attendance", value: `${avgAttendance.toFixed(1)}%`, badge: `${attendanceList.length} records` },
+                    { icon: <Target size={22} />, grad: "linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))", label: "Enrolled Students", value: String(enrolledLeads), badge: `${newLeads} new today` },
+                  ];
+                })().map((m, i) => (
                   <div key={i} style={{ background: "#fff", borderRadius: "16px", padding: "22px 20px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.08)", transition: "all 0.3s ease", cursor: "default" }}
                     onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-4px)"; el.style.boxShadow = "0 16px 40px -8px rgba(29,10,39,0.15)"; }}
                     onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "none"; el.style.boxShadow = "0 2px 16px -4px rgba(29,10,39,0.08)"; }}>
@@ -408,12 +405,12 @@ function App() {
                     </h3>
                     <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
                       {[
-                        { label: "Add New Student",  icon: <Plus size={13} />,         view: "leads"      as ViewType, color: "hsl(328,100%,54%)" },
-                        { label: "Mark Attendance",  icon: <CheckCircle2 size={13} />, view: "attendance" as ViewType, color: "hsl(142,70%,42%)" },
-                        { label: "Issue Invoice",    icon: <IndianRupee size={13} />,  view: "billing"    as ViewType, color: "hsl(38,92%,50%)" },
-                        { label: "Schedule Class",   icon: <CalendarDays size={13} />, view: "schedule"   as ViewType, color: "hsl(271,91%,60%)" },
+                        { label: "Add New Student",  icon: <Plus size={13} />,         action: () => { setCurrentView("leads"); setStudentTab("add"); },        color: "hsl(328,100%,54%)" },
+                        { label: "Mark Attendance",  icon: <CheckCircle2 size={13} />, action: () => setCurrentView("attendance"), color: "hsl(142,70%,42%)" },
+                        { label: "Issue Invoice",    icon: <IndianRupee size={13} />,  action: () => setCurrentView("billing"),    color: "hsl(38,92%,50%)" },
+                        { label: "Schedule Class",   icon: <CalendarDays size={13} />, action: () => setCurrentView("schedule"),   color: "hsl(271,91%,60%)" },
                       ].map(a => (
-                        <button key={a.label} onClick={() => setCurrentView(a.view)}
+                        <button key={a.label} onClick={a.action}
                           style={{ display: "flex", alignItems: "center", gap: "9px", padding: "9px 11px", background: `${a.color}08`, border: `1px solid ${a.color}1a`, borderRadius: "10px", cursor: "pointer", fontSize: "12px", fontWeight: 600, color: "var(--text-primary)", transition: "all 0.2s", textAlign: "left", width: "100%" }}
                           onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = `${a.color}14`; el.style.transform = "translateX(3px)"; }}
                           onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = `${a.color}08`; el.style.transform = "none"; }}>
@@ -472,7 +469,7 @@ function App() {
           {/* ══════════════ STUDENTS VIEW ══════════════ */}
           {currentView === "leads" && (
             <div className="animate-fade-in">
-              <StudentManagement />
+              <StudentManagement initialTab={studentTab} />
             </div>
           )}
 
@@ -484,89 +481,7 @@ function App() {
           )}
 
           {/* ══════════════ ATTENDANCE VIEW ══════════════ */}
-          {currentView === "attendance" && (
-            <div className="animate-fade-in">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" }}>
-                <div>
-                  <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Attendance Tracker</h1>
-                  <p>Select batch and date to log student attendance.</p>
-                </div>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-success)", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <Activity size={14} />Week Rate: 93.8%
-                </span>
-              </div>
-
-              {attendanceNotificationText && (
-                <div style={{ background: "hsla(142,70%,40%,0.08)", border: "1px solid hsla(142,70%,40%,0.2)", padding: "12px 16px", borderRadius: "10px", color: "var(--color-success)", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px", marginBottom: "20px" }}>
-                  <CheckCircle2 size={16} />{attendanceNotificationText}
-                </div>
-              )}
-
-              <Card style={{ padding: "20px", marginBottom: "20px", gap: 0 }}>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", alignItems: "flex-end" }}>
-                  <div style={{ flex: 1, minWidth: "200px" }}>
-                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "6px" }}>Class Batch</label>
-                    <select value={selectedBatch} onChange={e => setSelectedBatch(e.target.value)}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", border: "1px solid var(--border-glass)", background: "var(--surface-glass)", color: "var(--text-primary)", fontSize: "13px", fontWeight: 600, outline: "none" }}>
-                      <option value="Grade 10 Algebra">Grade 10 Algebra A (Mathematics)</option>
-                      <option value="Grade 8 Physics">Grade 8 Physics B (Physics)</option>
-                    </select>
-                  </div>
-                  <div style={{ width: "190px" }}>
-                    <label style={{ display: "block", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", marginBottom: "6px" }}>Session Date</label>
-                    <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: "8px", border: "1px solid var(--border-glass)", background: "var(--surface-glass)", color: "var(--text-primary)", fontSize: "13px", fontWeight: 600, outline: "none" }} />
-                  </div>
-                  <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer", paddingBottom: "2px" }}>
-                    <input type="checkbox" checked={absenceAlertChecked} onChange={e => setAbsenceAlertChecked(e.target.checked)}
-                      style={{ width: "15px", height: "15px", accentColor: "var(--color-accent)", cursor: "pointer" }} />
-                    Auto-Notify Parents
-                  </label>
-                </div>
-              </Card>
-
-              {isLoading ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  {[1,2,3].map(i => <Skeleton key={i} variant="rect" height={60} />)}
-                </div>
-              ) : (
-                <Card style={{ padding: 0, overflow: "hidden", gap: 0 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 180px 1fr", padding: "12px 24px", background: "rgba(29,10,39,0.03)", borderBottom: "1px solid var(--border-glass)", fontWeight: 700, fontSize: "12px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    <div>Student</div><div style={{ textAlign: "center" }}>Status</div><div>Remarks</div>
-                  </div>
-                  {attendanceList.map(student => (
-                    <div key={student.id} style={{ display: "grid", gridTemplateColumns: "1fr 180px 1fr", padding: "14px 24px", borderBottom: "1px solid var(--border-glass)", alignItems: "center", gap: "16px" }}>
-                      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                        <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "hsla(271,91%,60%,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700, color: "hsl(271,91%,60%)", flexShrink: 0 }}>{student.initials}</div>
-                        <div>
-                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 650 }}>{student.name}</p>
-                          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{student.email} • avg: <strong style={{ color: "var(--color-success)" }}>{student.rate}</strong></p>
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "center", gap: "6px" }}>
-                        {(["PRESENT","ABSENT","LATE"] as const).map(s => (
-                          <button key={s} onClick={() => handleToggleAttendance(student.id, s)}
-                            style={{ width: "36px", height: "36px", borderRadius: "8px", border: `2px solid ${student.status === s ? (s === "PRESENT" ? "var(--color-success)" : s === "ABSENT" ? "var(--color-danger)" : "hsl(38,92%,50%)") : "var(--border-glass)"}`, background: student.status === s ? (s === "PRESENT" ? "hsla(142,70%,40%,0.15)" : s === "ABSENT" ? "hsla(342,90%,48%,0.15)" : "hsla(38,92%,50%,0.15)") : "transparent", color: student.status === s ? (s === "PRESENT" ? "var(--color-success)" : s === "ABSENT" ? "var(--color-danger)" : "hsl(38,92%,50%)") : "var(--text-secondary)", fontWeight: 700, fontSize: "12px", cursor: "pointer", transition: "all 0.15s ease" }}>
-                            {s[0]}
-                          </button>
-                        ))}
-                      </div>
-                      <input type="text" placeholder="Add a note..." value={student.remarks} onChange={e => handleRemarksChange(student.id, e.target.value)}
-                        style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border-glass)", background: "transparent", fontSize: "12px", outline: "none", color: "var(--text-primary)" }} />
-                    </div>
-                  ))}
-                  <div style={{ padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(29,10,39,0.02)" }}>
-                    <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
-                      <strong>{selectedBatch}</strong> • <strong>{selectedDate}</strong> • {attendanceList.length} students
-                    </span>
-                    <Button variant="primary" isLoading={btnLoading} onClick={handleSaveAttendance} leftIcon={<Check size={15} />}>
-                      Save & Notify
-                    </Button>
-                  </div>
-                </Card>
-              )}
-            </div>
-          )}
+          {currentView === "attendance" && <AttendanceTracker />}
 
           {/* ══════════════ BILLING VIEW ══════════════ */}
           {currentView === "billing" && (
@@ -584,11 +499,20 @@ function App() {
 
               {/* Summary strip */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "24px" }}>
-                {[
-                  { label: "Total Billed", value: "₹1,42,000", color: "var(--color-accent)", bg: "hsla(328,100%,54%,0.08)" },
-                  { label: "Collected", value: "₹1,28,500", color: "var(--color-success)", bg: "hsla(142,70%,40%,0.08)" },
-                  { label: "Outstanding", value: "₹13,500", color: "var(--color-danger)", bg: "hsla(342,90%,48%,0.08)" },
-                ].map(s => (
+                {(() => {
+                  const totalBilled = invoicesList.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+                  const totalFeesCollected = invoicesList.reduce((sum, inv) => {
+                    const paid = inv.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0;
+                    return sum + paid;
+                  }, 0);
+                  const outstanding = totalBilled - totalFeesCollected;
+
+                  return [
+                    { label: "Total Billed", value: `₹${totalBilled.toLocaleString("en-IN")}`, color: "var(--color-accent)", bg: "hsla(328,100%,54%,0.08)" },
+                    { label: "Collected", value: `₹${totalFeesCollected.toLocaleString("en-IN")}`, color: "var(--color-success)", bg: "hsla(142,70%,40%,0.08)" },
+                    { label: "Outstanding", value: `₹${outstanding.toLocaleString("en-IN")}`, color: "var(--color-danger)", bg: "hsla(342,90%,48%,0.08)" },
+                  ];
+                })().map(s => (
                   <div key={s.label} style={{ padding: "16px 20px", background: s.bg, borderRadius: "12px", border: `1px solid ${s.color}22` }}>
                     <p style={{ margin: "0 0 4px", fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>{s.label}</p>
                     <h3 style={{ margin: 0, fontSize: "22px", fontWeight: 700, color: s.color }}>{s.value}</h3>
@@ -605,26 +529,25 @@ function App() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", padding: "12px 24px", background: "rgba(29,10,39,0.03)", borderBottom: "1px solid var(--border-glass)", fontWeight: 700, fontSize: "12px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", gap: "16px" }}>
                     <div>Student / Period</div><div>Amount</div><div>Status</div><div>Action</div>
                   </div>
-                  {[
-                    { id: "INV-001", name: "John Connor", period: "July 2026 — Grade 10 Algebra", amount: "₹4,500", status: "UNPAID" },
-                    { id: "INV-002", name: "Marcus Wright", period: "July 2026 — Grade 8 Physics", amount: "₹3,800", status: "PAID" },
-                    { id: "INV-003", name: "Alice Cooper", period: "July 2026 — Grade 10 Algebra", amount: "₹4,500", status: "PARTIAL" },
-                    { id: "INV-004", name: "Emma Watson", period: "June 2026 — Calculus Advanced", amount: "₹5,200", status: "PAID" },
-                    { id: "INV-005", name: "Diana Prince", period: "July 2026 — Grade 8 Physics", amount: "₹3,800", status: "UNPAID" },
-                  ].map(inv => {
+                  {invoicesList.length === 0 ? (
+                    <div style={{ padding: "24px", textAlign: "center", color: "var(--text-secondary)", fontSize: "13px" }}>No invoices found in the system.</div>
+                  ) : invoicesList.map(inv => {
+                    const studentName = inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : (inv.student?.parentName || "Student");
+                    const period = `Due: ${new Date(inv.dueDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`;
+                    const amount = `₹${Number(inv.totalAmount).toLocaleString("en-IN")}`;
                     const statusMap: Record<string, { color: string; bg: string; label: string }> = {
                       PAID:    { color: "var(--color-success)", bg: "hsla(142,70%,40%,0.1)", label: "Paid" },
                       UNPAID:  { color: "var(--color-danger)",  bg: "hsla(342,90%,48%,0.1)", label: "Unpaid" },
                       PARTIAL: { color: "hsl(38,92%,50%)",      bg: "hsla(38,92%,50%,0.1)",  label: "Partial" },
                     };
-                    const s = statusMap[inv.status];
+                    const s = statusMap[inv.status] || { color: "var(--text-secondary)", bg: "rgba(0,0,0,0.05)", label: inv.status };
                     return (
                       <div key={inv.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", padding: "16px 24px", borderBottom: "1px solid var(--border-glass)", alignItems: "center", gap: "16px" }}>
                         <div>
-                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 650 }}>{inv.name}</p>
-                          <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>#{inv.id} • {inv.period}</p>
+                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 650 }}>{studentName}</p>
+                          <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>#{inv.id.substring(0, 8)} • {period}</p>
                         </div>
-                        <span style={{ fontSize: "15px", fontWeight: 700 }}>{inv.amount}</span>
+                        <span style={{ fontSize: "15px", fontWeight: 700 }}>{amount}</span>
                         <span style={{ fontSize: "11px", fontWeight: 700, color: s.color, background: s.bg, padding: "4px 10px", borderRadius: "20px", whiteSpace: "nowrap" }}>{s.label}</span>
                         <div style={{ display: "flex", gap: "8px" }}>
                           {inv.status !== "PAID" && <Button variant="primary" size="sm">Pay Now</Button>}

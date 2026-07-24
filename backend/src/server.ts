@@ -4,6 +4,8 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
 import { PrismaClient } from "@prisma/client";
 import logger from "./utils/logger";
 import authRoutes from "./routes/auth";
@@ -18,8 +20,35 @@ import schedulesRoutes from "./routes/schedules";
 dotenv.config();
 
 const app = express();
+const httpServer = createServer(app);
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5000;
+
+// ── WebSocket Setup for Real-Time Updates ──────────────────
+export const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+  },
+});
+
+io.on("connection", (socket) => {
+  logger.info(`Socket connected: ${socket.id}`);
+  
+  socket.on("join_batch", (batchId: string) => {
+    socket.join(`batch_${batchId}`);
+    logger.info(`Socket ${socket.id} joined batch_${batchId}`);
+  });
+  
+  socket.on("leave_batch", (batchId: string) => {
+    socket.leave(`batch_${batchId}`);
+    logger.info(`Socket ${socket.id} left batch_${batchId}`);
+  });
+  
+  socket.on("disconnect", () => {
+    logger.info(`Socket disconnected: ${socket.id}`);
+  });
+});
 
 // ── Middleware ──────────────────────────────────────────────
 app.use(helmet({
@@ -68,11 +97,12 @@ app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   res.status(500).json({ status: "error", message: err.message });
 });
 
-app.listen(PORT, () => logger.info(`E-CRM API running on http://localhost:${PORT}`));
+httpServer.listen(PORT, () => logger.info(`E-CRM API running on http://localhost:${PORT}`));
 
 process.on("SIGINT", async () => {
   await prisma.$disconnect();
-  logger.info("DB disconnected. Bye.");
+  io.close();
+  logger.info("DB disconnected. WebSocket closed. Bye.");
   process.exit(0);
 });
 

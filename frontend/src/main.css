@@ -3201,3 +3201,135 @@ p {
     background-position: 0% 50%;
   }
 }
+
+
+/* ==========================================================================
+   17. REAL-TIME ATTENDANCE LIVE STATUS ANIMATIONS
+   ========================================================================== */
+
+/* Pulse animation for live connection indicator */
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+}
+
+.live-connection-pulse {
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+/* Shimmer effect for newly updated rows */
+@keyframes attendanceRowShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.attendance-row-updated {
+  background: linear-gradient(
+    90deg,
+    hsla(142,70%,40%,0.01) 0%,
+    hsla(142,70%,40%,0.08) 50%,
+    hsla(142,70%,40%,0.01) 100%
+  );
+  background-size: 200% 100%;
+  animation: attendanceRowShimmer 2s ease-in-out;
+}
+
+/* Mobile sync badge animation */
+@keyframes mobileBadgePop {
+  0% {
+    transform: scale(0) rotate(-12deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15) rotate(3deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.mobile-sync-badge {
+  animation: mobileBadgePop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Live status indicator glow */
+@keyframes liveStatusGlow {
+  0%, 100% {
+    box-shadow: 0 0 8px hsla(142,70%,40%,0.4);
+  }
+  50% {
+    box-shadow: 0 0 16px hsla(142,70%,40%,0.8), 0 0 24px hsla(142,70%,40%,0.4);
+  }
+}
+
+.live-status-glow {
+  animation: liveStatusGlow 2s ease-in-out infinite;
+}
+
+/* Real-time notification slide in from bottom */
+@keyframes notificationSlideIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.attendance-notification-enter {
+  animation: notificationSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Connection status fade transition */
+@keyframes connectionStatusFade {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.connection-status-change {
+  animation: connectionStatusFade 0.3s ease-out;
+}
+
+/* Attendance completion progress bar fill animation */
+@keyframes progressFillIn {
+  from {
+    width: 0;
+  }
+}
+
+.attendance-progress-fill {
+  animation: progressFillIn 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Live update flash effect */
+@keyframes liveUpdateFlash {
+  0%, 100% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: hsla(142,70%,40%,0.12);
+  }
+}
+
+.live-update-flash {
+  animation: liveUpdateFlash 0.6s ease-in-out;
+}

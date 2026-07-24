@@ -76,7 +76,18 @@ export const api = {
       const q = new URLSearchParams(params as any).toString();
       return request<any>(`/attendance${q ? `?${q}` : ""}`);
     },
+    getSession: (params: { batch_id: string; date: string }) => {
+      const q = new URLSearchParams(params as any).toString();
+      return request<any>(`/attendance/session?${q}`);
+    },
     submit: (body: object) => request<any>("/attendance", { method: "POST", body: JSON.stringify(body) }),
+    mark: (body: {
+      schedule_id: string;
+      student_id: string;
+      class_date: string;
+      status: string;
+      remarks?: string;
+    }) => request<any>("/attendance/mark", { method: "POST", body: JSON.stringify(body) }),
     sync: (records: object[]) => request<any>("/attendance/sync", { method: "POST", body: JSON.stringify({ records }) }),
   },
 

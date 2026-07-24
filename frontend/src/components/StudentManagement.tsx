@@ -34,7 +34,8 @@ import {
   FileText,
   Activity,
   Eye,
-  X
+  X,
+  ExternalLink
 } from "lucide-react";
 
 // ─────────────────────────── Types ───────────────────────────
@@ -150,12 +151,22 @@ const getFeeColor = (status: string) => {
   }
 };
 
+interface StudentManagementProps {
+  initialTab?: StudentTab;
+}
+
 // ─────────────────────────── Component ───────────────────────────
-export const StudentManagement: React.FC = () => {
+export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab = "all" }) => {
   // Core state — starts empty, loads from API
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
-  const [activeTab, setActiveTab] = useState<StudentTab>("all");
+  const [activeTab, setActiveTab] = useState<StudentTab>(initialTab);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   // Table state
@@ -179,6 +190,7 @@ export const StudentManagement: React.FC = () => {
     feeAmount: "8500", notes: ""
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [successModalData, setSuccessModalData] = useState<{ student: Student; whatsappLink: string } | null>(null);
 
   // ─────────── Helpers ───────────
   const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
@@ -186,13 +198,31 @@ export const StudentManagement: React.FC = () => {
     setTimeout(() => setToast(null), 4500);
   };
 
-  // ─────────── Load students from API ───────────
+  const LS_STUDENTS_KEY = "ecrm_students_list";
+
+  const getLocalStudents = (): Student[] => {
+    try {
+      const raw = localStorage.getItem(LS_STUDENTS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  };
+
+  const saveLocalStudents = (list: Student[]) => {
+    try { localStorage.setItem(LS_STUDENTS_KEY, JSON.stringify(list)); } catch (e) { console.error(e); }
+  };
+
+  // ─────────── Load students from API & LocalStorage ───────────
   useEffect(() => {
     const loadStudents = async () => {
       setIsLoadingStudents(true);
+      const localList = getLocalStudents();
+      if (localList.length > 0) {
+        setStudents(localList);
+      }
+
       try {
         const res = await api.students.getAll();
-        if (res.data && res.data.length > 0) {
+        if (res.data && Array.isArray(res.data)) {
           const mapped: Student[] = res.data.map((s: any) => ({
             id: s.id,
             name: s.user ? `${s.user.firstName} ${s.user.lastName}` : (s.parentName || "Student"),
@@ -212,11 +242,15 @@ export const StudentManagement: React.FC = () => {
             notes: "",
             subjects: [],
           }));
-          setStudents(mapped);
+
+          const dbIds = new Set(mapped.map(s => s.id));
+          const pendingLocal = localList.filter(s => s.id.startsWith("stu-") && !dbIds.has(s.id));
+          const merged = [...pendingLocal, ...mapped];
+          setStudents(merged);
+          saveLocalStudents(merged);
         }
-        // If DB returns empty, list stays empty — user adds real students
       } catch {
-        // Backend not available — list stays empty
+        // Backend offline — keep localList in state
       } finally {
         setIsLoadingStudents(false);
       }
@@ -293,7 +327,11 @@ export const StudentManagement: React.FC = () => {
   // ─────────── Delete Student ───────────
   const handleDeleteStudent = async (id: string) => {
     // Optimistic UI update
-    setStudents(prev => prev.filter(s => s.id !== id));
+    setStudents(prev => {
+      const updated = prev.filter(s => s.id !== id);
+      saveLocalStudents(updated);
+      return updated;
+    });
     if (expandedRow === id) setExpandedRow(null);
     if (selectedStudent?.id === id) setSelectedStudent(null);
     try {
@@ -315,6 +353,9 @@ export const StudentManagement: React.FC = () => {
     if (!formData.guardianName.trim()) errors.guardianName = "Guardian name is required";
     if (!formData.guardianPhone.trim()) errors.guardianPhone = "Guardian phone is required";
     setFormErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      showToast("⚠️ Please fill in all required fields marked with *", "error");
+    }
     return Object.keys(errors).length === 0;
   };
 
@@ -322,16 +363,17 @@ export const StudentManagement: React.FC = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const nameParts = formData.name.trim().split(" ");
+    const currentData = { ...formData };
+    const nameParts = currentData.name.trim().split(" ");
     const optimisticStudent: Student = {
       id: `stu-${Date.now()}`,
-      name: formData.name, email: formData.email, phone: formData.phone,
-      dob: formData.dob, gender: formData.gender,
-      guardianName: formData.guardianName, guardianPhone: formData.guardianPhone,
-      address: formData.address, batch: formData.batch,
+      name: currentData.name, email: currentData.email, phone: currentData.phone,
+      dob: currentData.dob, gender: currentData.gender,
+      guardianName: currentData.guardianName, guardianPhone: currentData.guardianPhone,
+      address: currentData.address, batch: currentData.batch,
       enrollmentDate: new Date().toISOString().split("T")[0],
-      status: "Active", feeAmount: parseInt(formData.feeAmount) || 8500,
-      feeStatus: "Pending", attendanceRate: 0, notes: formData.notes,
+      status: "Active", feeAmount: parseInt(currentData.feeAmount) || 8500,
+      feeStatus: "Pending", attendanceRate: 0, notes: currentData.notes,
       subjects: [
         { name: "Mathematics", score: 0, grade: "-", trend: "stable" },
         { name: "Science",     score: 0, grade: "-", trend: "stable" },
@@ -341,7 +383,11 @@ export const StudentManagement: React.FC = () => {
     };
 
     // Optimistic UI — add immediately
-    setStudents(prev => [optimisticStudent, ...prev]);
+    setStudents(prev => {
+      const updated = [optimisticStudent, ...prev];
+      saveLocalStudents(updated);
+      return updated;
+    });
     setFormData({ name: "", email: "", phone: "", dob: "", gender: "Male", guardianName: "", guardianPhone: "", address: "", batch: BATCHES[0], feeAmount: "8500", notes: "" });
     setFormErrors({});
     addHistoryItem({
@@ -354,20 +400,63 @@ export const StudentManagement: React.FC = () => {
     showToast(`🎉 ${optimisticStudent.name} registered successfully!`, "success");
     setActiveTab("all");
 
+    // Default modal with WhatsApp invite link while DB request is processed
+    const fallbackLink = `https://chat.whatsapp.com/ECRM_BATCH_${currentData.batch.replace(/\s+/g, "_").toUpperCase()}`;
+    setSuccessModalData({
+      student: optimisticStudent,
+      whatsappLink: fallbackLink
+    });
+
     // Save to database in background
     try {
-      await api.students.create({
+      const res = await api.students.create({
         firstName: nameParts[0],
         lastName: nameParts.slice(1).join(" ") || nameParts[0],
-        email: formData.email,
-        phone: formData.phone,
-        parentName: formData.guardianName,
-        parentPhone: formData.guardianPhone,
-        parentEmail: formData.email,
-        dateOfBirth: formData.dob,
+        email: currentData.email,
+        phone: currentData.phone,
+        parentName: currentData.guardianName,
+        parentPhone: currentData.guardianPhone,
+        parentEmail: currentData.email,
+        dateOfBirth: currentData.dob,
+        batch: currentData.batch,
+        feeAmount: currentData.feeAmount
       });
-    } catch {
-      // Saved locally — will sync when backend available
+      if (res && res.data) {
+        const s = res.data;
+        const mappedStudent: Student = {
+          id: s.id,
+          name: s.user ? `${s.user.firstName} ${s.user.lastName}` : (s.parentName || "Student"),
+          email: s.user?.email || s.parentEmail,
+          phone: s.user?.phone || s.parentPhone,
+          dob: s.dateOfBirth?.split("T")[0] || "",
+          gender: currentData.gender,
+          guardianName: s.parentName,
+          guardianPhone: s.parentPhone,
+          address: currentData.address,
+          batch: s.enrollments?.[0]?.batch?.name || currentData.batch,
+          enrollmentDate: s.createdAt?.split("T")[0] || "",
+          status: "Active" as const,
+          feeAmount: s.invoices?.[0]?.totalAmount || 0,
+          feeStatus: (s.invoices?.[0]?.status === "PAID" ? "Paid" : s.invoices?.[0]?.status === "PARTIAL" ? "Pending" : "Overdue") as any,
+          attendanceRate: 0,
+          notes: currentData.notes,
+          subjects: optimisticStudent.subjects,
+        };
+        setStudents(prev => {
+          const updated = prev.map(item => item.id === optimisticStudent.id ? mappedStudent : item);
+          saveLocalStudents(updated);
+          return updated;
+        });
+        
+        // Update modal data with server-assigned student ID and backend link
+        const wlink = res.whatsappLink || fallbackLink;
+        setSuccessModalData({
+          student: mappedStudent,
+          whatsappLink: wlink
+        });
+      }
+    } catch (err) {
+      console.error("Database save failed, student retained in local storage:", err);
     }
   };
 
@@ -904,55 +993,90 @@ export const StudentManagement: React.FC = () => {
             </div>
           </div>
 
-          {/* ── Section 3: Academic & Fees ── */}
-          <div style={{background:"#fff",borderRadius:"16px",overflow:"hidden",marginBottom:"20px",boxShadow:"0 2px 16px -4px rgba(29,10,39,0.08)",border:"1px solid hsla(285,30%,20%,0.07)"}}>
-            <div style={{padding:"18px 24px",borderBottom:"1px solid hsla(285,30%,20%,0.06)",background:"linear-gradient(135deg,hsla(38,92%,50%,0.04),hsla(20,95%,55%,0.03))",display:"flex",alignItems:"center",gap:"10px"}}>
-              <div style={{width:"32px",height:"32px",borderRadius:"10px",background:"linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))",display:"flex",alignItems:"center",justifyContent:"center"}}><GraduationCap size={16} color="#fff"/></div>
-              <div><h3 style={{margin:0,fontSize:"14px",fontWeight:700}}>Academic & Fee Details</h3><p style={{margin:0,fontSize:"11px",color:"hsl(285,20%,45%)"}}>Class enrollment and fee structure</p></div>
+          {/* ── Section 3: Academic & Fees (Redesigned) ── */}
+          <div style={{background:"#fff",borderRadius:"20px",overflow:"hidden",marginBottom:"24px",boxShadow:"0 4px 20px -4px rgba(29,10,39,0.08)",border:"1px solid hsla(38,92%,50%,0.18)"}}>
+            <div style={{padding:"20px 28px",borderBottom:"1px solid hsla(38,92%,50%,0.12)",background:"linear-gradient(135deg,hsla(38,92%,50%,0.08),hsla(20,95%,55%,0.05))",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+                <div style={{width:"36px",height:"36px",borderRadius:"12px",background:"linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 12px hsla(38,92%,50%,0.25)"}}>
+                  <GraduationCap size={18} color="#fff"/>
+                </div>
+                <div>
+                  <h3 style={{margin:0,fontSize:"15px",fontWeight:800,color:"hsl(285,50%,12%)"}}>Academic & Fee Enrollment</h3>
+                  <p style={{margin:0,fontSize:"12px",color:"hsl(285,20%,45%)"}}>Assign student to a batch and set class fee structure</p>
+                </div>
+              </div>
+              <span style={{fontSize:"11px",fontWeight:800,color:"hsl(38,92%,42%)",background:"hsla(38,92%,50%,0.12)",padding:"4px 12px",borderRadius:"20px",border:"1px solid hsla(38,92%,50%,0.25)"}}>
+                Auto-Onboarding Active
+              </span>
             </div>
-            <div style={{padding:"24px",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:"18px"}}>
-              <div style={{display:"flex",flexDirection:"column",gap:"6px"}}>
-                <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Select Batch / Class</label>
-                <div style={{position:"relative"}}>
-                  <span style={{position:"absolute",left:"12px",top:"50%",transform:"translateY(-50%)",color:"hsl(285,20%,55%)",display:"flex",pointerEvents:"none"}}><BookOpen size={15}/></span>
-                  <select value={formData.batch} onChange={e=>setFormData({...formData,batch:e.target.value})}
-                    style={{width:"100%",height:"44px",padding:"0 14px 0 38px",borderRadius:"10px",border:"1.5px solid hsla(285,30%,20%,0.1)",background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",cursor:"pointer",appearance:"none",transition:"border-color 0.2s"}}
-                    onFocus={e=>(e.target.style.borderColor="hsl(38,92%,50%)")} onBlur={e=>(e.target.style.borderColor="hsla(285,30%,20%,0.1)")}>
-                    {BATCHES.map(b=><option key={b} value={b}>{b}</option>)}
-                  </select>
+
+            <div style={{padding:"28px",display:"flex",flexDirection:"column",gap:"22px"}}>
+              {/* Top Row: Batch & Fee Inputs */}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(250px,1fr))",gap:"20px"}}>
+                <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
+                  <label style={{fontSize:"12px",fontWeight:700,color:"hsl(285,50%,15%)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                    <span>SELECT BATCH / CLASS <span style={{color:"hsl(328,100%,54%)"}}>*</span></span>
+                    <span style={{fontSize:"11px",color:"var(--color-success)",fontWeight:600}}>🟢 Active Roster</span>
+                  </label>
+                  <div style={{position:"relative"}}>
+                    <span style={{position:"absolute",left:"14px",top:"50%",transform:"translateY(-50%)",color:"hsl(38,92%,50%)",display:"flex",pointerEvents:"none"}}><BookOpen size={17}/></span>
+                    <select value={formData.batch} onChange={e=>setFormData({...formData,batch:e.target.value})}
+                      style={{width:"100%",height:"48px",padding:"0 16px 0 42px",borderRadius:"12px",border:"1.5px solid hsla(38,92%,50%,0.25)",background:"#fff",fontSize:"14px",fontWeight:600,outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",cursor:"pointer",boxShadow:"0 2px 8px rgba(0,0,0,0.03)",transition:"all 0.2s"}}
+                      onFocus={e=>(e.target.style.borderColor="hsl(328,100%,54%)")} onBlur={e=>(e.target.style.borderColor="hsla(38,92%,50%,0.25)")}>
+                      {BATCHES.map(b=><option key={b} value={b}>{b}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
+                  <label style={{fontSize:"12px",fontWeight:700,color:"hsl(285,50%,15%)"}}>MONTHLY FEE STRUCTURE (₹) <span style={{color:"hsl(328,100%,54%)"}}>*</span></label>
+                  <div style={{position:"relative"}}>
+                    <span style={{position:"absolute",left:"14px",top:"50%",transform:"translateY(-50%)",color:"hsl(142,70%,42%)",display:"flex",pointerEvents:"none"}}><IndianRupee size={17}/></span>
+                    <input type="number" placeholder="e.g. 8500" min="0" value={formData.feeAmount} onChange={e=>setFormData({...formData,feeAmount:e.target.value})}
+                      style={{width:"100%",height:"48px",padding:"0 16px 0 42px",borderRadius:"12px",border:"1.5px solid hsla(142,70%,42%,0.25)",background:"#fff",fontSize:"14px",fontWeight:700,outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",boxShadow:"0 2px 8px rgba(0,0,0,0.03)",transition:"all 0.2s"}}
+                      onFocus={e=>(e.target.style.borderColor="hsl(142,70%,42%)")} onBlur={e=>(e.target.style.borderColor="hsla(142,70%,42%,0.25)")}/>
+                  </div>
                 </div>
               </div>
-              <div style={{display:"flex",flexDirection:"column",gap:"6px"}}>
-                <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Monthly Fee (₹)</label>
-                <div style={{position:"relative"}}>
-                  <span style={{position:"absolute",left:"12px",top:"50%",transform:"translateY(-50%)",color:"hsl(285,20%,55%)",display:"flex",pointerEvents:"none"}}><IndianRupee size={15}/></span>
-                  <input type="number" placeholder="e.g. 8500" min="0" value={formData.feeAmount} onChange={e=>setFormData({...formData,feeAmount:e.target.value})}
-                    style={{width:"100%",height:"44px",padding:"0 14px 0 38px",borderRadius:"10px",border:"1.5px solid hsla(285,30%,20%,0.1)",background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",transition:"border-color 0.2s"}}
-                    onFocus={e=>(e.target.style.borderColor="hsl(38,92%,50%)")} onBlur={e=>(e.target.style.borderColor="hsla(285,30%,20%,0.1)")}/>
+
+              {/* Batch Info & Auto-WhatsApp Notification Box */}
+              <div style={{background:"linear-gradient(135deg,hsla(142,70%,45%,0.06),hsla(200,95%,50%,0.04))",borderRadius:"14px",padding:"16px 20px",border:"1px solid hsla(142,70%,45%,0.2)",display:"flex",alignItems:"center",gap:"16px"}}>
+                <div style={{width:"42px",height:"42px",borderRadius:"12px",background:"linear-gradient(135deg,#25d366,#128c7e)",display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",boxShadow:"0 4px 12px rgba(37,211,102,0.3)",flexShrink:0}}>
+                  <Sparkles size={20}/>
+                </div>
+                <div style={{flex:1}}>
+                  <h4 style={{margin:"0 0 2px",fontSize:"13px",fontWeight:800,color:"#065f46"}}>Automated WhatsApp Group & App Onboarding</h4>
+                  <p style={{margin:0,fontSize:"12px",color:"#047857",lineHeight:1.4}}>
+                    Enrolling into <strong>{formData.batch}</strong> will generate a batch WhatsApp Group Invite (`https://chat.whatsapp.com/ECRM_BATCH...`) and automatically email student login credentials (<strong>Student@123</strong>) + Mobile App Download links!
+                  </p>
                 </div>
               </div>
-              <div style={{display:"flex",flexDirection:"column",gap:"6px",gridColumn:"1 / -1"}}>
-                <label style={{fontSize:"11px",fontWeight:700,color:"hsl(285,20%,45%)",textTransform:"uppercase",letterSpacing:"0.5px"}}>Notes / Remarks</label>
-                <textarea rows={3} placeholder="Special notes, medical info, aspirations, weak areas..." value={formData.notes} onChange={e=>setFormData({...formData,notes:e.target.value})}
-                  style={{width:"100%",padding:"12px 14px",borderRadius:"10px",border:"1.5px solid hsla(285,30%,20%,0.1)",background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",resize:"vertical",lineHeight:1.5,transition:"border-color 0.2s"}}
-                  onFocus={e=>(e.target.style.borderColor="hsl(38,92%,50%)")} onBlur={e=>(e.target.style.borderColor="hsla(285,30%,20%,0.1)")}/>
+
+              {/* Remarks */}
+              <div style={{display:"flex",flexDirection:"column",gap:"8px"}}>
+                <label style={{fontSize:"12px",fontWeight:700,color:"hsl(285,50%,15%)"}}>ADDITIONAL NOTES & REMARKS</label>
+                <textarea rows={3} placeholder="Add special instructions, learning goals, or medical remarks..." value={formData.notes} onChange={e=>setFormData({...formData,notes:e.target.value})}
+                  style={{width:"100%",padding:"14px 16px",borderRadius:"12px",border:"1.5px solid hsla(285,30%,20%,0.12)",background:"#fafafa",fontSize:"13px",outline:"none",boxSizing:"border-box",fontFamily:"inherit",color:"hsl(285,50%,12%)",resize:"vertical",lineHeight:1.5,transition:"all 0.2s"}}
+                  onFocus={e=>(e.target.style.borderColor="hsl(328,100%,54%)")} onBlur={e=>(e.target.style.borderColor="hsla(285,30%,20%,0.12)")}/>
               </div>
             </div>
           </div>
 
-          {/* ── Submit Bar ── */}
-          <div style={{background:"#fff",borderRadius:"16px",padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",boxShadow:"0 2px 16px -4px rgba(29,10,39,0.08)",border:"1px solid hsla(285,30%,20%,0.07)"}}>
-            <p style={{margin:0,fontSize:"12px",color:"hsl(285,20%,55%)"}}>Fields with <span style={{color:"hsl(328,100%,54%)",fontWeight:700}}>*</span> are required</p>
-            <div style={{display:"flex",gap:"12px"}}>
+          {/* ── Action Submit Bar (Redesigned) ── */}
+          <div style={{background:"#fff",borderRadius:"20px",padding:"20px 28px",display:"flex",justifyContent:"space-between",alignItems:"center",boxShadow:"0 4px 20px -4px rgba(29,10,39,0.08)",border:"1px solid hsla(285,30%,20%,0.08)"}}>
+            <p style={{margin:0,fontSize:"13px",color:"hsl(285,20%,45%)",display:"flex",alignItems:"center",gap:"6px"}}>
+              <AlertCircle size={15} style={{color:"hsl(328,100%,54%)"}}/> Fields with <span style={{color:"hsl(328,100%,54%)",fontWeight:800}}>*</span> are mandatory
+            </p>
+            <div style={{display:"flex",gap:"14px"}}>
               <button type="button" onClick={()=>{setFormData({name:"",email:"",phone:"",dob:"",gender:"Male",guardianName:"",guardianPhone:"",address:"",batch:BATCHES[0],feeAmount:"8500",notes:""});setFormErrors({});}}
-                style={{height:"42px",padding:"0 20px",borderRadius:"10px",border:"1.5px solid hsla(285,30%,20%,0.1)",background:"transparent",fontSize:"13px",fontWeight:600,cursor:"pointer",color:"hsl(285,50%,12%)",transition:"all 0.2s"}}
-                onMouseEnter={e=>(e.currentTarget.style.borderColor="hsl(285,50%,12%)")} onMouseLeave={e=>(e.currentTarget.style.borderColor="hsla(285,30%,20%,0.1)")}>
-                Reset
+                style={{height:"46px",padding:"0 24px",borderRadius:"12px",border:"1.5px solid hsla(285,30%,20%,0.15)",background:"#fff",fontSize:"13px",fontWeight:700,cursor:"pointer",color:"hsl(285,50%,15%)",transition:"all 0.2s"}}
+                onMouseEnter={e=>(e.currentTarget.style.borderColor="hsl(285,50%,12%)")} onMouseLeave={e=>(e.currentTarget.style.borderColor="hsla(285,30%,20%,0.15)")}>
+                Reset Form
               </button>
               <button type="submit"
-                style={{height:"42px",padding:"0 28px",borderRadius:"10px",border:"none",background:"linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))",color:"#fff",fontSize:"13px",fontWeight:700,cursor:"pointer",display:"flex",alignItems:"center",gap:"8px",boxShadow:"0 4px 14px hsla(328,100%,54%,0.35)",transition:"all 0.2s"}}
-                onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-1px)")} onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
-                <CheckCircle2 size={15}/> Register Student
+                style={{height:"46px",padding:"0 32px",borderRadius:"12px",border:"none",background:"linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))",color:"#fff",fontSize:"14px",fontWeight:800,cursor:"pointer",display:"flex",alignItems:"center",gap:"10px",boxShadow:"0 6px 20px -2px hsla(328,100%,54%,0.4)",transition:"all 0.2s"}}
+                onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-2px)")} onMouseLeave={e=>(e.currentTarget.style.transform="none")}>
+                <CheckCircle2 size={17}/> Enroll Student Now
               </button>
             </div>
           </div>
@@ -1076,6 +1200,97 @@ export const StudentManagement: React.FC = () => {
                 </Card>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ── REGISTRATION SUCCESS MODAL (WhatsApp Link + Credentials) ── */}
+      {successModalData && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+          background: "rgba(15, 7, 26, 0.75)", backdropFilter: "blur(8px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          zIndex: 9999, padding: "20px"
+        }}>
+          <div className="animate-scale-up" style={{
+            background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "520px",
+            boxShadow: "0 24px 64px rgba(0,0,0,0.3)", overflow: "hidden", border: "1px solid hsla(142,70%,45%,0.25)"
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              background: "linear-gradient(135deg, hsl(142,70%,40%), hsl(160,70%,35%))",
+              padding: "28px 32px", color: "#fff", textAlign: "center", position: "relative"
+            }}>
+              <button onClick={() => setSuccessModalData(null)} style={{
+                position: "absolute", top: "16px", right: "16px", background: "rgba(255,255,255,0.2)",
+                border: "none", width: "32px", height: "32px", borderRadius: "50%", color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer"
+              }}>
+                <X size={18} />
+              </button>
+              <div style={{ width: "54px", height: "54px", borderRadius: "18px", background: "#fff", color: "hsl(142,70%,40%)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", boxShadow: "0 6px 20px rgba(0,0,0,0.15)" }}>
+                <CheckCircle2 size={32} />
+              </div>
+              <h2 style={{ margin: "0 0 4px", fontSize: "22px", fontWeight: 800 }}>Student Enrolled Successfully!</h2>
+              <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>Onboarding credentials & batch invite details generated</p>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: "28px", display: "flex", flexDirection: "column", gap: "20px" }}>
+              {/* Student Summary */}
+              <div style={{ background: "#f9fafb", borderRadius: "14px", padding: "16px", border: "1px solid #f3f4f6" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>Enrolled Student:</span>
+                  <span style={{ fontSize: "13px", fontWeight: 800, color: "var(--text-primary)" }}>{successModalData.student.name}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>Assigned Batch:</span>
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.1)", padding: "2px 10px", borderRadius: "12px" }}>{successModalData.student.batch}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>Login Email:</span>
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{successModalData.student.email}</span>
+                </div>
+              </div>
+
+              {/* WhatsApp Action Box */}
+              <div style={{ background: "linear-gradient(135deg, #f0fdf4, #e8f5e9)", borderRadius: "16px", padding: "20px", border: "1.5px solid #25d366" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#25d366", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Sparkles size={16} />
+                  </div>
+                  <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#166534" }}>Batch WhatsApp Group Invite</h4>
+                </div>
+                <p style={{ margin: "0 0 14px", fontSize: "12px", color: "#15803d", lineHeight: 1.4 }}>
+                  Share this WhatsApp invite link with the student or parent to join their official class discussion group:
+                </p>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <input type="text" readOnly value={successModalData.whatsappLink}
+                    style={{ flex: 1, height: "40px", padding: "0 12px", borderRadius: "10px", border: "1px solid #bbf7d0", background: "#fff", fontSize: "12px", fontFamily: "monospace", color: "#166534" }} />
+                  <button onClick={() => {
+                    navigator.clipboard.writeText(successModalData.whatsappLink);
+                    showToast("📋 WhatsApp link copied to clipboard!", "success");
+                  }} style={{ background: "#15803d", color: "#fff", border: "none", borderRadius: "10px", padding: "0 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
+                    Copy
+                  </button>
+                  <a href={successModalData.whatsappLink} target="_blank" rel="noreferrer" style={{ background: "#25d366", color: "#fff", textDecoration: "none", borderRadius: "10px", padding: "0 16px", fontSize: "12px", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px" }}>
+                    Open WhatsApp <ExternalLink size={12} />
+                  </a>
+                </div>
+              </div>
+
+              {/* Email & Mobile App Notification Status */}
+              <div style={{ background: "#eff6ff", borderRadius: "14px", padding: "16px", border: "1px solid #bfdbfe", display: "flex", alignItems: "center", gap: "12px" }}>
+                <Mail size={20} style={{ color: "#2563eb", flexShrink: 0 }} />
+                <div style={{ fontSize: "12px", color: "#1e40af", lineHeight: 1.4 }}>
+                  <strong>Onboarding Email Sent!</strong> Contains credentials (Password: <code>Student@123</code>), timetable, WhatsApp link, and Mobile App download link.
+                </div>
+              </div>
+
+              <Button variant="primary" style={{ width: "100%", height: "46px", borderRadius: "12px", fontSize: "14px", fontWeight: 800 }} onClick={() => setSuccessModalData(null)}>
+                Done & Continue
+              </Button>
+            </div>
           </div>
         </div>
       )}

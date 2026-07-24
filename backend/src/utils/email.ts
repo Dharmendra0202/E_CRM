@@ -232,3 +232,83 @@ export async function sendStudentScheduleUpdateEmail(
 </html>`,
   });
 }
+
+// ── STUDENT ONBOARDING & APP DOWNLOAD EMAIL ──────────────────────────────
+export async function sendStudentOnboardingEmail(
+  to: string,
+  studentName: string,
+  batchName: string,
+  whatsappLink: string,
+  feeAmount: number
+) {
+  const appDownloadUrl = `${APP_URL}/download-app`;
+  await resend.emails.send({
+    from: FROM,
+    to,
+    subject: `🎉 Welcome to E-CRM Academy! Batch: ${batchName} – Access & App Details`,
+    html: `
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#f4f4f8;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f8;padding:40px 20px;">
+    <tr><td align="center">
+      <table width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 6px 28px rgba(0,0,0,0.08);">
+        <tr><td style="background:linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%));padding:40px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;">🎉 Welcome to the Academy!</h1>
+          <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;font-weight:600;">E-CRM Student Onboarding & Access Portal</p>
+        </td></tr>
+        <tr><td style="padding:40px;">
+          <p style="margin:0 0 20px;color:#1f2937;font-size:16px;line-height:1.6;">
+            Dear <strong>${studentName}</strong>,<br><br>
+            Congratulations! You have been successfully enrolled in <strong>${batchName}</strong>. Below are your login credentials, WhatsApp group link, and mobile app download link.
+          </p>
+
+          <!-- Credentials Box -->
+          <div style="background:#fdf2f8;border:1.5px solid #fbcfe8;border-radius:14px;padding:20px;margin-bottom:24px;">
+            <h3 style="margin:0 0 12px;color:#9d174d;font-size:15px;font-weight:700;">🔐 Your Account Credentials</h3>
+            <table width="100%" cellpadding="6" cellspacing="0">
+              <tr>
+                <td style="color:#831843;font-size:13px;font-weight:600;width:120px;">Email / Login:</td>
+                <td style="color:#1f2937;font-size:14px;font-weight:700;">${to}</td>
+              </tr>
+              <tr>
+                <td style="color:#831843;font-size:13px;font-weight:600;">Default Password:</td>
+                <td style="color:#1f2937;font-size:14px;font-weight:700;font-family:monospace;">Student@123</td>
+              </tr>
+              <tr>
+                <td style="color:#831843;font-size:13px;font-weight:600;">Monthly Fee:</td>
+                <td style="color:#059669;font-size:14px;font-weight:800;">₹${feeAmount.toLocaleString("en-IN")}</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- WhatsApp Group -->
+          <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:14px;padding:20px;margin-bottom:24px;text-align:center;">
+            <h3 style="margin:0 0 8px;color:#166534;font-size:15px;font-weight:700;">💬 Join Your Batch WhatsApp Group</h3>
+            <p style="margin:0 0 16px;color:#15803d;font-size:13px;">Get instant class updates, schedule changes, and study materials.</p>
+            <a href="${whatsappLink}" target="_blank" style="display:inline-block;background:#25d366;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 14px rgba(37,211,102,0.35);">
+              📲 Join WhatsApp Group
+            </a>
+          </div>
+
+          <!-- App Download -->
+          <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:14px;padding:20px;margin-bottom:24px;text-align:center;">
+            <h3 style="margin:0 0 8px;color:#1e40af;font-size:15px;font-weight:700;">📱 Download Mobile Attendance App</h3>
+            <p style="margin:0 0 16px;color:#1d4ed8;font-size:13px;">Track your attendance, view class schedules, and pay fees on the go.</p>
+            <a href="${appDownloadUrl}" target="_blank" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 14px rgba(37,99,235,0.35);">
+              ⬇️ Download Student App
+            </a>
+          </div>
+
+          <p style="margin:0;color:#9ca3af;font-size:12px;text-align:center;">Need help? Reply to this email or contact your academy administrator.</p>
+        </td></tr>
+        <tr><td style="background:#f9fafb;padding:20px 40px;border-top:1px solid #f3f4f6;text-align:center;">
+          <p style="margin:0;color:#9ca3af;font-size:12px;">© 2026 E-CRM Portal · Academy Management System</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  });
+}
