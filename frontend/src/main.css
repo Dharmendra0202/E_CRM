@@ -218,6 +218,74 @@ p {
   }
 }
 
+/* ── macOS Genie Effect ─────────────────────────────────────────────── */
+@keyframes genieIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-55vh) scale(0.06, 0.04);
+    border-radius: 40px;
+    filter: blur(4px);
+  }
+  30% {
+    opacity: 0.7;
+    transform: translateY(-28vh) scale(0.42, 0.22);
+    border-radius: 32px;
+    filter: blur(1px);
+  }
+  65% {
+    opacity: 0.95;
+    transform: translateY(-4vh) scale(0.96, 1.04);
+    border-radius: 24px;
+    filter: blur(0);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(1vh) scale(1.02, 0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1, 1);
+    border-radius: 24px;
+    filter: blur(0);
+  }
+}
+
+@keyframes genieOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1, 1);
+    border-radius: 24px;
+    filter: blur(0);
+  }
+  25% {
+    opacity: 0.9;
+    transform: translateY(-8vh) scale(0.88, 0.72);
+    border-radius: 28px;
+  }
+  60% {
+    opacity: 0.5;
+    transform: translateY(-33vh) scale(0.32, 0.18);
+    border-radius: 36px;
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-56vh) scale(0.04, 0.04);
+    border-radius: 44px;
+    filter: blur(5px);
+  }
+}
+
+@keyframes genieBackdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes genieBackdropOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
 }
