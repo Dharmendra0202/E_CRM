@@ -206,10 +206,99 @@ function App() {
             <span className="navbar-logo-badge">PRO</span>
           </div>
 
-          <div className="navbar-search-box" style={{ display: "flex", width: "280px" }}>
-            <Search size={15} style={{ color: "var(--text-secondary)" }} />
-            <input type="text" placeholder="Search anything..." className="navbar-search-input"
-              value={globalSearch} onChange={e => setGlobalSearch(e.target.value)} />
+          <div className="navbar-search-box" style={{ display: "flex", width: "300px", position: "relative" }}>
+            <Search size={15} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
+            <input
+              type="text"
+              placeholder="Search student by name..."
+              className="navbar-search-input"
+              value={globalSearch}
+              onChange={e => setGlobalSearch(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Escape") setGlobalSearch("");
+                if (e.key === "Enter") {
+                  const q = globalSearch.toLowerCase().trim();
+                  const hits = leadsList.filter(s => s.name?.toLowerCase().startsWith(q));
+                  if (hits.length === 1) {
+                    setCurrentView("leads");
+                    setStudentTab("search");
+                    setGlobalSearch("");
+                  }
+                }
+              }}
+              onBlur={() => setTimeout(() => setGlobalSearch(""), 200)}
+              autoComplete="off"
+            />
+            {/* Live suggestions dropdown */}
+            {globalSearch.trim().length > 0 && (() => {
+              const q = globalSearch.toLowerCase().trim();
+              const hits = leadsList.filter(s => s.name?.toLowerCase().startsWith(q));
+              if (hits.length === 0) return (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
+                  background: "#fff", borderRadius: "14px",
+                  boxShadow: "0 12px 40px rgba(0,0,0,0.18)", zIndex: 99999,
+                  border: "1px solid hsla(285,30%,20%,0.08)", overflow: "hidden"
+                }}>
+                  <div style={{ padding: "14px 16px", fontSize: "12px", color: "hsl(285,20%,55%)", textAlign: "center" }}>
+                    No student found for <strong>"{globalSearch}"</strong>
+                  </div>
+                </div>
+              );
+              return (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
+                  background: "#fff", borderRadius: "14px",
+                  boxShadow: "0 12px 40px rgba(0,0,0,0.18)", zIndex: 99999,
+                  border: "1px solid hsla(285,30%,20%,0.08)", overflow: "hidden"
+                }}>
+                  <div style={{ padding: "8px 14px 5px", fontSize: "9px", fontWeight: 800, color: "hsl(285,20%,55%)", textTransform: "uppercase", letterSpacing: "0.6px", borderBottom: "1px solid hsla(285,30%,20%,0.06)" }}>
+                    {hits.length} student{hits.length !== 1 ? "s" : ""} found
+                  </div>
+                  {hits.slice(0, 10).map(s => {
+                    const initials = s.name?.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase() || "??";
+                    return (
+                      <div
+                        key={s.id}
+                        onMouseDown={() => {
+                          setCurrentView("leads");
+                          setStudentTab("search");
+                          setGlobalSearch("");
+                        }}
+                        style={{
+                          display: "flex", alignItems: "center", gap: "10px",
+                          padding: "10px 14px", cursor: "pointer",
+                          borderBottom: "1px solid hsla(285,30%,20%,0.04)",
+                          transition: "background 0.15s"
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "hsla(271,91%,60%,0.05)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        <div style={{
+                          width: "34px", height: "34px", borderRadius: "10px", flexShrink: 0,
+                          background: "linear-gradient(135deg,hsl(271,91%,60%),hsl(328,100%,54%))",
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: "11px", fontWeight: 900, color: "#fff"
+                        }}>{initials}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: "13px", fontWeight: 700, color: "hsl(285,50%,12%)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {/* Highlight matching prefix */}
+                            <span style={{ color: "hsl(328,100%,48%)", fontWeight: 900 }}>{s.name?.substring(0, globalSearch.length)}</span>
+                            <span>{s.name?.substring(globalSearch.length)}</span>
+                          </div>
+                          <div style={{ fontSize: "11px", color: "hsl(285,20%,55%)", marginTop: "1px" }}>{s.source || "Not Enrolled"} · {s.phone || s.email || ""}</div>
+                        </div>
+                        <span style={{
+                          fontSize: "9px", fontWeight: 800, padding: "3px 8px", borderRadius: "8px",
+                          background: s.status === "ENROLLED" ? "hsla(142,70%,40%,0.1)" : "hsla(285,30%,20%,0.07)",
+                          color: s.status === "ENROLLED" ? "hsl(142,70%,35%)" : "hsl(285,20%,45%)", flexShrink: 0
+                        }}>{s.status}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -482,6 +571,7 @@ function App() {
 
           {/* ══════════════ ATTENDANCE VIEW ══════════════ */}
           {currentView === "attendance" && <AttendanceTracker />}
+
 
           {/* ══════════════ BILLING VIEW ══════════════ */}
           {currentView === "billing" && (

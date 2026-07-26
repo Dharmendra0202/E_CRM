@@ -62,6 +62,14 @@ export const api = {
     delete: (id: string) => request<any>(`/students/${id}`, { method: "DELETE" }),
   },
 
+  // ── WhatsApp ─────────────────────────────────────────────
+  whatsapp: {
+    getStatus: () => request<any>("/whatsapp/status"),
+    getQR: () => request<any>("/whatsapp/qr"),
+    restart: () => request<any>("/whatsapp/restart", { method: "POST" }),
+    sendTest: (body: { phone: string; message: string }) => request<any>("/whatsapp/send-test", { method: "POST", body: JSON.stringify(body) }),
+  },
+
   // ── Staff ────────────────────────────────────────────────
   staff: {
     getAll: () => request<any>("/staff"),
