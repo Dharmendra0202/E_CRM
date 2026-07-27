@@ -66,9 +66,13 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         setScreen("reset_sent");
       }
     } catch (err: any) {
-      if (err.message?.includes("fetch") || err.message?.includes("Failed")) { demoLogin(); return; }
+      if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
+        showToast("Backend server unreachable. Launching Demo Mode...", "info");
+        demoLogin();
+        return;
+      }
       if (err.message?.toLowerCase().includes("verify")) { setPE(email); setScreen("verify"); setLoading(false); return; }
-      setErrorMsg(err.message || "Authentication error.");
+      setErrorMsg(err.message || "Invalid email or password.");
     } finally {
       setLoading(false);
     }

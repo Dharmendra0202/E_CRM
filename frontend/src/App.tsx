@@ -9,6 +9,8 @@ import { StudentManagement } from "./components/StudentManagement";
 import { TimetableScheduler } from "./components/TimetableScheduler";
 import { HistoryModal } from "./components/HistoryModal";
 import { AttendanceTracker } from "./components/AttendanceTracker";
+import { ExamsManagement } from "./components/ExamsManagement";
+import { AppsMenuDrawer } from "./components/ui/AppsMenuDrawer";
 import {
   Search, User, Plus, Check, GraduationCap, DollarSign, TrendingUp,
   Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
@@ -17,7 +19,7 @@ import {
   BarChart3, IndianRupee, CheckCircle2, XCircle, Target, Zap, History
 } from "lucide-react";
 
-type ViewType = "dashboard" | "leads" | "schedule" | "billing" | "staff" | "attendance";
+type ViewType = "dashboard" | "leads" | "schedule" | "billing" | "staff" | "attendance" | "exams";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
@@ -310,6 +312,7 @@ function App() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <AppsMenuDrawer onNavigate={(view) => { setCurrentView(view as ViewType); if (view === "leads") setStudentTab("all"); }} currentView={currentView} />
             <Button
               variant="ghost"
               title="Activity History"
@@ -579,6 +582,13 @@ function App() {
 
           {/* ══════════════ ATTENDANCE VIEW ══════════════ */}
           {currentView === "attendance" && <AttendanceTracker />}
+
+          {/* ══════════════ EXAMS VIEW ══════════════ */}
+          {currentView === "exams" && (
+            <div className="animate-fade-in">
+              <ExamsManagement />
+            </div>
+          )}
 
 
           {/* ══════════════ BILLING VIEW ══════════════ */}
