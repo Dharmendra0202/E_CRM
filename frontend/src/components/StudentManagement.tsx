@@ -4,6 +4,7 @@ import { Card } from "./ui/Card";
 import { api } from "../utils/api";
 import { addHistoryItem } from "../utils/history";
 import { WhatsAppStatusWidget } from "./ui/WhatsAppStatusWidget";
+import { StudentProfile } from "./StudentProfile";
 import {
   Search,
   User,
@@ -178,6 +179,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
   const [sortDir, setSortDir] = useState<SortDir>("asc");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const [profileStudentId, setProfileStudentId] = useState<string | null>(null);
 
   // Search & Profile state
   const [profileSearchQuery, setProfileSearchQuery] = useState("");
@@ -1712,7 +1714,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                   {/* View Profile Link */}
                   <button
                     className="stu-progress-view-btn"
-                    onClick={() => { setSelectedStudent(stu); setActiveTab("all"); }}
+                    onClick={() => { setProfileStudentId(stu.id); }}
                   >
                     View Full Profile <Eye size={14} />
                   </button>
@@ -1812,6 +1814,11 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
             </div>
           </div>
         </div>
+      )}
+
+      {/* Student Profile Overlay */}
+      {profileStudentId && (
+        <StudentProfile studentId={profileStudentId} onClose={() => setProfileStudentId(null)} />
       )}
     </div>
   );

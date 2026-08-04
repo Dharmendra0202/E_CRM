@@ -1,5 +1,6 @@
+import { prisma } from "../utils/prisma";
 import { Router, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 import {
   sendTeacherLectureAssignmentEmail,
@@ -7,7 +8,6 @@ import {
 } from "../utils/email";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 

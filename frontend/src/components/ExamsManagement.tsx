@@ -1,210 +1,214 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Award, GraduationCap, CheckCircle2, FileText, Plus, Search,
-  Download, Printer, Sparkles, AlertCircle, BookOpen, Clock, User
+  Download, Printer, Sparkles, BookOpen, Clock, User
 } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
+import { api } from "../utils/api";
 
 export function ExamsManagement() {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
-  const [filterClass, setFilterClass] = useState("ALL");
+  const [students, setStudents] = useState<any[]>([]);
+  const [batches, setBatches] = useState<any[]>([]);
+  const [selectedBatch, setSelectedBatch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
-  const mockExams = [
-    { id: "EX-101", title: "Mid-Term Mathematics", date: "2026-07-15", class: "Class X-A", totalStudents: 32, status: "PUBLISHED" },
-    { id: "EX-102", title: "Physics Quarterly Exam", date: "2026-07-20", class: "Class XII-B", totalStudents: 28, status: "PUBLISHED" },
-    { id: "EX-103", title: "Chemistry Mock Test", date: "2026-07-28", class: "Class XI-A", totalStudents: 30, status: "UPCOMING" },
-  ];
+  useEffect(() => { loadData(); }, []);
 
-  const mockStudents = [
-    { id: "STU-001", name: "Rahul Sharma", rollNo: "101", class: "Class X-A", math: 92, physics: 88, chemistry: 95, total: 275, grade: "A+", result: "PASS" },
-    { id: "STU-002", name: "Priya Patel", rollNo: "102", class: "Class X-A", math: 85, physics: 90, chemistry: 89, total: 264, grade: "A", result: "PASS" },
-    { id: "STU-003", name: "Amit Kumar", rollNo: "103", class: "Class X-A", math: 78, physics: 82, chemistry: 75, total: 235, grade: "B+", result: "PASS" },
-    { id: "STU-004", name: "Sneha Verma", rollNo: "104", class: "Class X-A", math: 96, physics: 94, chemistry: 98, total: 288, grade: "A+", result: "PASS" },
-  ];
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [stuRes, batchRes] = await Promise.all([
+        api.students.getAll(),
+        api.batches.getAll(),
+      ]);
+      if (stuRes.data) setStudents(stuRes.data);
+      if (batchRes.data) {
+        setBatches(batchRes.data);
+        if (batchRes.data.length > 0) setSelectedBatch(batchRes.data[0].name);
+      }
+    } catch (err) { console.error(err); }
+    setIsLoading(false);
+  };
+
+  // Derive stats from real data
+  const totalStudents = students.length;
+  const batchStudents = students.filter(s =>
+    s.enrollments?.some((e: any) => e.batch?.name === selectedBatch)
+  );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <h1 className="text-2xl font-extrabold text-gradient-indigo flex items-center gap-2">
-            <Award className="text-pink-500" size={26} /> Exams & Report Cards
+          <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px", display: "flex", alignItems: "center", gap: "10px" }}>
+            <Award size={26} style={{ color: "var(--color-accent)" }} /> Exams & Report Cards
           </h1>
-          <p className="text-sm text-neutral-500 mt-1">
+          <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>
             Generate student report cards, track grades & publish exam results.
           </p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <Button variant="primary" className="bg-gradient-to-r from-pink-500 to-purple-600 text-white gap-2">
-            <Plus size={16} /> Create New Exam
-          </Button>
-        </div>
+        <Button variant="primary" leftIcon={<Plus size={14} />}>Create New Exam</Button>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center font-bold">
-            <Award size={24} />
-          </div>
-          <div>
-            <div className="text-2xl font-black text-neutral-800">12</div>
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Total Exams</div>
-          </div>
-        </Card>
-
-        <Card className="p-4 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
-            <CheckCircle2 size={24} />
-          </div>
-          <div>
-            <div className="text-2xl font-black text-neutral-800">94.2%</div>
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Pass Rate</div>
-          </div>
-        </Card>
-
-        <Card className="p-4 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold">
-            <GraduationCap size={24} />
-          </div>
-          <div>
-            <div className="text-2xl font-black text-neutral-800">148</div>
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Report Cards</div>
-          </div>
-        </Card>
-
-        <Card className="p-4 flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
-            <Sparkles size={24} />
-          </div>
-          <div>
-            <div className="text-2xl font-black text-neutral-800">A+</div>
-            <div className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Top Grade</div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Main Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Student Marks List */}
-        <div className="lg:col-span-2 space-y-4">
-          <Card className="p-5">
-            <div className="flex items-center justify-between pb-4 border-b border-neutral-100 mb-4">
-              <h3 className="font-bold text-base text-neutral-800 flex items-center gap-2">
-                <FileText size={18} className="text-pink-500" /> Class X-A Results Ledger
-              </h3>
-              <div className="text-xs text-neutral-400 font-semibold">4 Students Listed</div>
+      {/* KPI Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+        {[
+          { icon: <Award size={22} />, value: "12", label: "TOTAL EXAMS", color: "hsl(328,100%,54%)", bg: "hsla(328,100%,54%,0.08)" },
+          { icon: <CheckCircle2 size={22} />, value: "94.2%", label: "PASS RATE", color: "hsl(160,70%,40%)", bg: "hsla(160,70%,40%,0.08)" },
+          { icon: <GraduationCap size={22} />, value: String(totalStudents), label: "REPORT CARDS", color: "hsl(271,91%,60%)", bg: "hsla(271,91%,60%,0.08)" },
+          { icon: <Sparkles size={22} />, value: "A+", label: "TOP GRADE", color: "hsl(38,92%,50%)", bg: "hsla(38,92%,50%,0.08)" },
+        ].map((stat, i) => (
+          <div key={i} style={{
+            background: "#fff", borderRadius: "16px", padding: "20px", border: "1px solid var(--border-glass)",
+            display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "10px",
+          }}>
+            <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: stat.bg, display: "flex", alignItems: "center", justifyContent: "center", color: stat.color }}>
+              {stat.icon}
             </div>
+            <div>
+              <p style={{ margin: 0, fontSize: "28px", fontWeight: 800, color: "var(--text-primary)" }}>{stat.value}</p>
+              <p style={{ margin: "4px 0 0", fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.8px" }}>{stat.label}</p>
+            </div>
+          </div>
+        ))}
+      </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-neutral-200/80 text-neutral-500 uppercase tracking-wider font-bold">
-                    <th className="py-2.5 px-3">Roll No</th>
-                    <th className="py-2.5 px-3">Student Name</th>
-                    <th className="py-2.5 px-3 text-center">Math</th>
-                    <th className="py-2.5 px-3 text-center">Physics</th>
-                    <th className="py-2.5 px-3 text-center">Chemistry</th>
-                    <th className="py-2.5 px-3 text-center">Total</th>
-                    <th className="py-2.5 px-3 text-center">Grade</th>
-                    <th className="py-2.5 px-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-neutral-100 font-medium">
-                  {mockStudents.map(student => (
-                    <tr key={student.id} className="hover:bg-pink-50/40 transition-colors">
-                      <td className="py-3 px-3 font-bold text-neutral-600">#{student.rollNo}</td>
-                      <td className="py-3 px-3 font-bold text-neutral-900">{student.name}</td>
-                      <td className="py-3 px-3 text-center">{student.math}</td>
-                      <td className="py-3 px-3 text-center">{student.physics}</td>
-                      <td className="py-3 px-3 text-center">{student.chemistry}</td>
-                      <td className="py-3 px-3 text-center font-bold text-pink-600">{student.total}/300</td>
-                      <td className="py-3 px-3 text-center">
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-700">
-                          {student.grade}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <button
-                          onClick={() => setSelectedStudent(student)}
-                          className="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-pink-100 text-pink-700 hover:bg-pink-200 transition-colors cursor-pointer"
-                        >
-                          Report Card
-                        </button>
-                      </td>
-                    </tr>
+      {/* Main Content: 2-col */}
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "20px" }}>
+        {/* Results Ledger */}
+        <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid var(--border-glass)", overflow: "hidden" }}>
+          <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--border-glass)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+              <FileText size={16} style={{ color: "var(--color-accent)" }} />
+              {selectedBatch || "Class"} Results Ledger
+            </h3>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <select
+                value={selectedBatch}
+                onChange={(e) => setSelectedBatch(e.target.value)}
+                style={{ padding: "5px 10px", borderRadius: "8px", border: "1px solid var(--border-glass)", fontSize: "11px", fontWeight: 600, background: "transparent", color: "var(--text-primary)", outline: "none" }}
+              >
+                {batches.map((b) => <option key={b.id} value={b.name}>{b.name}</option>)}
+                {batches.length === 0 && <option>No batches</option>}
+              </select>
+              <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600 }}>
+                {batchStudents.length} Students
+              </span>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--border-glass)", background: "rgba(29,10,39,0.02)" }}>
+                  {["ROLL NO", "STUDENT NAME", "BATCH", "STATUS", "ACTION"].map((h) => (
+                    <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr><td colSpan={5} style={{ padding: "40px", textAlign: "center", color: "var(--text-secondary)" }}>Loading...</td></tr>
+                ) : students.length === 0 ? (
+                  <tr><td colSpan={5} style={{ padding: "40px", textAlign: "center", color: "var(--text-secondary)" }}>No students found. Add students first.</td></tr>
+                ) : (
+                  students.slice(0, 10).map((student, idx) => {
+                    const name = student.user ? `${student.user.firstName} ${student.user.lastName}` : student.parentName;
+                    const batch = student.enrollments?.[0]?.batch?.name || "—";
+                    const status = student.enrollments?.[0]?.status || "—";
+                    return (
+                      <tr key={student.id} style={{ borderBottom: "1px solid var(--border-glass)", transition: "background 0.1s" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "hsla(328,100%,54%,0.02)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+                        <td style={{ padding: "12px 16px", fontWeight: 700, color: "var(--text-secondary)" }}>#{String(idx + 101)}</td>
+                        <td style={{ padding: "12px 16px", fontWeight: 700, color: "var(--text-primary)" }}>{name}</td>
+                        <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{batch}</td>
+                        <td style={{ padding: "12px 16px" }}>
+                          <span style={{ fontSize: "10px", fontWeight: 700, color: status === "ACTIVE" ? "var(--color-success)" : "var(--text-secondary)", background: status === "ACTIVE" ? "hsla(142,70%,42%,0.08)" : "var(--bg-secondary)", padding: "3px 8px", borderRadius: "10px" }}>
+                            {status}
+                          </span>
+                        </td>
+                        <td style={{ padding: "12px 16px" }}>
+                          <button
+                            onClick={() => setSelectedStudent(student)}
+                            style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.08)", border: "1px solid hsla(328,100%,54%,0.2)", padding: "4px 10px", borderRadius: "8px", cursor: "pointer" }}
+                          >
+                            Report Card
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        {/* Right Col: Interactive Printable Report Card Preview */}
-        <div>
-          <Card className="p-5 border-pink-200/80 bg-gradient-to-b from-white to-pink-50/30">
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-pink-100">
-              <h3 className="font-bold text-sm text-neutral-800 flex items-center gap-2">
-                <Printer size={16} className="text-pink-500" /> Printable Report Card
-              </h3>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-pink-500 text-white">LIVE PREVIEW</span>
+        {/* Report Card Preview */}
+        <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid hsla(328,100%,54%,0.15)", padding: "20px", backgroundImage: "linear-gradient(to bottom, #fff, hsla(328,100%,54%,0.02))" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid hsla(328,100%,54%,0.1)" }}>
+            <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+              <Printer size={16} style={{ color: "var(--color-accent)" }} /> Printable Report Card
+            </h3>
+            <span style={{ fontSize: "9px", fontWeight: 800, color: "#fff", background: "var(--color-accent)", padding: "3px 8px", borderRadius: "6px" }}>LIVE PREVIEW</span>
+          </div>
+
+          {selectedStudent ? (
+            <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid hsla(328,100%,54%,0.15)", padding: "20px", boxShadow: "0 4px 16px rgba(29,10,39,0.06)" }}>
+              {/* School Header */}
+              <div style={{ textAlign: "center", paddingBottom: "12px", borderBottom: "1px solid var(--border-glass)", marginBottom: "14px" }}>
+                <GraduationCap size={28} style={{ color: "var(--color-accent)", marginBottom: "4px" }} />
+                <h4 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 800 }}>E-CRM ACADEMY</h4>
+                <p style={{ margin: 0, fontSize: "9px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "1.5px" }}>Official Academic Progress Report</p>
+              </div>
+
+              {/* Student Info */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", padding: "10px", background: "hsla(328,100%,54%,0.03)", borderRadius: "10px", border: "1px solid hsla(328,100%,54%,0.08)", marginBottom: "14px", fontSize: "11px" }}>
+                <div><span style={{ color: "var(--text-secondary)" }}>Name: </span><strong>{selectedStudent.user ? `${selectedStudent.user.firstName} ${selectedStudent.user.lastName}` : selectedStudent.parentName}</strong></div>
+                <div><span style={{ color: "var(--text-secondary)" }}>Batch: </span><strong>{selectedStudent.enrollments?.[0]?.batch?.name || "—"}</strong></div>
+                <div><span style={{ color: "var(--text-secondary)" }}>Email: </span><strong>{selectedStudent.user?.email || "—"}</strong></div>
+                <div><span style={{ color: "var(--text-secondary)" }}>Status: </span><strong style={{ color: "var(--color-success)" }}>ACTIVE</strong></div>
+              </div>
+
+              {/* Enrollment Details */}
+              <div style={{ fontSize: "11px", display: "flex", flexDirection: "column", gap: "6px", marginBottom: "14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--border-glass)" }}>
+                  <span style={{ color: "var(--text-secondary)" }}>Parent/Guardian</span>
+                  <span style={{ fontWeight: 700 }}>{selectedStudent.parentName}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--border-glass)" }}>
+                  <span style={{ color: "var(--text-secondary)" }}>Parent Phone</span>
+                  <span style={{ fontWeight: 700 }}>{selectedStudent.parentPhone}</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid var(--border-glass)" }}>
+                  <span style={{ color: "var(--text-secondary)" }}>Date of Birth</span>
+                  <span style={{ fontWeight: 700 }}>{new Date(selectedStudent.dateOfBirth).toLocaleDateString("en-IN")}</span>
+                </div>
+              </div>
+
+              {/* Print Button */}
+              <Button
+                onClick={() => window.print()}
+                variant="primary"
+                leftIcon={<Download size={14} />}
+                style={{ width: "100%" }}
+              >
+                Download Report Card
+              </Button>
             </div>
-
-            {selectedStudent ? (
-              <div className="bg-white rounded-xl border border-pink-200 p-4 shadow-md space-y-4">
-                {/* School Header */}
-                <div className="text-center pb-3 border-b border-neutral-100">
-                  <GraduationCap size={28} className="mx-auto text-pink-500 mb-1" />
-                  <h4 className="font-extrabold text-sm text-neutral-900">E-CRM ACADEMY</h4>
-                  <p className="text-[10px] text-neutral-400 uppercase tracking-widest">Official Academic Progress Report</p>
-                </div>
-
-                {/* Student Bio */}
-                <div className="grid grid-cols-2 gap-2 text-[11px] bg-pink-50/50 p-2.5 rounded-lg border border-pink-100">
-                  <div><span className="text-neutral-400">Name:</span> <strong className="text-neutral-800">{selectedStudent.name}</strong></div>
-                  <div><span className="text-neutral-400">Roll:</span> <strong className="text-neutral-800">{selectedStudent.rollNo}</strong></div>
-                  <div><span className="text-neutral-400">Class:</span> <strong className="text-neutral-800">{selectedStudent.class}</strong></div>
-                  <div><span className="text-neutral-400">Status:</span> <strong className="text-emerald-600">{selectedStudent.result}</strong></div>
-                </div>
-
-                {/* Marks Breakdown */}
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between py-1 border-b border-neutral-100">
-                    <span className="text-neutral-600">Mathematics</span>
-                    <span className="font-bold text-neutral-800">{selectedStudent.math}/100</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-100">
-                    <span className="text-neutral-600">Physics</span>
-                    <span className="font-bold text-neutral-800">{selectedStudent.physics}/100</span>
-                  </div>
-                  <div className="flex justify-between py-1 border-b border-neutral-100">
-                    <span className="text-neutral-600">Chemistry</span>
-                    <span className="font-bold text-neutral-800">{selectedStudent.chemistry}/100</span>
-                  </div>
-                  <div className="flex justify-between py-2 font-bold text-sm text-pink-600 pt-2">
-                    <span>Aggregate Marks</span>
-                    <span>{selectedStudent.total}/300 ({selectedStudent.grade})</span>
-                  </div>
-                </div>
-
-                {/* Print Button */}
-                <Button
-                  onClick={() => window.print()}
-                  variant="primary"
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white gap-2 justify-center py-2"
-                >
-                  <Printer size={15} /> Print Official Card
-                </Button>
-              </div>
-            ) : (
-              <div className="text-center py-12 text-neutral-400 text-xs">
-                <FileText size={36} className="mx-auto text-neutral-300 mb-2 opacity-60" />
+          ) : (
+            <div style={{ textAlign: "center", padding: "32px 16px" }}>
+              <FileText size={36} style={{ color: "var(--text-secondary)", opacity: 0.3, marginBottom: "12px" }} />
+              <p style={{ margin: "0 0 6px", fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)" }}>
                 Select any student from the ledger to generate & preview their official printable report card.
-              </div>
-            )}
-          </Card>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

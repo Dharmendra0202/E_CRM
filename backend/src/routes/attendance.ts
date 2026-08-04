@@ -1,10 +1,10 @@
+import { prisma } from "../utils/prisma";
 import { Router, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 import { io } from "../server";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // ── Helper: emit attendance update to all clients watching this batch ──
 function emitAttendanceUpdate(batchId: string, payload: object) {

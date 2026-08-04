@@ -1,10 +1,10 @@
+import { prisma } from "../utils/prisma";
 import { Router, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+
 import bcrypt from "bcryptjs";
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // GET /api/v1/staff
 router.get("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {

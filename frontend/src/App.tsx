@@ -11,26 +11,40 @@ import { HistoryModal } from "./components/HistoryModal";
 import { AttendanceTracker } from "./components/AttendanceTracker";
 import { ExamsManagement } from "./components/ExamsManagement";
 import { AppsMenuDrawer } from "./components/ui/AppsMenuDrawer";
+import { Dashboard } from "./components/Dashboard";
+import { OnboardingWizard } from "./components/OnboardingWizard";
+import { UserRoleManagement } from "./components/UserRoleManagement";
+import { AdmissionsCRM } from "./components/AdmissionsCRM";
+import { ParentManagement } from "./components/ParentManagement";
+import { AcademicManagement } from "./components/AcademicManagement";
+import { HomeworkAssignments } from "./components/HomeworkAssignments";
+import { FeeManagement } from "./components/FeeManagement";
+import { TransportManagement } from "./components/TransportManagement";
+import { LibraryManagement } from "./components/LibraryManagement";
+import { CommunicationCenter } from "./components/CommunicationCenter";
+import { ReportsAnalytics } from "./components/ReportsAnalytics";
+import { SettingsPage } from "./components/SettingsPage";
+import { LandingPage } from "./components/LandingPage";
+import { Sidebar } from "./components/ui/Sidebar";
+import { CommandPalette } from "./components/ui/CommandPalette";
+import { NotificationCenter } from "./components/ui/NotificationCenter";
 import {
-  Search, User, Plus, Check, GraduationCap, DollarSign, TrendingUp,
+  Search, Plus, Check, GraduationCap, TrendingUp,
   Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
-  ExternalLink, Filter, Settings, LogOut, ShieldCheck, Bell, Sparkles,
-  Activity, BookOpen, AlertCircle, ArrowUpRight, Clock, UserCheck,
-  BarChart3, IndianRupee, CheckCircle2, XCircle, Target, Zap, History
+  Filter, Settings, LogOut, ShieldCheck, Sparkles,
+  Activity, BookOpen, IndianRupee, History, Sun, Moon
 } from "lucide-react";
 
-type ViewType = "dashboard" | "leads" | "schedule" | "billing" | "staff" | "attendance" | "exams";
+type ViewType = "dashboard" | "leads" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
-  const [session, setSession] = useState<any>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [btnLoading, setBtnLoading] = useState(false);
   const [globalSearch, setGlobalSearch] = useState("");
   const [globalSearchCard, setGlobalSearchCard] = useState<any>(null);
   const [isCardClosing, setIsCardClosing] = useState(false);
@@ -47,6 +61,7 @@ function App() {
   const [staffList, setStaffList] = useState<any[]>([]);
   const [invoicesList, setInvoicesList] = useState<any[]>([]);
   const [attendanceList, setAttendanceList] = useState<any[]>([]);
+  const [batchesList, setBatchesList] = useState<any[]>([]);
   const [studentTab, setStudentTab] = useState<"all" | "add" | "search" | "progress">("all");
 
   const fetchDashboardStudents = async () => {
@@ -81,6 +96,14 @@ function App() {
     } catch { setAttendanceList([]); }
   };
 
+  const fetchBatches = async () => {
+    try {
+      const res = await api.batches.getAll();
+      if (res.data) setBatchesList(res.data);
+      else setBatchesList([]);
+    } catch { setBatchesList([]); }
+  };
+
 
   const fetchStaff = async () => {
     try {
@@ -103,14 +126,6 @@ function App() {
     } catch {
       setStaffList([]);
     }
-  };
-
-  const handleUpdateLeadStatus = async (leadId: string, newStatus: string) => {
-    // Optimistic update
-    setLeadsList(prev => prev.map(l => l.id === leadId ? { ...l, status: newStatus } : l));
-    try {
-      await api.leads.update(leadId, { status: newStatus });
-    } catch { /* revert not needed for UX */ }
   };
 
   useEffect(() => {
@@ -141,14 +156,9 @@ function App() {
       fetchStaff();
       fetchInvoices();
       fetchAttendance();
+      fetchBatches();
     }
   }, [userProfile, currentView]);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const t = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(t);
-  }, [currentView]);
 
   const filteredStaff = activeStaffFilter === "ALL" ? staffList : staffList.filter(s => s.role === activeStaffFilter);
   const userInitials = userProfile?.user_metadata?.name
@@ -157,22 +167,33 @@ function App() {
   const userName = userProfile?.user_metadata?.name || userProfile?.email?.split("@")[0] || "Dharmendra";
   const userRole = userProfile?.user_metadata?.role || "Super Administrator";
 
-  if (!userProfile) return <Login onLoginSuccess={(u) => setUserProfile(u)} />;
+  const [showLogin, setShowLogin] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("ecrm_theme") === "dark");
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
-  // ── Derived stats from student list ───────────────────────
-  const totalLeads = leadsList.length;
-  const newLeads = leadsList.filter(l => l.status === "NEW").length;
-  const enrolledLeads = leadsList.filter(l => l.status === "ENROLLED").length;
-  const lostLeads = leadsList.filter(l => l.status === "LOST").length;
+  // Dark mode effect
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
+    localStorage.setItem("ecrm_theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
-  const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
-    NEW:            { label: "New",            color: "var(--color-info)",    bg: "hsla(200,95%,50%,0.1)" },
-    CONTACTED:      { label: "Contacted",      color: "var(--color-warning)", bg: "hsla(38,92%,50%,0.1)" },
-    DEMO_SCHEDULED: { label: "Demo Scheduled", color: "hsl(271,91%,60%)",     bg: "hsla(271,91%,60%,0.1)" },
-    ENROLLED:       { label: "Enrolled",       color: "var(--color-success)", bg: "hsla(142,70%,45%,0.1)" },
-    LOST:           { label: "Lost",           color: "var(--color-danger)",  bg: "hsla(342,90%,48%,0.1)" },
-    DEMO:           { label: "Demo",           color: "hsl(271,91%,60%)",     bg: "hsla(271,91%,60%,0.1)" },
-  };
+  // Command palette keyboard shortcut
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  if (!userProfile) {
+    if (showLogin) return <Login onLoginSuccess={(u) => setUserProfile(u)} />;
+    return <LandingPage onLogin={() => setShowLogin(true)} />;
+  }
 
   const ROLE_META: Record<string, { color: string; bg: string }> = {
     ADMIN:   { color: "hsl(38,92%,50%)",    bg: "hsla(38,92%,50%,0.1)" },
@@ -188,8 +209,23 @@ function App() {
   };
 
   return (
-    <div className="crm-container relative overflow-hidden">
+    <div className={`crm-container relative overflow-hidden has-sidebar ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
       <div className="radial-spotlight" />
+
+      {/* ── Sidebar ── */}
+      <Sidebar
+        currentView={currentView}
+        onNavigate={(view) => { setCurrentView(view as ViewType); if (view === "leads") setStudentTab("all"); }}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
+
+      {/* ── Command Palette ── */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+        onNavigate={(view) => { setCurrentView(view as ViewType); if (view === "leads") setStudentTab("all"); }}
+      />
 
       {/* ── Bottom Dock ── */}
       <nav className="crm-bottom-dock">
@@ -313,6 +349,26 @@ function App() {
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <AppsMenuDrawer onNavigate={(view) => { setCurrentView(view as ViewType); if (view === "leads") setStudentTab("all"); }} currentView={currentView} />
+            
+            {/* Command Palette Trigger */}
+            <button
+              onClick={() => setCommandPaletteOpen(true)}
+              title="Command Palette (Ctrl+K)"
+              style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 12px", borderRadius: "8px", border: "1px solid var(--border-glass)", background: "transparent", cursor: "pointer", fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}
+            >
+              <Search size={13} />
+              <span>Ctrl+K</span>
+            </button>
+
+            {/* Dark Mode Toggle */}
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              style={{ width: "36px", height: "36px", borderRadius: "10px", border: "1px solid var(--border-glass)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", transition: "all 0.2s" }}
+            >
+              {darkMode ? <Sun size={17} /> : <Moon size={17} />}
+            </button>
+
             <Button
               variant="ghost"
               title="Activity History"
@@ -321,10 +377,13 @@ function App() {
             >
               <History size={17} />
             </Button>
-            <Button variant="ghost" style={{ position: "relative", width: "36px", height: "36px", padding: 0, borderRadius: "50%" }}>
-              <Bell size={17} />
-              <span className="navbar-bell-ping" /><span className="navbar-bell-ping-ring" />
-            </Button>
+
+            {/* Notification Center */}
+            <NotificationCenter
+              invoiceCount={invoicesList.filter((i: any) => i.status === "UNPAID").length}
+              studentCount={leadsList.filter((s: any) => { const d = new Date(s.createdAt); const now = new Date(); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length}
+              homeworkCount={0}
+            />
 
             <div className="profile-dropdown-container">
               <button className="navbar-profile-trigger" onClick={() => setIsProfileOpen(!isProfileOpen)}>
@@ -339,7 +398,7 @@ function App() {
                   <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}><Settings size={14} /><span>Settings</span></button>
                   <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}><ShieldCheck size={14} /><span>Security</span></button>
                   <hr style={{ border: 0, borderTop: "1px solid var(--border-glass)", margin: "4px 0" }} />
-                  <button className="dropdown-item dropdown-item-danger" onClick={() => { setIsProfileOpen(false); setToken(null); setUserProfile(null); setSession(null); }}>
+                  <button className="dropdown-item dropdown-item-danger" onClick={() => { setIsProfileOpen(false); setToken(null); setUserProfile(null); }}>
                     <LogOut size={14} /><span>Log Out</span>
                   </button>
                 </div>
@@ -379,192 +438,27 @@ function App() {
 
           {/* ══════════════ DASHBOARD VIEW ══════════════ */}
           {currentView === "dashboard" && (
-            <div className="animate-fade-in">
-
-              {/* ── Hero Welcome Banner ── */}
-              <div style={{
-                background: "linear-gradient(135deg, hsl(328,100%,54%) 0%, hsl(271,91%,60%) 55%, hsl(240,80%,65%) 100%)",
-                borderRadius: "20px", padding: "28px 32px", marginBottom: "24px",
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                boxShadow: "0 16px 48px -8px hsla(328,100%,54%,0.35)", overflow: "hidden", position: "relative"
-              }}>
-                <div style={{ position: "absolute", top: "-40px", right: "200px", width: "180px", height: "180px", borderRadius: "50%", background: "hsla(0,0%,100%,0.07)", pointerEvents: "none" }} />
-                <div style={{ position: "absolute", bottom: "-50px", right: "60px", width: "140px", height: "140px", borderRadius: "50%", background: "hsla(0,0%,100%,0.05)", pointerEvents: "none" }} />
-                <div style={{ position: "relative", zIndex: 1 }}>
-                  <p style={{ fontSize: "11px", color: "hsla(0,0%,100%,0.7)", fontWeight: 700, margin: "0 0 6px", letterSpacing: "1px", textTransform: "uppercase" }}>Monday, 20 July 2026</p>
-                  <h1 style={{ margin: "0 0 6px", fontSize: "24px", fontWeight: 800, color: "#fff" }}>Welcome back, {userName.split(" ")[0]} 👋</h1>
-                  <p style={{ margin: 0, fontSize: "14px", color: "hsla(0,0%,100%,0.72)" }}>Here's what's happening at your academy today.</p>
-                </div>
-                <div style={{ display: "flex", gap: "10px", flexShrink: 0, position: "relative", zIndex: 1 }}>
-                  <button onClick={() => { setCurrentView("leads"); setStudentTab("add"); }} style={{ background: "hsla(0,0%,100%,0.18)", border: "1px solid hsla(0,0%,100%,0.3)", borderRadius: "12px", padding: "10px 16px", color: "#fff", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", transition: "background 0.2s", backdropFilter: "blur(8px)" }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "hsla(0,0%,100%,0.28)")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "hsla(0,0%,100%,0.18)")}>
-                    <Plus size={14} /> Add Student
-                  </button>
-                  <button onClick={() => setCurrentView("attendance")} style={{ background: "#fff", border: "none", borderRadius: "12px", padding: "10px 16px", color: "hsl(328,100%,50%)", fontSize: "13px", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", boxShadow: "0 4px 14px rgba(0,0,0,0.12)", transition: "transform 0.2s" }}
-                    onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-2px)")}
-                    onMouseLeave={e => (e.currentTarget.style.transform = "none")}>
-                    <Check size={14} /> Take Attendance
-                  </button>
-                </div>
-              </div>
-
-              {/* ── KPI Metric Cards ── */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "24px" }}>
-                {(() => {
-                  const studentsThisMonth = leadsList.filter(s => {
-                    const d = new Date(s.createdAt);
-                    const now = new Date();
-                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-                  }).length;
-                  const totalFeesCollected = invoicesList.reduce((sum, inv) => {
-                    const paid = inv.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0;
-                    return sum + paid;
-                  }, 0);
-                  const totalBilled = invoicesList.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-                  const collectionRate = totalBilled > 0 ? Math.round((totalFeesCollected / totalBilled) * 100) : 0;
-                  const avgAttendance = attendanceList.length > 0
-                    ? (attendanceList.filter(a => a.status === "PRESENT" || a.status === "LATE").length / attendanceList.length) * 100
-                    : 0;
-
-                  return [
-                    { icon: <Users2 size={22} />, grad: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", label: "Total Students", value: String(leadsList.length), badge: `+${studentsThisMonth} this month` },
-                    { icon: <IndianRupee size={22} />, grad: "linear-gradient(135deg,hsl(142,70%,42%),hsl(160,70%,35%))", label: "Fees Collected", value: `₹${totalFeesCollected.toLocaleString("en-IN")}`, badge: `${collectionRate}% of target` },
-                    { icon: <UserCheck size={22} />, grad: "linear-gradient(135deg,hsl(271,91%,60%),hsl(240,80%,65%))", label: "Avg Attendance", value: `${avgAttendance.toFixed(1)}%`, badge: `${attendanceList.length} records` },
-                    { icon: <Target size={22} />, grad: "linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))", label: "Enrolled Students", value: String(enrolledLeads), badge: `${newLeads} new today` },
-                  ];
-                })().map((m, i) => (
-                  <div key={i} style={{ background: "#fff", borderRadius: "16px", padding: "22px 20px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.08)", transition: "all 0.3s ease", cursor: "default" }}
-                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "translateY(-4px)"; el.style.boxShadow = "0 16px 40px -8px rgba(29,10,39,0.15)"; }}
-                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.transform = "none"; el.style.boxShadow = "0 2px 16px -4px rgba(29,10,39,0.08)"; }}>
-                    {isLoading ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                        <Skeleton variant="circle" width={44} height={44} />
-                        <Skeleton variant="text" width="55%" />
-                        <Skeleton variant="text" width="40%" height={30} />
-                      </div>
-                    ) : (
-                      <>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-                          <div style={{ width: "46px", height: "46px", borderRadius: "13px", background: m.grad, display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 6px 16px rgba(0,0,0,0.18)" }}>{m.icon}</div>
-                          <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-success)", background: "hsla(142,70%,42%,0.1)", padding: "3px 9px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "3px" }}>
-                            <TrendingUp size={10} />{m.badge}
-                          </span>
-                        </div>
-                        <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.6px" }}>{m.label}</p>
-                        <h2 style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-headings)" }}>{m.value}</h2>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* ── Main 2-col grid ── */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "16px", marginBottom: "16px" }}>
-                {/* Recent Leads */}
-                <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)", overflow: "hidden" }}>
-                  <div style={{ padding: "16px 22px", borderBottom: "1px solid hsla(285,30%,20%,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                      <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Recent Students</h3>
-                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Latest registered students</p>
-                    </div>
-                    <button onClick={() => setCurrentView("leads")} style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.07)", border: "1px solid hsla(328,100%,54%,0.18)", borderRadius: "8px", padding: "5px 11px", cursor: "pointer" }}>
-                      View All <ArrowUpRight size={12} />
-                    </button>
-                  </div>
-                  {isLoading ? (
-                    <div style={{ padding: "14px 22px", display: "flex", flexDirection: "column", gap: "10px" }}>
-                      {[1,2,3,4].map(i => <Skeleton key={i} variant="rect" height={48} />)}
-                    </div>
-                  ) : leadsList.slice(0, 5).map((lead, idx) => {
-                    const meta = STATUS_META[lead.status] || STATUS_META["NEW"];
-                    return (
-                      <div key={lead.id} style={{ display: "flex", alignItems: "center", padding: "12px 22px", borderBottom: idx < 4 ? "1px solid hsla(285,30%,20%,0.05)" : "none", gap: "12px", transition: "background 0.15s" }}
-                        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "hsla(328,100%,54%,0.02)")}
-                        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "transparent")}>
-                        <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: `linear-gradient(135deg,${meta.color}22,${meta.color}44)`, border: `1.5px solid ${meta.color}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, color: meta.color, flexShrink: 0 }}>
-                          {lead.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{lead.name}</p>
-                          <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{lead.source} · {lead.phone}</p>
-                        </div>
-                        <span style={{ fontSize: "10px", fontWeight: 700, color: meta.color, background: meta.bg, border: `1px solid ${meta.color}25`, padding: "3px 9px", borderRadius: "20px", flexShrink: 0 }}>{meta.label}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Right column */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                  {/* Quick Actions */}
-                  <div style={{ background: "#fff", borderRadius: "16px", padding: "18px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)" }}>
-                    <h3 style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
-                      <span style={{ width: "22px", height: "22px", borderRadius: "7px", background: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Zap size={12} color="#fff" /></span>
-                      Quick Actions
-                    </h3>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
-                      {[
-                        { label: "Add New Student",  icon: <Plus size={13} />,         action: () => { setCurrentView("leads"); setStudentTab("add"); },        color: "hsl(328,100%,54%)" },
-                        { label: "Mark Attendance",  icon: <CheckCircle2 size={13} />, action: () => setCurrentView("attendance"), color: "hsl(142,70%,42%)" },
-                        { label: "Issue Invoice",    icon: <IndianRupee size={13} />,  action: () => setCurrentView("billing"),    color: "hsl(38,92%,50%)" },
-                        { label: "Schedule Class",   icon: <CalendarDays size={13} />, action: () => setCurrentView("schedule"),   color: "hsl(271,91%,60%)" },
-                      ].map(a => (
-                        <button key={a.label} onClick={a.action}
-                          style={{ display: "flex", alignItems: "center", gap: "9px", padding: "9px 11px", background: `${a.color}08`, border: `1px solid ${a.color}1a`, borderRadius: "10px", cursor: "pointer", fontSize: "12px", fontWeight: 600, color: "var(--text-primary)", transition: "all 0.2s", textAlign: "left", width: "100%" }}
-                          onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.background = `${a.color}14`; el.style.transform = "translateX(3px)"; }}
-                          onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.background = `${a.color}08`; el.style.transform = "none"; }}>
-                          <span style={{ color: a.color, display: "flex" }}>{a.icon}</span>{a.label}
-                          <ArrowUpRight size={11} style={{ marginLeft: "auto", opacity: 0.35 }} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Pending Alerts */}
-                  <div style={{ background: "#fff", borderRadius: "16px", padding: "18px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)" }}>
-                    <h3 style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
-                      <span style={{ width: "22px", height: "22px", borderRadius: "7px", background: "linear-gradient(135deg,hsl(38,92%,50%),hsl(20,95%,55%))", display: "inline-flex", alignItems: "center", justifyContent: "center" }}><AlertCircle size={12} color="#fff" /></span>
-                      Pending Alerts
-                    </h3>
-                    {[
-                      { msg: "3 invoices overdue",         color: "var(--color-danger)", icon: <XCircle size={13} />,  bg: "hsla(342,90%,48%,0.07)" },
-                      { msg: "Demo class at 3 PM today",   color: "hsl(271,91%,60%)",    icon: <Clock size={13} />,    bg: "hsla(271,91%,60%,0.07)" },
-                      { msg: `${newLeads} leads uncontacted`, color: "hsl(200,95%,50%)", icon: <Users2 size={13} />,   bg: "hsla(200,95%,50%,0.07)" },
-                    ].map((a, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: "9px", padding: "9px 10px", marginBottom: i < 2 ? "6px" : 0, background: a.bg, borderRadius: "9px" }}>
-                        <span style={{ color: a.color, flexShrink: 0, display: "flex" }}>{a.icon}</span>
-                        <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-primary)" }}>{a.msg}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* ── Pipeline Summary ── */}
-              <div style={{ background: "#fff", borderRadius: "16px", padding: "20px 22px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)" }}>
-                <h3 style={{ margin: "0 0 14px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
-                  <BarChart3 size={16} style={{ color: "var(--color-accent)" }} /> Lead Pipeline Overview
-                </h3>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "10px" }}>
-                  {Object.entries(STATUS_META).filter(([s]) => s !== "DEMO").map(([status, meta]) => {
-                    const count = leadsList.filter(l => l.status === status).length;
-                    const pct = totalLeads > 0 ? Math.round((count / totalLeads) * 100) : 0;
-                    return (
-                      <div key={status} style={{ padding: "14px", background: meta.bg, borderRadius: "12px", border: `1px solid ${meta.color}1a` }}>
-                        <p style={{ margin: "0 0 6px", fontSize: "10px", fontWeight: 800, color: meta.color, textTransform: "uppercase", letterSpacing: "0.7px" }}>{meta.label}</p>
-                        <h3 style={{ margin: "0 0 8px", fontSize: "26px", fontWeight: 800 }}>{count}</h3>
-                        <div style={{ height: "3px", background: `${meta.color}20`, borderRadius: "2px", overflow: "hidden" }}>
-                          <div style={{ width: `${pct}%`, height: "100%", background: meta.color, borderRadius: "2px" }} />
-                        </div>
-                        <p style={{ margin: "4px 0 0", fontSize: "10px", color: "var(--text-secondary)", fontWeight: 600 }}>{pct}% of total</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <Dashboard
+              isLoading={isLoading}
+              leadsList={leadsList}
+              invoicesList={invoicesList}
+              attendanceList={attendanceList}
+              batchesList={batchesList}
+              staffList={staffList}
+              userName={userName}
+              onNavigate={(view, opts) => {
+                setCurrentView(view as ViewType);
+                if (view === "leads" && opts?.tab) setStudentTab(opts.tab);
+              }}
+            />
           )}
+
+          {/* ══════════════ STUDENTS VIEW ══════════════ */}
+          {/* ══════════════ ADMISSIONS CRM VIEW ══════════════ */}
+          {currentView === "admissions" && <AdmissionsCRM />}
+
+          {/* ══════════════ PARENTS VIEW ══════════════ */}
+          {currentView === "parents" && <ParentManagement />}
 
           {/* ══════════════ STUDENTS VIEW ══════════════ */}
           {currentView === "leads" && (
@@ -592,82 +486,13 @@ function App() {
 
 
           {/* ══════════════ BILLING VIEW ══════════════ */}
-          {currentView === "billing" && (
-            <div className="animate-fade-in">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" }}>
-                <div>
-                  <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Billing & Fee Ledger</h1>
-                  <p>Manage invoices, Stripe payments, and outstanding dues.</p>
-                </div>
-                <div style={{ display: "flex", gap: "10px" }}>
-                  <Button variant="secondary" leftIcon={<Filter size={14} />}>Filter</Button>
-                  <Button variant="primary" leftIcon={<Plus size={14} />}>Issue Invoice</Button>
-                </div>
-              </div>
+          {currentView === "billing" && <FeeManagement />}
 
-              {/* Summary strip */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px", marginBottom: "24px" }}>
-                {(() => {
-                  const totalBilled = invoicesList.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-                  const totalFeesCollected = invoicesList.reduce((sum, inv) => {
-                    const paid = inv.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0;
-                    return sum + paid;
-                  }, 0);
-                  const outstanding = totalBilled - totalFeesCollected;
+          {/* ══════════════ ACADEMICS VIEW ══════════════ */}
+          {currentView === "academics" && <AcademicManagement />}
 
-                  return [
-                    { label: "Total Billed", value: `₹${totalBilled.toLocaleString("en-IN")}`, color: "var(--color-accent)", bg: "hsla(328,100%,54%,0.08)" },
-                    { label: "Collected", value: `₹${totalFeesCollected.toLocaleString("en-IN")}`, color: "var(--color-success)", bg: "hsla(142,70%,40%,0.08)" },
-                    { label: "Outstanding", value: `₹${outstanding.toLocaleString("en-IN")}`, color: "var(--color-danger)", bg: "hsla(342,90%,48%,0.08)" },
-                  ];
-                })().map(s => (
-                  <div key={s.label} style={{ padding: "16px 20px", background: s.bg, borderRadius: "12px", border: `1px solid ${s.color}22` }}>
-                    <p style={{ margin: "0 0 4px", fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>{s.label}</p>
-                    <h3 style={{ margin: 0, fontSize: "22px", fontWeight: 700, color: s.color }}>{s.value}</h3>
-                  </div>
-                ))}
-              </div>
-
-              {isLoading ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {[1,2,3].map(i => <Skeleton key={i} variant="rect" height={72} />)}
-                </div>
-              ) : (
-                <Card style={{ padding: 0, gap: 0, overflow: "hidden" }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", padding: "12px 24px", background: "rgba(29,10,39,0.03)", borderBottom: "1px solid var(--border-glass)", fontWeight: 700, fontSize: "12px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px", gap: "16px" }}>
-                    <div>Student / Period</div><div>Amount</div><div>Status</div><div>Action</div>
-                  </div>
-                  {invoicesList.length === 0 ? (
-                    <div style={{ padding: "24px", textAlign: "center", color: "var(--text-secondary)", fontSize: "13px" }}>No invoices found in the system.</div>
-                  ) : invoicesList.map(inv => {
-                    const studentName = inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : (inv.student?.parentName || "Student");
-                    const period = `Due: ${new Date(inv.dueDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}`;
-                    const amount = `₹${Number(inv.totalAmount).toLocaleString("en-IN")}`;
-                    const statusMap: Record<string, { color: string; bg: string; label: string }> = {
-                      PAID:    { color: "var(--color-success)", bg: "hsla(142,70%,40%,0.1)", label: "Paid" },
-                      UNPAID:  { color: "var(--color-danger)",  bg: "hsla(342,90%,48%,0.1)", label: "Unpaid" },
-                      PARTIAL: { color: "hsl(38,92%,50%)",      bg: "hsla(38,92%,50%,0.1)",  label: "Partial" },
-                    };
-                    const s = statusMap[inv.status] || { color: "var(--text-secondary)", bg: "rgba(0,0,0,0.05)", label: inv.status };
-                    return (
-                      <div key={inv.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto auto", padding: "16px 24px", borderBottom: "1px solid var(--border-glass)", alignItems: "center", gap: "16px" }}>
-                        <div>
-                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 650 }}>{studentName}</p>
-                          <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>#{inv.id.substring(0, 8)} • {period}</p>
-                        </div>
-                        <span style={{ fontSize: "15px", fontWeight: 700 }}>{amount}</span>
-                        <span style={{ fontSize: "11px", fontWeight: 700, color: s.color, background: s.bg, padding: "4px 10px", borderRadius: "20px", whiteSpace: "nowrap" }}>{s.label}</span>
-                        <div style={{ display: "flex", gap: "8px" }}>
-                          {inv.status !== "PAID" && <Button variant="primary" size="sm">Pay Now</Button>}
-                          <Button variant="secondary" size="sm" leftIcon={<ExternalLink size={13} />}>PDF</Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </Card>
-              )}
-            </div>
-          )}
+          {/* ══════════════ HOMEWORK VIEW ══════════════ */}
+          {currentView === "homework" && <HomeworkAssignments />}
 
           {/* ══════════════ STAFF VIEW ══════════════ */}
           {currentView === "staff" && (
@@ -744,6 +569,29 @@ function App() {
                 </div>
               </div>
             </div>
+          )}
+
+          {/* ══════════════ SETTINGS VIEW ══════════════ */}
+          {currentView === "settings" && <SettingsPage />}
+
+          {/* ══════════════ ROLES & PERMISSIONS VIEW ══════════════ */}
+          {currentView === "roles" && <UserRoleManagement />}
+
+          {/* ══════════════ TRANSPORT VIEW ══════════════ */}
+          {currentView === "transport" && <TransportManagement />}
+
+          {/* ══════════════ LIBRARY VIEW ══════════════ */}
+          {currentView === "library" && <LibraryManagement />}
+
+          {/* ══════════════ COMMUNICATION VIEW ══════════════ */}
+          {currentView === "communication" && <CommunicationCenter />}
+
+          {/* ══════════════ REPORTS VIEW ══════════════ */}
+          {currentView === "reports" && <ReportsAnalytics />}
+
+          {/* ══════════════ ONBOARDING VIEW ══════════════ */}
+          {currentView === "onboarding" && (
+            <OnboardingWizard onComplete={() => setCurrentView("dashboard")} />
           )}
 
         </div>{/* end crm-viewport */}

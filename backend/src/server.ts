@@ -6,8 +6,9 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "./utils/prisma";
 import logger from "./utils/logger";
+import { sanitizeInput, requestId, securityHeaders } from "./middleware/security";
 import authRoutes from "./routes/auth";
 import leadsRoutes from "./routes/leads";
 import studentsRoutes from "./routes/students";
@@ -16,12 +17,20 @@ import attendanceRoutes from "./routes/attendance";
 import invoicesRoutes from "./routes/invoices";
 import batchesRoutes from "./routes/batches";
 import schedulesRoutes from "./routes/schedules";
+import organizationsRoutes from "./routes/organizations";
+import rolesRoutes from "./routes/roles";
+import homeworkRoutes from "./routes/homework";
+import subjectsRoutes from "./routes/subjects";
+import transportRoutes from "./routes/transport";
+import libraryRoutes from "./routes/library";
+import announcementsRoutes from "./routes/announcements";
+import reportsRoutes from "./routes/reports";
+import settingsRoutes from "./routes/settings";
 
 dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
-const prisma = new PrismaClient();
 const PORT = process.env.PORT || 5000;
 
 // ── WebSocket Setup for Real-Time Updates ──────────────────
@@ -66,6 +75,9 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+app.use(sanitizeInput);
+app.use(requestId);
+app.use(securityHeaders);
 
 // Rate limiting — general + strict for auth
 const limiter     = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false });
@@ -86,6 +98,15 @@ app.use("/api/v1/attendance", attendanceRoutes);
 app.use("/api/v1/invoices",   invoicesRoutes);
 app.use("/api/v1/batches",    batchesRoutes);
 app.use("/api/v1/schedules",  schedulesRoutes);
+app.use("/api/v1/organizations", organizationsRoutes);
+app.use("/api/v1/roles",      rolesRoutes);
+app.use("/api/v1/homework",   homeworkRoutes);
+app.use("/api/v1/subjects",   subjectsRoutes);
+app.use("/api/v1/transport",  transportRoutes);
+app.use("/api/v1/library",    libraryRoutes);
+app.use("/api/v1/announcements", announcementsRoutes);
+app.use("/api/v1/reports",    reportsRoutes);
+app.use("/api/v1/settings",   settingsRoutes);
 
 // ── Health Check ────────────────────────────────────────────
 app.get("/api/v1/health", async (_req: Request, res: Response) => {

@@ -1,13 +1,13 @@
+import { prisma } from "../utils/prisma";
 import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
+
 import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/email";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // ── Zod Schemas ─────────────────────────────────────────────
 const LoginSchema = z.object({

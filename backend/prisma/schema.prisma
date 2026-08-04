@@ -8,6 +8,137 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ORGANIZATION & MULTI-TENANT MODELS
+// ═══════════════════════════════════════════════════════════════
+
+model Organization {
+  id            String         @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name          String
+  slug          String         @unique
+  type          String         @default("COACHING") // SCHOOL, COACHING, COLLEGE, TRAINING_CENTER
+  logo          String?
+  email         String?
+  phone         String?
+  website       String?
+  address       String?
+  city          String?
+  state         String?
+  country       String         @default("India")
+  pincode       String?
+  timezone      String         @default("Asia/Kolkata")
+  currency      String         @default("INR")
+  language      String         @default("en")
+  setupComplete Boolean        @default(false)
+  setupStep     Int            @default(1)
+  createdAt     DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
+  campuses      Campus[]
+  departments   Department[]
+  academicYears AcademicYear[]
+  roles         Role[]
+  members       OrgMember[]
+}
+
+model Campus {
+  id             String       @id @default(dbgenerated("(gen_random_uuid())::text"))
+  organizationId String
+  name           String
+  address        String?
+  city           String?
+  phone          String?
+  isMain         Boolean      @default(false)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+model Department {
+  id             String       @id @default(dbgenerated("(gen_random_uuid())::text"))
+  organizationId String
+  name           String
+  code           String?
+  headUserId     String?
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+model AcademicYear {
+  id             String       @id @default(dbgenerated("(gen_random_uuid())::text"))
+  organizationId String
+  name           String       // e.g. "2026-27"
+  startDate      DateTime     @db.Date
+  endDate        DateTime     @db.Date
+  isCurrent      Boolean      @default(false)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(6)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ROLE & PERMISSION MODELS (RBAC)
+// ═══════════════════════════════════════════════════════════════
+
+model Role {
+  id             String           @id @default(dbgenerated("(gen_random_uuid())::text"))
+  organizationId String?
+  name           String           // e.g. "Super Admin", "Teacher", "Parent"
+  slug           String           // e.g. "super_admin", "teacher"
+  description    String?
+  isSystem       Boolean          @default(false) // system roles can't be deleted
+  createdAt      DateTime         @default(now()) @db.Timestamptz(6)
+  organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  permissions    RolePermission[]
+  members        OrgMember[]
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+}
+
+model Permission {
+  id          String           @id @default(dbgenerated("(gen_random_uuid())::text"))
+  module      String           // e.g. "students", "attendance", "fees"
+  action      String           // e.g. "create", "read", "update", "delete"
+  description String?
+  roles       RolePermission[]
+
+  @@unique([module, action])
+}
+
+model RolePermission {
+  id           String     @id @default(dbgenerated("(gen_random_uuid())::text"))
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model OrgMember {
+  id             String       @id @default(dbgenerated("(gen_random_uuid())::text"))
+  userId         String
+  organizationId String
+  roleId         String
+  status         String       @default("ACTIVE") // ACTIVE, INVITED, DISABLED
+  joinedAt       DateTime     @default(now()) @db.Timestamptz(6)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           Role         @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXISTING MODELS (updated with org relationship)
+// ═══════════════════════════════════════════════════════════════
+
 /// This model contains an expression index which requires additional setup for migrations. Visit https://pris.ly/d/expression-indexes for more info.
 model User {
   id                  String       @id @default(dbgenerated("(gen_random_uuid())::text"))
@@ -29,23 +160,41 @@ model User {
   updatedAt           DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
   attendanceMarked    Attendance[] @relation("markedBy")
   leadsAssigned       Lead[]       @relation("assignedAdmin")
+  orgMemberships      OrgMember[]
   student             Student?
   teacher             Teacher?
 }
 
 model Lead {
-  id              String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  id              String         @id @default(dbgenerated("(gen_random_uuid())::text"))
   name            String
   email           String
-  phone           String   @default("")
-  status          String   @default("NEW")
-  source          String   @default("Manual Entry")
+  phone           String         @default("")
+  status          String         @default("NEW") // NEW, CONTACTED, COUNSELLING, FOLLOW_UP, APPLICATION, VERIFICATION, ADMITTED, FEE_PAID, ENROLLED, LOST
+  source          String         @default("Manual Entry")
   notes           String?
   assignedAdminId String?
-  createdAt       DateTime @default(now()) @db.Timestamptz(6)
-  assignedAdmin   User?    @relation("assignedAdmin", fields: [assignedAdminId], references: [id], onUpdate: NoAction)
+  nextFollowUp    DateTime?      @db.Timestamptz(6)
+  expectedJoining DateTime?      @db.Date
+  course          String?
+  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  assignedAdmin   User?          @relation("assignedAdmin", fields: [assignedAdminId], references: [id], onUpdate: NoAction)
+  activities      LeadActivity[]
 
   @@index([status, createdAt(sort: Desc)])
+}
+
+model LeadActivity {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  leadId    String
+  type      String   // NOTE, STATUS_CHANGE, FOLLOW_UP, CALL, EMAIL, MEETING, DOCUMENT, PAYMENT
+  content   String
+  metadata  String?  // JSON string for extra data
+  createdBy String?
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([leadId, createdAt(sort: Desc)])
 }
 
 model Student {
@@ -154,4 +303,165 @@ model Payment {
   transactionReference String?  @unique
   paidAt               DateTime @default(now()) @db.Timestamptz(6)
   invoice              Invoice  @relation(fields: [invoiceId], references: [id], onUpdate: NoAction)
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ACADEMIC MANAGEMENT: SUBJECTS & CURRICULUM
+// ═══════════════════════════════════════════════════════════════
+
+model Subject {
+  id          String       @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name        String
+  code        String?
+  description String?
+  createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  homework    Homework[]
+
+  @@unique([name])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HOMEWORK & ASSIGNMENTS
+// ═══════════════════════════════════════════════════════════════
+
+model Homework {
+  id          String               @id @default(dbgenerated("(gen_random_uuid())::text"))
+  title       String
+  description String?
+  subjectId   String?
+  batchId     String?
+  assignedBy  String               // teacher userId
+  dueDate     DateTime             @db.Date
+  status      String               @default("ACTIVE") // ACTIVE, CLOSED, CANCELLED
+  maxScore    Int?
+  attachments String?              // JSON array of file URLs
+  createdAt   DateTime             @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime             @default(now()) @updatedAt @db.Timestamptz(6)
+  subject     Subject?             @relation(fields: [subjectId], references: [id])
+  submissions HomeworkSubmission[]
+
+  @@index([batchId, dueDate(sort: Desc)])
+  @@index([assignedBy])
+}
+
+model HomeworkSubmission {
+  id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  homeworkId  String
+  studentId   String
+  content     String?  // text submission
+  attachments String?  // JSON array of file URLs
+  score       Int?
+  feedback    String?
+  submittedAt DateTime @default(now()) @db.Timestamptz(6)
+  gradedAt    DateTime? @db.Timestamptz(6)
+  status      String   @default("SUBMITTED") // SUBMITTED, GRADED, LATE, MISSING
+  homework    Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+
+  @@unique([homeworkId, studentId])
+  @@index([studentId])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TRANSPORT MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+
+model TransportRoute {
+  id          String          @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name        String
+  startPoint  String
+  endPoint    String
+  distance    String?
+  vehicleId   String?
+  driverName  String?
+  driverPhone String?
+  fee         Decimal         @default(0) @db.Decimal(10, 2)
+  status      String          @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  stops       TransportStop[]
+  vehicle     Vehicle?        @relation(fields: [vehicleId], references: [id])
+
+  @@index([status])
+}
+
+model TransportStop {
+  id        String         @id @default(dbgenerated("(gen_random_uuid())::text"))
+  routeId   String
+  name      String
+  pickupTime String?
+  dropTime  String?
+  sortOrder Int            @default(0)
+  route     TransportRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
+
+  @@index([routeId])
+}
+
+model Vehicle {
+  id              String           @id @default(dbgenerated("(gen_random_uuid())::text"))
+  number          String           @unique
+  type            String           @default("BUS") // BUS, VAN, CAR, AUTO
+  capacity        Int              @default(40)
+  driverName      String?
+  driverPhone     String?
+  insuranceExpiry DateTime?        @db.Date
+  status          String           @default("ACTIVE") // ACTIVE, MAINTENANCE, INACTIVE
+  createdAt       DateTime         @default(now()) @db.Timestamptz(6)
+  routes          TransportRoute[]
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LIBRARY MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+
+model Book {
+  id            String      @id @default(dbgenerated("(gen_random_uuid())::text"))
+  title         String
+  author        String
+  isbn          String?     @unique
+  publisher     String?
+  category      String?
+  totalCopies   Int         @default(1)
+  availableCopies Int       @default(1)
+  shelfLocation String?
+  status        String      @default("AVAILABLE") // AVAILABLE, LOW_STOCK, OUT_OF_STOCK
+  createdAt     DateTime    @default(now()) @db.Timestamptz(6)
+  issues        BookIssue[]
+}
+
+model BookIssue {
+  id         String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  bookId     String
+  issuedTo   String    // userId or studentId
+  issuedBy   String?   // librarian userId
+  issueDate  DateTime  @default(now()) @db.Timestamptz(6)
+  dueDate    DateTime  @db.Date
+  returnDate DateTime? @db.Timestamptz(6)
+  fine       Decimal   @default(0) @db.Decimal(10, 2)
+  status     String    @default("ISSUED") // ISSUED, RETURNED, OVERDUE, LOST
+  book       Book      @relation(fields: [bookId], references: [id])
+
+  @@index([bookId])
+  @@index([issuedTo])
+  @@index([status])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMMUNICATION CENTER
+// ═══════════════════════════════════════════════════════════════
+
+model Announcement {
+  id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  title       String
+  content     String
+  type        String   @default("GENERAL") // GENERAL, ACADEMIC, EVENT, HOLIDAY, EMERGENCY, FEE_REMINDER
+  audience    String   @default("ALL") // ALL, STUDENTS, PARENTS, TEACHERS, STAFF, BATCH_SPECIFIC
+  batchId     String?  // if audience is BATCH_SPECIFIC
+  priority    String   @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  publishedBy String
+  publishedAt DateTime @default(now()) @db.Timestamptz(6)
+  expiresAt   DateTime? @db.Timestamptz(6)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([type, isActive])
+  @@index([audience])
 }

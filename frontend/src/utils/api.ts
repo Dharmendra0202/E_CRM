@@ -42,22 +42,30 @@ export const api = {
       request<any>("/auth/refresh", { method: "POST", body: JSON.stringify({ refreshToken }) }),
   },
 
-  // ── Leads ───────────────────────────────────────────────
+  // ── Leads / Admissions CRM ──────────────────────────────
   leads: {
-    getAll: (params?: { status?: string; page?: number; limit?: number }) => {
+    getAll: (params?: { status?: string; source?: string; search?: string; page?: number; limit?: number }) => {
       const q = new URLSearchParams(params as any).toString();
       return request<any>(`/leads${q ? `?${q}` : ""}`);
     },
+    getById: (id: string) => request<any>(`/leads/${id}`),
+    getStats: () => request<any>("/leads/stats"),
     create: (body: object) => request<any>("/leads", { method: "POST", body: JSON.stringify(body) }),
     update: (id: string, body: object) => request<any>(`/leads/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     delete: (id: string) => request<any>(`/leads/${id}`, { method: "DELETE" }),
+    getActivities: (id: string) => request<any>(`/leads/${id}/activities`),
+    addActivity: (id: string, body: { type: string; content: string; metadata?: any }) =>
+      request<any>(`/leads/${id}/activities`, { method: "POST", body: JSON.stringify(body) }),
   },
 
   // ── Students ─────────────────────────────────────────────
   students: {
     getAll: () => request<any>("/students"),
     getOne: (id: string) => request<any>(`/students/${id}`),
+    getProfile: (id: string) => request<any>(`/students/${id}/profile`),
+    getStats: () => request<any>("/students/stats"),
     create: (body: object) => request<any>("/students", { method: "POST", body: JSON.stringify(body) }),
+    bulkImport: (students: object[]) => request<any>("/students/bulk", { method: "POST", body: JSON.stringify({ students }) }),
     update: (id: string, body: object) => request<any>(`/students/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     delete: (id: string) => request<any>(`/students/${id}`, { method: "DELETE" }),
   },
@@ -114,5 +122,103 @@ export const api = {
     enroll: (batchId: string, studentId: string) =>
       request<any>(`/batches/${batchId}/enroll`, { method: "POST", body: JSON.stringify({ studentId }) }),
     delete: (id: string) => request<any>(`/batches/${id}`, { method: "DELETE" }),
+  },
+
+  // ── Organizations ──────────────────────────────────────────
+  organizations: {
+    getAll: () => request<any>("/organizations"),
+    getById: (id: string) => request<any>(`/organizations/${id}`),
+    create: (body: object) => request<any>("/organizations", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: object) => request<any>(`/organizations/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+    setup: (id: string, step: number, data: object) => request<any>(`/organizations/${id}/setup`, { method: "POST", body: JSON.stringify({ step, data }) }),
+    invite: (id: string, email: string, roleSlug: string) => request<any>(`/organizations/${id}/invite`, { method: "POST", body: JSON.stringify({ email, roleSlug }) }),
+  },
+
+  // ── Roles & Permissions ────────────────────────────────────
+  roles: {
+    getAll: (orgId?: string) => request<any>(`/roles${orgId ? `?org_id=${orgId}` : ""}`),
+    create: (body: object) => request<any>("/roles", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: object) => request<any>(`/roles/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+    delete: (id: string) => request<any>(`/roles/${id}`, { method: "DELETE" }),
+    getPermissions: () => request<any>("/roles/permissions"),
+    getMembers: (orgId?: string) => request<any>(`/roles/members${orgId ? `?org_id=${orgId}` : ""}`),
+    updateMember: (id: string, body: object) => request<any>(`/roles/members/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+  },
+
+  // ── Subjects ─────────────────────────────────────────────
+  subjects: {
+    getAll: () => request<any>("/subjects"),
+    create: (body: object) => request<any>("/subjects", { method: "POST", body: JSON.stringify(body) }),
+    delete: (id: string) => request<any>(`/subjects/${id}`, { method: "DELETE" }),
+  },
+
+  // ── Homework & Assignments ──────────────────────────────
+  homework: {
+    getAll: (params?: { batch_id?: string; status?: string }) => {
+      const q = new URLSearchParams(params as any).toString();
+      return request<any>(`/homework${q ? `?${q}` : ""}`);
+    },
+    getById: (id: string) => request<any>(`/homework/${id}`),
+    getStats: () => request<any>("/homework/stats"),
+    create: (body: object) => request<any>("/homework", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: object) => request<any>(`/homework/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    delete: (id: string) => request<any>(`/homework/${id}`, { method: "DELETE" }),
+    submit: (id: string, body: object) => request<any>(`/homework/${id}/submit`, { method: "POST", body: JSON.stringify(body) }),
+    grade: (id: string, body: object) => request<any>(`/homework/${id}/grade`, { method: "PATCH", body: JSON.stringify(body) }),
+  },
+
+  // ── Transport ──────────────────────────────────────────
+  transport: {
+    getRoutes: () => request<any>("/transport/routes"),
+    createRoute: (body: object) => request<any>("/transport/routes", { method: "POST", body: JSON.stringify(body) }),
+    deleteRoute: (id: string) => request<any>(`/transport/routes/${id}`, { method: "DELETE" }),
+    getVehicles: () => request<any>("/transport/vehicles"),
+    createVehicle: (body: object) => request<any>("/transport/vehicles", { method: "POST", body: JSON.stringify(body) }),
+    deleteVehicle: (id: string) => request<any>(`/transport/vehicles/${id}`, { method: "DELETE" }),
+    getStats: () => request<any>("/transport/stats"),
+  },
+
+  // ── Library ────────────────────────────────────────────
+  library: {
+    getBooks: (params?: { search?: string; category?: string }) => {
+      const q = new URLSearchParams(params as any).toString();
+      return request<any>(`/library/books${q ? `?${q}` : ""}`);
+    },
+    createBook: (body: object) => request<any>("/library/books", { method: "POST", body: JSON.stringify(body) }),
+    deleteBook: (id: string) => request<any>(`/library/books/${id}`, { method: "DELETE" }),
+    issueBook: (bookId: string, body: object) => request<any>(`/library/books/${bookId}/issue`, { method: "POST", body: JSON.stringify(body) }),
+    returnBook: (issueId: string) => request<any>(`/library/issues/${issueId}/return`, { method: "POST" }),
+    getIssues: (status?: string) => request<any>(`/library/issues${status ? `?status=${status}` : ""}`),
+    getStats: () => request<any>("/library/stats"),
+  },
+
+  // ── Announcements / Communication ──────────────────────
+  announcements: {
+    getAll: (params?: { type?: string; audience?: string; active?: string }) => {
+      const q = new URLSearchParams(params as any).toString();
+      return request<any>(`/announcements${q ? `?${q}` : ""}`);
+    },
+    create: (body: object) => request<any>("/announcements", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: object) => request<any>(`/announcements/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    delete: (id: string) => request<any>(`/announcements/${id}`, { method: "DELETE" }),
+  },
+
+  // ── Reports & Analytics ────────────────────────────────
+  reports: {
+    getOverview: () => request<any>("/reports/overview"),
+    getAttendance: (params?: { batch_id?: string; days?: string }) => {
+      const q = new URLSearchParams(params as any).toString();
+      return request<any>(`/reports/attendance${q ? `?${q}` : ""}`);
+    },
+    getFinance: () => request<any>("/reports/finance"),
+  },
+
+  // ── Settings & Configuration ───────────────────────────
+  settings: {
+    get: () => request<any>("/settings"),
+    updateOrganization: (body: object) => request<any>("/settings/organization", { method: "PUT", body: JSON.stringify(body) }),
+    addDepartment: (body: object) => request<any>("/settings/departments", { method: "POST", body: JSON.stringify(body) }),
+    deleteDepartment: (id: string) => request<any>(`/settings/departments/${id}`, { method: "DELETE" }),
+    addAcademicYear: (body: object) => request<any>("/settings/academic-years", { method: "POST", body: JSON.stringify(body) }),
   },
 };

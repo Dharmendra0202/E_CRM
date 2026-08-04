@@ -1,9 +1,9 @@
+import { prisma } from "../utils/prisma";
 import { Router, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // GET /api/v1/invoices
 router.get("/", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {

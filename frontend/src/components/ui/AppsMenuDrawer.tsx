@@ -10,18 +10,31 @@ interface AppsMenuDrawerProps {
 
 export function AppsMenuDrawer({ onNavigate, currentView }: AppsMenuDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsOpen(true);
-  };
+  // Close only when clicking outside or clicking the trigger icon again
+  const handleToggle = () => setIsOpen((prev) => !prev);
 
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setIsOpen(false);
-    }, 300);
-  };
+  // Close when clicking outside the menu
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    // Delay adding listener so the current click doesn't immediately close it
+    const timer = setTimeout(() => {
+      document.addEventListener("mousedown", handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   // Dedicated separate modules with vibrant tailored gradient colors
   const separateActions = [
@@ -61,13 +74,12 @@ export function AppsMenuDrawer({ onNavigate, currentView }: AppsMenuDrawerProps)
 
   return (
     <div
+      ref={containerRef}
       className="relative inline-block z-[99999]"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
     >
       {/* ── Main Trigger Circle Button (Vibrant Magenta-Purple Gradient) ── */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer text-white shadow-lg ${
           isOpen
             ? "bg-gradient-to-r from-[hsl(328,100%,50%)] to-[hsl(271,91%,55%)] scale-110 shadow-pink-500/50 ring-4 ring-pink-500/30"
@@ -88,8 +100,6 @@ export function AppsMenuDrawer({ onNavigate, currentView }: AppsMenuDrawerProps)
         <div
           className="absolute top-full left-0 pointer-events-auto"
           style={{ width: "100%", height: "90px" }}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
         >
           {separateActions.map((item, index) => {
             const Icon = item.icon;

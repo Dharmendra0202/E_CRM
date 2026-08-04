@@ -57,7 +57,7 @@
   --bg-primary: hsl(320, 30%, 98%); /* Soft pink-white background */
   --bg-secondary: hsl(320, 20%, 94%); /* Lilac-white secondary background */
   --surface-glass: hsla(0, 0%, 100%, 0.7); /* Frosted glass white */
-  --border-glass: hsla(285, 30%, 20%, 0.06); /* Translucent dark borders */
+  --border-glass: hsla(285, 30%, 20%, 0.03); /* Nearly invisible border */
   
   --text-primary: hsl(285, 50%, 12%); /* Deep velvet plum text */
   --text-secondary: hsl(285, 20%, 45%); /* Muted plum-gray text */
@@ -667,18 +667,16 @@ p {
    ========================================================================== */
 .glass-card {
   background: var(--surface-glass);
-  border: 1px solid var(--border-glass);
+  border: none;
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
   padding: var(--space-xl);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   overflow: hidden;
   position: relative;
 }
@@ -3400,4 +3398,259 @@ p {
 
 .live-update-flash {
   animation: liveUpdateFlash 0.6s ease-in-out;
+}
+
+
+/* ==========================================================================
+   18. DARK MODE
+   ========================================================================== */
+
+[data-theme="dark"] {
+  --bg-primary: hsl(240, 20%, 8%);
+  --bg-secondary: hsl(240, 18%, 12%);
+  --surface-glass: hsla(240, 20%, 14%, 0.9);
+  --border-glass: hsla(240, 20%, 30%, 0.3);
+  --text-primary: hsl(0, 0%, 93%);
+  --text-secondary: hsl(240, 10%, 55%);
+  --color-accent-glow: hsla(328, 100%, 54%, 0.12);
+  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] body {
+  background-color: hsl(240, 20%, 8%);
+  color: hsl(0, 0%, 93%);
+}
+
+[data-theme="dark"] .crm-container {
+  background: linear-gradient(135deg, hsl(240, 20%, 8%) 0%, hsl(260, 20%, 10%) 50%, hsl(280, 18%, 9%) 100%);
+}
+
+[data-theme="dark"] .crm-top-header {
+  background: hsla(240, 20%, 10%, 0.9);
+  border-bottom-color: hsla(240, 20%, 25%, 0.3);
+}
+
+[data-theme="dark"] .crm-bottom-dock {
+  background: hsla(240, 20%, 12%, 0.85);
+  border-color: hsla(240, 20%, 30%, 0.3);
+  box-shadow: 0 16px 48px -8px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .crm-dock-item {
+  color: hsl(240, 10%, 50%);
+}
+
+[data-theme="dark"] .crm-dock-item.is-active {
+  color: var(--color-accent);
+  background: hsla(328, 100%, 54%, 0.12);
+}
+
+[data-theme="dark"] .glass-card,
+[data-theme="dark"] .glass-btn {
+  background: hsla(240, 20%, 14%, 0.9);
+  border-color: hsla(240, 20%, 25%, 0.3);
+}
+
+[data-theme="dark"] .navbar-search-box {
+  background: hsla(240, 20%, 14%, 0.8) !important;
+  border-color: hsla(240, 20%, 25%, 0.3) !important;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background: hsla(240, 20%, 14%, 0.8) !important;
+  border-color: hsla(240, 20%, 25%, 0.3) !important;
+  color: hsl(0, 0%, 93%) !important;
+}
+
+/* Override white backgrounds in dark mode */
+[data-theme="dark"] div[style*="background: \"#fff\""],
+[data-theme="dark"] div[style*="background: rgb(255"] {
+  background: hsla(240, 20%, 14%, 0.9) !important;
+}
+
+/* ==========================================================================
+   19. SIDEBAR LAYOUT ADJUSTMENTS
+   ========================================================================== */
+
+/* When sidebar is present, push main content */
+.has-sidebar .crm-main-content {
+  margin-left: 220px;
+  transition: margin-left 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.has-sidebar.sidebar-collapsed .crm-main-content {
+  margin-left: 64px;
+}
+
+/* Hide bottom dock on desktop when sidebar is visible */
+@media (min-width: 1024px) {
+  .has-sidebar .crm-bottom-dock {
+    display: none;
+  }
+}
+
+/* On mobile, hide sidebar */
+@media (max-width: 1023px) {
+  .has-sidebar .crm-main-content {
+    margin-left: 0 !important;
+  }
+}
+
+
+/* ==========================================================================
+   20. BORDERLESS ELEVATION DESIGN (No visible borders, shadow-only depth)
+   Linear / Vercel / Notion inspired � clean, modern, zero-border
+   ========================================================================== */
+
+/* -- Kill all visible borders globally -- */
+.glass-card,
+.clay-card {
+  border: none !important;
+  border-radius: 20px !important;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08);
+}
+
+/* -- Sidebar: no border, soft shadow -- */
+[data-theme="light"] aside {
+  border-right: none !important;
+  background: #fff !important;
+  box-shadow: 2px 0 16px -4px rgba(29,10,39,0.06) !important;
+}
+
+/* -- Top Header: no bottom border, shadow only -- */
+.crm-top-header {
+  border-bottom: none !important;
+  box-shadow: 0 1px 12px -4px rgba(29,10,39,0.08) !important;
+}
+
+/* -- Bottom Dock: floating with elevation -- */
+.crm-bottom-dock {
+  border: none !important;
+  box-shadow: 0 -4px 24px -8px rgba(29,10,39,0.12), 0 8px 32px -4px rgba(29,10,39,0.1) !important;
+  border-radius: 22px !important;
+}
+
+/* -- Primary Button: clean glow -- */
+.btn-primary {
+  border: none !important;
+  box-shadow: 0 4px 14px -3px hsla(328,100%,54%,0.35) !important;
+}
+.btn-primary:hover:not(:disabled) {
+  box-shadow: 0 8px 24px -3px hsla(328,100%,54%,0.45) !important;
+}
+
+/* -- Secondary/Ghost Buttons -- */
+.btn-secondary,
+.glass-btn:not(.btn-primary):not(.btn-success):not(.btn-danger):not(.btn-warning):not(.btn-ghost) {
+  border-color: rgba(29,10,39,0.06) !important;
+  box-shadow: 0 1px 4px rgba(29,10,39,0.04) !important;
+}
+
+/* -- Input fields: subtle inset -- */
+.glass-input-wrapper,
+input[style*="borderRadius"],
+select[style*="borderRadius"] {
+  border-color: rgba(29,10,39,0.06) !important;
+  box-shadow: inset 0 1px 3px rgba(29,10,39,0.03) !important;
+}
+
+/* -- Hover: scale up slightly, stronger shadow -- */
+.card-hover-lift:hover,
+.clay-card:hover,
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(29,10,39,0.06), 0 12px 32px -8px rgba(29,10,39,0.12) !important;
+}
+
+/* -- Dock item active -- */
+.crm-dock-item.is-active {
+  box-shadow: 0 2px 8px hsla(328,100%,54%,0.15) !important;
+}
+
+/* -- Modals: floating card -- */
+div[class*="animate-slide-up"] {
+  border: none !important;
+  box-shadow: 0 24px 64px -12px rgba(29,10,39,0.2), 0 8px 24px rgba(29,10,39,0.08) !important;
+  border-radius: 20px !important;
+}
+
+/* -- Hero Banner -- */
+div[style*="linear-gradient(135deg, hsl(328"] {
+  border: none !important;
+  box-shadow: 0 12px 40px -8px hsla(328,100%,54%,0.3) !important;
+  border-radius: 20px !important;
+}
+
+/* -- Global radius -- */
+.glass-card {
+  border-radius: 20px !important;
+}
+
+/* -- Dark Mode: borderless too -- */
+[data-theme="dark"] .clay-card,
+[data-theme="dark"] .glass-card {
+  background: hsl(240,18%,14%);
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2), 0 8px 24px -8px rgba(0,0,0,0.4);
+}
+
+[data-theme="dark"] .crm-top-header {
+  border-bottom: none !important;
+  box-shadow: 0 1px 12px -4px rgba(0,0,0,0.3) !important;
+}
+
+[data-theme="dark"] .crm-bottom-dock {
+  border: none !important;
+  box-shadow: 0 -4px 24px -8px rgba(0,0,0,0.4), 0 8px 32px -4px rgba(0,0,0,0.3) !important;
+}
+
+[data-theme="dark"] aside {
+  background: hsl(240,18%,11%) !important;
+  border-right: none !important;
+  box-shadow: 2px 0 16px -4px rgba(0,0,0,0.3) !important;
+}
+
+[data-theme="dark"] .btn-primary {
+  box-shadow: 0 4px 14px -3px hsla(328,100%,54%,0.5) !important;
+}
+
+/* ==========================================================================
+   21. PERFORMANCE OPTIMIZATIONS
+   ========================================================================== */
+
+/* GPU-accelerate frequently animated elements */
+.crm-dock-item,
+.card-hover-lift,
+.clay-card,
+.glass-btn {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Isolate component paint layers to prevent full-page repaints */
+.crm-viewport {
+  contain: layout style;
+}
+
+/* Reduce paint area on hover effects — use transform instead of box-shadow animation */
+.crm-dock-item:hover {
+  transform: translateY(-4px) scale(1.08);
+}
+
+/* Instant view switching — no delay animations on main content swap */
+.crm-viewport > .animate-fade-in {
+  animation-duration: 0.15s;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
