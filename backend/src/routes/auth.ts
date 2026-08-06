@@ -249,4 +249,54 @@ router.post("/refresh", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+
+
+// ── GET /auth/profile ────────────────────────────────────────
+router.get("/profile", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as any;
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: { id: true, email: true, firstName: true, lastName: true, role: true, phone: true, emailVerified: true, createdAt: true },
+    });
+    if (!user) { res.status(404).json({ status: "error", message: "User not found." }); return; }
+    res.json({ status: "success", data: user });
+  } catch { res.status(401).json({ status: "error", message: "Invalid token." }); }
+});
+
+// ── PUT /auth/change-password ────────────────────────────────
+router.put("/change-password", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
+    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET || "secret") as any;
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) { res.status(400).json({ status: "error", message: "currentPassword and newPassword required." }); return; }
+    if (newPassword.length < 8) { res.status(400).json({ status: "error", message: "New password must be at least 8 characters." }); return; }
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+    if (!user) { res.status(404).json({ status: "error", message: "User not found." }); return; }
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) { res.status(401).json({ status: "error", message: "Current password is incorrect." }); return; }
+    const hash = await bcrypt.hash(newPassword, 12);
+    await prisma.user.update({ where: { id: user.id }, data: { passwordHash: hash, refreshToken: null } });
+    res.json({ status: "success", message: "Password changed successfully." });
+  } catch { res.status(401).json({ status: "error", message: "Invalid token." }); }
+});
+
+// ── DELETE /auth/logout-all — terminate all sessions ─────────
+router.delete("/logout-all", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
+    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET || "secret") as any;
+    await prisma.user.update({ where: { id: decoded.id }, data: { refreshToken: null } });
+    res.json({ status: "success", message: "All sessions terminated." });
+  } catch { res.status(401).json({ status: "error", message: "Invalid token." }); }
+});
+
+
+
 export default router;

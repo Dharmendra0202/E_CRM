@@ -146,7 +146,7 @@ export function Dashboard({
       </div>
 
       {/* ── KPI Stat Cards (Clickable) ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "16px", marginBottom: "24px" }}>
         {kpiCards.map((m, i) => (
           <div
             key={i}
@@ -154,23 +154,21 @@ export function Dashboard({
             style={{
               background: "#fff",
               borderRadius: "16px",
-              padding: "20px",
-              border: "1px solid hsla(285,30%,20%,0.07)",
-              boxShadow: "0 2px 16px -4px rgba(29,10,39,0.08)",
-              transition: "all 0.3s ease",
+              padding: "22px",
+              border: "none",
+              boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
               cursor: "pointer",
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget;
-              el.style.transform = "translateY(-4px)";
-              el.style.boxShadow = "0 16px 40px -8px rgba(29,10,39,0.15)";
-              el.style.borderColor = "hsla(328,100%,54%,0.2)";
+              el.style.transform = "translateY(-3px)";
+              el.style.boxShadow = "0 4px 16px rgba(29,10,39,0.06), 0 12px 32px -8px rgba(29,10,39,0.12)";
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget;
               el.style.transform = "none";
-              el.style.boxShadow = "0 2px 16px -4px rgba(29,10,39,0.08)";
-              el.style.borderColor = "hsla(285,30%,20%,0.07)";
+              el.style.boxShadow = "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)";
             }}
           >
             {isLoading ? (
@@ -203,11 +201,12 @@ export function Dashboard({
                       fontWeight: 700,
                       color: m.badgeColor,
                       background: "hsla(142,70%,42%,0.1)",
-                      padding: "3px 9px",
+                      padding: "4px 10px",
                       borderRadius: "20px",
-                      display: "flex",
+                      display: "inline-flex",
                       alignItems: "center",
-                      gap: "3px",
+                      gap: "4px",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     <TrendingUp size={10} />
@@ -231,7 +230,7 @@ export function Dashboard({
         <h3 style={{ margin: "0 0 14px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
           <Zap size={16} style={{ color: "var(--color-accent)" }} /> Quick Navigation
         </h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
           {moduleCards.map((card) => (
             <div
               key={card.label}
@@ -239,26 +238,24 @@ export function Dashboard({
               style={{
                 background: "#fff",
                 borderRadius: "14px",
-                padding: "18px",
-                border: "1px solid hsla(285,30%,20%,0.07)",
-                boxShadow: "0 2px 12px -4px rgba(29,10,39,0.06)",
+                padding: "16px 18px",
+                border: "none",
+                boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)",
                 cursor: "pointer",
-                transition: "all 0.25s ease",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
                 display: "flex",
                 alignItems: "center",
                 gap: "14px",
               }}
               onMouseEnter={(e) => {
                 const el = e.currentTarget;
-                el.style.transform = "translateY(-3px)";
-                el.style.boxShadow = `0 12px 30px -6px ${card.color}30`;
-                el.style.borderColor = `${card.color}40`;
+                el.style.transform = "translateY(-2px)";
+                el.style.boxShadow = `0 4px 16px rgba(29,10,39,0.06), 0 8px 24px -6px ${card.color}25`;
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget;
                 el.style.transform = "none";
-                el.style.boxShadow = "0 2px 12px -4px rgba(29,10,39,0.06)";
-                el.style.borderColor = "hsla(285,30%,20%,0.07)";
+                el.style.boxShadow = "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)";
               }}
             >
               <div
@@ -289,7 +286,7 @@ export function Dashboard({
       {/* ── Two Column: Recent Students + Enrollment Overview ── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
         {/* Recent Students */}
-        <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)", overflow: "hidden" }}>
+        <div style={{ background: "#fff", borderRadius: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)", overflow: "hidden" }}>
           <div style={{ padding: "16px 20px", borderBottom: "1px solid hsla(285,30%,20%,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Recent Students</h3>
@@ -373,7 +370,7 @@ export function Dashboard({
         </div>
 
         {/* Enrollment Overview */}
-        <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)", padding: "20px" }}>
+        <div style={{ background: "#fff", borderRadius: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)", padding: "20px" }}>
           <h3 style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
             <BarChart3 size={16} style={{ color: "var(--color-accent)" }} /> Enrollment Overview
           </h3>
@@ -416,7 +413,7 @@ export function Dashboard({
       </div>
 
       {/* ── Quick Actions Row ── */}
-      <div style={{ background: "#fff", borderRadius: "16px", padding: "18px 20px", border: "1px solid hsla(285,30%,20%,0.07)", boxShadow: "0 2px 16px -4px rgba(29,10,39,0.06)" }}>
+      <div style={{ background: "#fff", borderRadius: "16px", padding: "18px 20px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)" }}>
         <h3 style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
           <span style={{ width: "22px", height: "22px", borderRadius: "7px", background: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
             <Zap size={12} color="#fff" />

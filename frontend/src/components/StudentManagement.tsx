@@ -488,6 +488,8 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
   };
 
   const handleSelectStudentProfile = async (stu: Student) => {
+    // Open the full profile modal
+    setProfileStudentId(stu.id);
     setShowSuggestions(false);
     setProfileSearchQuery(stu.name);
     setIsLoadingProfile(true);
@@ -893,7 +895,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
 
                 return (
                   <React.Fragment key={stu.id}>
-                    <div className={`stu-table-row ${isExpanded ? "is-expanded" : ""}`}>
+                    <div className={`stu-table-row ${isExpanded ? "is-expanded" : ""}`} onClick={() => setProfileStudentId(stu.id)} style={{ cursor: "pointer" }}>
                       <div className="stu-td stu-td-name">
                         <div className={`avatar-initials-gradient ${getAvatarColor(stu.batch)}`} style={{ width: "36px", height: "36px", fontSize: "12px", flexShrink: 0 }}>
                           {getInitials(stu.name)}
@@ -1317,9 +1319,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                             background: "#fff", borderRadius: "18px",
                             boxShadow: "0 20px 60px rgba(0,0,0,0.22)",
                             zIndex: 9999, overflow: "hidden",
-                            border: "1px solid hsla(285,30%,20%,0.08)"
-                          }}>
-                            <div style={{ padding: "10px 16px 6px", fontSize: "10px", fontWeight: 800, color: "hsl(285,20%,55%)", textTransform: "uppercase", letterSpacing: "0.6px", borderBottom: "1px solid hsla(285,30%,20%,0.06)" }}>
+                            border: "none" }}><div style={{ padding: "10px 16px 6px", fontSize: "10px", fontWeight: 800, color: "hsl(285,20%,55%)", textTransform: "uppercase", letterSpacing: "0.6px", borderBottom: "1px solid hsla(285,30%,20%,0.06)" }}>
                               {searchSuggestions.length} result{searchSuggestions.length !== 1 ? "s" : ""} found
                             </div>
                             {searchSuggestions.map((s) => {
@@ -1410,8 +1410,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                           style={{
                             background: "#fff", borderRadius: "16px", padding: "16px",
                             boxShadow: "0 2px 12px -2px rgba(29,10,39,0.08)",
-                            border: "1px solid hsla(285,30%,20%,0.07)",
-                            cursor: "pointer", transition: "all 0.2s", display: "flex", gap: "14px", alignItems: "center"
+                            border: "none", cursor: "pointer", transition: "all 0.2s", display: "flex", gap: "14px", alignItems: "center"
                           }}
                           onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px -4px rgba(29,10,39,0.14)"; }}
                           onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 12px -2px rgba(29,10,39,0.08)"; }}
@@ -1452,7 +1451,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
             style={{
               background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "640px",
               maxHeight: "90vh", overflowY: "auto", boxShadow: "0 32px 80px rgba(0,0,0,0.35)",
-              border: "1px solid hsla(285,30%,20%,0.1)", position: "relative"
+              border: "none", position: "relative"
             }}
           >
             {/* â”€â”€ Loading spinner inside modal â”€â”€ */}
@@ -1527,7 +1526,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                 <div key={i} style={{
                   background: "#fff", borderRadius: "14px", padding: "14px",
                   boxShadow: "0 4px 16px -4px rgba(29,10,39,0.14)",
-                  border: "1px solid hsla(285,30%,20%,0.07)"
+                  border: "none"
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
                     {item.icon}
@@ -1571,7 +1570,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                   <div key={i} style={{
                     display: "flex", gap: "10px", alignItems: "flex-start",
                     background: "hsl(285,30%,98.5%)", borderRadius: "12px",
-                    padding: "12px 14px", border: "1px solid hsla(285,30%,20%,0.06)"
+                    padding: "12px 14px", border: "none"
                   }}>
                     <div style={{ width: "30px", height: "30px", borderRadius: "9px", background: "hsla(271,91%,60%,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "hsl(271,91%,50%)", flexShrink: 0 }}>
                       {item.icon}
@@ -1608,7 +1607,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
 
               {/* Notes */}
               {profileResult.notes && (
-                <div style={{ background: "hsla(38,92%,50%,0.06)", borderRadius: "12px", padding: "16px", border: "1px solid hsla(38,92%,50%,0.18)", marginBottom: "20px" }}>
+                <div style={{ background: "hsla(38,92%,50%,0.06)", borderRadius: "12px", padding: "16px", border: "none", marginBottom: "20px" }}>
                   <h4 style={{ margin: "0 0 6px", fontSize: "10px", fontWeight: 800, color: "hsl(38,92%,38%)", display: "flex", alignItems: "center", gap: "5px", textTransform: "uppercase", letterSpacing: "0.4px" }}>
                     <FileText size={12} /> Notes & Remarks
                   </h4>
@@ -1735,7 +1734,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
         }}>
           <div className="animate-scale-up" style={{
             background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "520px",
-            boxShadow: "0 24px 64px rgba(0,0,0,0.3)", overflow: "hidden", border: "1px solid hsla(142,70%,45%,0.25)"
+            boxShadow: "0 24px 64px rgba(0,0,0,0.3)", overflow: "hidden", border: "none"
           }}>
             {/* Modal Header */}
             <div style={{
@@ -1759,7 +1758,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
             {/* Modal Body */}
             <div style={{ padding: "28px", display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Student Summary */}
-              <div style={{ background: "#f9fafb", borderRadius: "14px", padding: "16px", border: "1px solid #f3f4f6" }}>
+              <div style={{ background: "#f9fafb", borderRadius: "14px", padding: "16px", border: "none" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                   <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>Enrolled Student:</span>
                   <span style={{ fontSize: "13px", fontWeight: 800, color: "var(--text-primary)" }}>{successModalData.student.name}</span>
@@ -1787,7 +1786,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                 </p>
                 <div style={{ display: "flex", gap: "8px" }}>
                   <input type="text" readOnly value={successModalData.whatsappLink}
-                    style={{ flex: 1, height: "40px", padding: "0 12px", borderRadius: "10px", border: "1px solid #bbf7d0", background: "#fff", fontSize: "12px", fontFamily: "monospace", color: "#166534" }} />
+                    style={{ flex: 1, height: "40px", padding: "0 12px", borderRadius: "10px", border: "none", background: "#fff", fontSize: "12px", fontFamily: "monospace", color: "#166534" }} />
                   <button onClick={() => {
                     navigator.clipboard.writeText(successModalData.whatsappLink);
                     showToast("ðŸ“‹ WhatsApp link copied to clipboard!", "success");
@@ -1801,7 +1800,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
               </div>
 
               {/* Email & Mobile App Notification Status */}
-              <div style={{ background: "#eff6ff", borderRadius: "14px", padding: "16px", border: "1px solid #bfdbfe", display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ background: "#eff6ff", borderRadius: "14px", padding: "16px", border: "none", display: "flex", alignItems: "center", gap: "12px" }}>
                 <Mail size={20} style={{ color: "#2563eb", flexShrink: 0 }} />
                 <div style={{ fontSize: "12px", color: "#1e40af", lineHeight: 1.4 }}>
                   <strong>Onboarding Email Sent!</strong> Contains credentials (Password: <code>Student@123</code>), timetable, WhatsApp link, and Mobile App download link.

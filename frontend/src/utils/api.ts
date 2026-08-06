@@ -40,6 +40,10 @@ export const api = {
       request<any>("/auth/resend-verification", { method: "POST", body: JSON.stringify({ email }) }),
     refresh: (refreshToken: string) =>
       request<any>("/auth/refresh", { method: "POST", body: JSON.stringify({ refreshToken }) }),
+    getProfile: () => request<any>("/auth/profile"),
+    changePassword: (currentPassword: string, newPassword: string) =>
+      request<any>("/auth/change-password", { method: "PUT", body: JSON.stringify({ currentPassword, newPassword }) }),
+    logoutAll: () => request<any>("/auth/logout-all", { method: "DELETE" }),
   },
 
   // ── Leads / Admissions CRM ──────────────────────────────
