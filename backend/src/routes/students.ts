@@ -37,10 +37,11 @@ router.get("/:id", authenticate, async (req: AuthRequest, res: Response): Promis
 // POST /api/v1/students
 router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { parentName, parentPhone, parentEmail, dateOfBirth, firstName, lastName, email, phone, batch, feeAmount } = req.body;
-    if (!parentName || !parentPhone || !parentEmail || !dateOfBirth || !firstName || !lastName || !email) {
+    const { parentName, parentPhone, parentEmail, dateOfBirth, firstName, lastName, email, phone, batch, feeAmount, motherName, motherPhone } = req.body;
+    if (!parentName || !parentPhone || !parentEmail || !dateOfBirth || !firstName || !email) {
       res.status(400).json({ status: "error", message: "Required fields missing." }); return;
     }
+    const finalLastName = lastName || firstName;
     
     // 1. Create or find the User account
     let user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
@@ -51,11 +52,17 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
           email: email.toLowerCase(),
           passwordHash: hash,
           firstName,
-          lastName,
+          lastName: finalLastName,
           role: "STUDENT",
           phone: phone || null,
           emailVerified: true,
         }
+      });
+    } else {
+      // Update user's name and phone to match enrollment data
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { firstName, lastName: finalLastName, phone: phone || user.phone },
       });
     }
 
@@ -67,22 +74,43 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
     if (student) {
       student = await prisma.student.update({
         where: { id: student.id },
-        data: { parentName, parentPhone, parentEmail, dateOfBirth: new Date(dateOfBirth) },
+        data: { parentName, parentPhone, parentEmail, motherName: motherName || null, motherPhone: motherPhone || null, dateOfBirth: new Date(dateOfBirth) },
         include: { user: true, enrollments: { include: { batch: true } }, invoices: true }
       });
     } else {
       student = await prisma.student.create({
-        data: { userId: user.id, parentName, parentPhone, parentEmail, dateOfBirth: new Date(dateOfBirth) },
+        data: { userId: user.id, parentName, parentPhone, parentEmail, motherName: motherName || null, motherPhone: motherPhone || null, dateOfBirth: new Date(dateOfBirth) },
         include: { user: true, enrollments: { include: { batch: true } }, invoices: true }
       });
     }
 
     // 3. Batch enrollment if a batch is specified
     if (batch) {
-      const foundBatch = await prisma.batch.findFirst({
+      let foundBatch = await prisma.batch.findFirst({
         where: { name: batch }
       });
-      if (foundBatch) {
+      if (!foundBatch) {
+        // Auto-create the batch if it doesn't exist
+        const now = new Date();
+        const endDate = new Date(now.getFullYear() + 1, 2, 31); // End of academic year
+        foundBatch = await prisma.batch.create({
+          data: {
+            name: batch,
+            subject: "General",
+            startDate: now,
+            endDate,
+            capacity: 60,
+            teacherId: (await prisma.teacher.findFirst())?.id || "",
+            feeAmount: feeAmount ? parseFloat(feeAmount) : 0,
+            feeFrequency: "MONTHLY",
+          }
+        });
+      }
+      // Check if already enrolled in this batch
+      const existingEnrollment = await prisma.batchEnrollment.findFirst({
+        where: { studentId: student.id, batchId: foundBatch.id }
+      });
+      if (!existingEnrollment) {
         await prisma.batchEnrollment.create({
           data: {
             studentId: student.id,
@@ -127,7 +155,7 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
     // Send onboarding email (non-blocking)
     sendStudentOnboardingEmail(
       email.toLowerCase(),
-      `${firstName} ${lastName}`,
+      `${firstName} ${finalLastName}`,
       batch || "Standard Batch",
       whatsappLink,
       feeAmount ? parseFloat(feeAmount) : 8500

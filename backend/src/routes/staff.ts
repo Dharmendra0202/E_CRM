@@ -10,7 +10,7 @@ const router = Router();
 router.get("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const users = await prisma.user.findMany({
-      where: { role: { in: ["ADMIN", "TEACHER"] } },
+      where: { role: { in: ["ADMIN", "TEACHER", "SUPPORT", "SALES", "BILLING"] } },
       select: { id: true, email: true, firstName: true, lastName: true, role: true, phone: true, createdAt: true, teacher: { select: { id: true, qualification: true, hourlyRate: true, bio: true } } },
       orderBy: { createdAt: "desc" },
     });

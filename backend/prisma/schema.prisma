@@ -148,6 +148,8 @@ model User {
   firstName           String
   lastName            String
   phone               String?
+  googleId            String?      @unique
+  authProvider        String       @default("local") // "local" | "google"
   emailVerified       Boolean      @default(false)
   verificationToken   String?      @unique
   verificationExpiry  DateTime?    @db.Timestamptz(6)
@@ -203,6 +205,8 @@ model Student {
   parentName  String
   parentPhone String
   parentEmail String
+  motherName  String?
+  motherPhone String?
   dateOfBirth DateTime          @db.Date
   createdAt   DateTime          @default(now()) @db.Timestamptz(6)
   attendance  Attendance[]

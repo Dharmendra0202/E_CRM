@@ -15,7 +15,7 @@ interface CommandPaletteProps {
 const COMMANDS = [
   { view: "dashboard", icon: <LayoutDashboard size={16} />, label: "Dashboard", keywords: "home overview" },
   { view: "admissions", icon: <Target size={16} />, label: "Admissions CRM", keywords: "leads enquiry pipeline" },
-  { view: "leads", icon: <Users2 size={16} />, label: "Students", keywords: "student list manage" },
+  { view: "new-enrollment", icon: <Users2 size={16} />, label: "New Enrollment", keywords: "enroll student staff teacher register" },
   { view: "parents", icon: <UserCheck size={16} />, label: "Parents", keywords: "parent guardian" },
   { view: "staff", icon: <Briefcase size={16} />, label: "Staff & Teachers", keywords: "teacher employee" },
   { view: "academics", icon: <GraduationCap size={16} />, label: "Academics", keywords: "subject course curriculum" },

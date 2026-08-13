@@ -24,6 +24,7 @@ import { LibraryManagement } from "./components/LibraryManagement";
 import { CommunicationCenter } from "./components/CommunicationCenter";
 import { ReportsAnalytics } from "./components/ReportsAnalytics";
 import { SettingsPage } from "./components/SettingsPage";
+import { NewEnrollment } from "./components/NewEnrollment";
 import { LandingPage } from "./components/LandingPage";
 import { Sidebar } from "./components/ui/Sidebar";
 import { CommandPalette } from "./components/ui/CommandPalette";
@@ -35,7 +36,7 @@ import {
   Activity, BookOpen, IndianRupee, History, Sun, Moon
 } from "lucide-react";
 
-type ViewType = "dashboard" | "leads" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding";
+type ViewType = "dashboard" | "leads" | "new-enrollment" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
@@ -160,7 +161,7 @@ function App() {
     }
   }, [userProfile, currentView]);
 
-  const filteredStaff = activeStaffFilter === "ALL" ? staffList : staffList.filter(s => s.role === activeStaffFilter);
+  const filteredStaff = activeStaffFilter === "ALL" ? staffList.filter(s => s.role !== "TEACHER") : staffList.filter(s => s.role === activeStaffFilter);
   const userInitials = userProfile?.user_metadata?.name
     ? userProfile.user_metadata.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()
     : userProfile?.email ? userProfile.email.substring(0, 2).toUpperCase() : "DA";
@@ -231,13 +232,13 @@ function App() {
       <nav className="crm-bottom-dock">
         {([
           { view: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
-          { view: "leads",     icon: <Users2 size={20} />,          label: "Students" },
+          { view: "new-enrollment", icon: <Users2 size={20} />,     label: "Enroll" },
           { view: "schedule",  icon: <CalendarDays size={20} />,    label: "Timetable" },
           { view: "attendance",icon: <Check size={20} />,           label: "Attendance" },
           { view: "billing",   icon: <CreditCard size={20} />,      label: "Billing" },
           { view: "staff",     icon: <Briefcase size={20} />,       label: "Staff" },
         ] as { view: ViewType; icon: React.ReactNode; label: string }[]).map(({ view, icon, label }) => (
-          <button key={view} className={`crm-dock-item ${currentView === view ? "is-active" : ""}`} onClick={() => { setCurrentView(view); if (view === "leads") setStudentTab("all"); }}>
+          <button key={view} className={`crm-dock-item ${currentView === view ? "is-active" : ""}`} onClick={() => { setCurrentView(view); }}>
             {icon}
             <span className="crm-dock-tooltip">{label}</span>
           </button>
@@ -457,6 +458,13 @@ function App() {
           {/* ══════════════ ADMISSIONS CRM VIEW ══════════════ */}
           {currentView === "admissions" && <AdmissionsCRM />}
 
+          {/* ══════════════ NEW ENROLLMENT VIEW ══════════════ */}
+          {currentView === "new-enrollment" && (
+            <div className="animate-fade-in">
+              <NewEnrollment />
+            </div>
+          )}
+
           {/* ══════════════ PARENTS VIEW ══════════════ */}
           {currentView === "parents" && <ParentManagement />}
 
@@ -497,82 +505,71 @@ function App() {
           {/* ══════════════ STAFF VIEW ══════════════ */}
           {currentView === "staff" && (
             <div className="animate-fade-in">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" }}>
-                <div>
-                  <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Staff & Roles Directory</h1>
-                  <p>Manage academic, admin, sales, billing, and support rosters.</p>
-                </div>
-                <Button variant="primary" leftIcon={<Plus size={14} />}>Register Staff</Button>
+              <div style={{ marginBottom: "28px" }}>
+                <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Staff Directory</h1>
+                <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>All registered staff members</p>
               </div>
 
-              <div className="staff-layout-grid">
-                {/* Sidebar */}
-                <Card style={{ padding: "16px", gap: "6px" }}>
-                  <p style={{ fontSize: "11px", fontWeight: 700, textTransform: "uppercase", color: "var(--text-secondary)", margin: "0 0 8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <Filter size={13} /> Departments
-                  </p>
-                  {([
-                    { key: "ALL",     icon: <Activity size={14} />,      label: "All Staff",    count: staffList.length },
-                    { key: "ADMIN",   icon: <Sparkles size={14} />,      label: "Admin",        count: staffList.filter(s => s.role === "ADMIN").length },
-                    { key: "TEACHER", icon: <GraduationCap size={14} />, label: "Teachers",     count: staffList.filter(s => s.role === "TEACHER").length },
-                    { key: "SALES",   icon: <Users2 size={14} />,        label: "Sales",        count: staffList.filter(s => s.role === "SALES").length },
-                    { key: "BILLING", icon: <IndianRupee size={14} />,   label: "Billing",      count: staffList.filter(s => s.role === "BILLING").length },
-                    { key: "SUPPORT", icon: <BookOpen size={14} />,      label: "Support",      count: staffList.filter(s => s.role === "SUPPORT").length },
-                  ] as { key: StaffRoleType; icon: React.ReactNode; label: string; count: number }[]).map(f => (
-                    <button key={f.key} className={`staff-filter-btn ${activeStaffFilter === f.key ? "is-active" : ""}`}
-                      onClick={() => setActiveStaffFilter(f.key)}>
-                      {f.icon}
-                      <span style={{ flex: 1 }}>{f.label}</span>
-                      <span style={{ fontSize: "11px", fontWeight: 700, opacity: 0.6 }}>{f.count}</span>
-                    </button>
-                  ))}
-                </Card>
-
-                {/* Staff Cards Grid */}
-                <div>
-                  {isLoading ? (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-                      {[1,2,3].map(i => <Skeleton key={i} variant="rect" height={180} />)}
-                    </div>
-                  ) : (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
-                      {filteredStaff.map(staff => {
-                        const rm = ROLE_META[staff.role] || { color: "var(--text-secondary)", bg: "rgba(0,0,0,0.05)" };
-                        const onlineColor = STATUS_ONLINE[staff.status] || "var(--text-secondary)";
-                        return (
-                          <Card key={staff.id} hoverLift style={{ padding: "20px", gap: 0 }}>
-                            <div style={{ display: "flex", alignItems: "flex-start", gap: "14px", marginBottom: "14px" }}>
-                              <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: rm.bg, border: `2px solid ${rm.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: rm.color, flexShrink: 0 }}>
-                                {staff.initials}
-                              </div>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{staff.name}</p>
-                                <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{staff.title}</p>
-                              </div>
-                              <span style={{ fontSize: "10px", fontWeight: 700, color: rm.color, background: rm.bg, padding: "3px 8px", borderRadius: "20px", flexShrink: 0 }}>{staff.role}</span>
-                            </div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12px", color: "var(--text-secondary)" }}>
-                              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                                <TrendingUp size={12} />{staff.assignment}
-                              </span>
-                              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                                <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: onlineColor, flexShrink: 0 }} />
-                                <span style={{ color: onlineColor, fontWeight: 600 }}>{staff.status}</span>
-                                <span style={{ marginLeft: "auto" }}>{staff.phone}</span>
-                              </span>
-                            </div>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+                {filteredStaff.length === 0 ? (
+                  <p style={{ fontSize: "14px", color: "var(--text-secondary)", gridColumn: "1 / -1" }}>No staff registered yet. Add one via New Enrollment.</p>
+                ) : filteredStaff.map(staff => {
+                  const rm = ROLE_META[staff.role] || { color: "var(--text-secondary)", bg: "rgba(0,0,0,0.05)" };
+                  return (
+                    <Card key={staff.id} hoverLift style={{ padding: "20px", gap: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "12px" }}>
+                        <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: rm.bg, border: `2px solid ${rm.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: rm.color, flexShrink: 0 }}>
+                          {staff.initials}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{staff.name}</p>
+                          <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{staff.email}</p>
+                        </div>
+                        <span style={{ fontSize: "10px", fontWeight: 700, color: rm.color, background: rm.bg, padding: "3px 8px", borderRadius: "20px", flexShrink: 0 }}>{staff.role}</span>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                        {staff.phone && <span>📞 {staff.phone}</span>}
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           )}
 
           {/* ══════════════ SETTINGS VIEW ══════════════ */}
           {currentView === "settings" && <SettingsPage />}
+
+          {/* ══════════════ TEACHERS VIEW ══════════════ */}
+          {currentView === "teachers" && (
+            <div className="animate-fade-in">
+              <div style={{ marginBottom: "28px" }}>
+                <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Teachers</h1>
+                <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>All registered teachers and instructors</p>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+                {staffList.filter(s => s.role === "TEACHER").length === 0 ? (
+                  <p style={{ fontSize: "14px", color: "var(--text-secondary)", gridColumn: "1 / -1" }}>No teachers registered yet. Add one via New Enrollment.</p>
+                ) : staffList.filter(s => s.role === "TEACHER").map(teacher => (
+                  <Card key={teacher.id} hoverLift style={{ padding: "20px", gap: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "12px" }}>
+                      <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: "hsla(142,70%,45%,0.1)", border: "2px solid hsla(142,70%,45%,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: "var(--color-success)", flexShrink: 0 }}>
+                        {teacher.initials}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "var(--text-primary)" }}>{teacher.name}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{teacher.email}</p>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                      {teacher.phone && <span>📞 {teacher.phone}</span>}
+                      <span>📚 {teacher.title || "General"}</span>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* ══════════════ ROLES & PERMISSIONS VIEW ══════════════ */}
           {currentView === "roles" && <UserRoleManagement />}

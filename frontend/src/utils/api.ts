@@ -19,7 +19,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.message || "Request failed");
+  if (!res.ok) {
+    // If token expired, clear it and reload to force re-login
+    if (res.status === 401 && (data.message === "Invalid or expired token." || data.message === "Token missing.")) {
+      setToken(null);
+      window.location.reload();
+    }
+    throw new Error(data.message || "Request failed");
+  }
   return data;
 }
 
@@ -30,6 +37,8 @@ export const api = {
       request<any>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
     register: (body: object) =>
       request<any>("/auth/register", { method: "POST", body: JSON.stringify(body) }),
+    google: (credential: string) =>
+      request<any>("/auth/google", { method: "POST", body: JSON.stringify({ credential }) }),
     forgotPassword: (email: string) =>
       request<any>("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) }),
     resetPassword: (token: string, password: string) =>

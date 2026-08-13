@@ -17,11 +17,12 @@ const NAV_ITEMS = [
   { group: "Main", items: [
     { view: "dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { view: "admissions", icon: <Target size={18} />, label: "Admissions" },
+    { view: "new-enrollment", icon: <Layers size={18} />, label: "New Enrollment" },
   ]},
   { group: "People", items: [
     { view: "leads", icon: <Users2 size={18} />, label: "Students" },
-    { view: "parents", icon: <UserCheck size={18} />, label: "Parents" },
     { view: "staff", icon: <Briefcase size={18} />, label: "Staff" },
+    { view: "teachers", icon: <GraduationCap size={18} />, label: "Teachers" },
   ]},
   { group: "Academics", items: [
     { view: "academics", icon: <GraduationCap size={18} />, label: "Academics" },

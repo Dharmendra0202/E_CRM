@@ -4,8 +4,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { z } from "zod";
+import { OAuth2Client } from "google-auth-library";
 
 import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/email";
+
+const googleClient = new OAuth2Client();
 
 const router = Router();
 
@@ -295,6 +298,76 @@ router.delete("/logout-all", async (req: Request, res: Response): Promise<void> 
     await prisma.user.update({ where: { id: decoded.id }, data: { refreshToken: null } });
     res.json({ status: "success", message: "All sessions terminated." });
   } catch { res.status(401).json({ status: "error", message: "Invalid token." }); }
+});
+
+
+
+// ── POST /auth/google — Google OAuth login/register ──────────
+router.post("/google", async (req: Request, res: Response): Promise<void> => {
+  const { credential } = req.body;
+  if (!credential) {
+    res.status(400).json({ status: "error", message: "Google credential token is required." });
+    return;
+  }
+  try {
+    // Verify the Google ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      res.status(401).json({ status: "error", message: "Invalid Google token." });
+      return;
+    }
+
+    const { sub: googleId, email, given_name, family_name, email_verified } = payload;
+
+    // Check if a user already exists with this Google ID
+    let user = await prisma.user.findFirst({ where: { googleId } });
+
+    if (!user) {
+      // Check if a user with this email already exists (linked via email/password)
+      user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+
+      if (user) {
+        // Link Google account to existing user
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { googleId, authProvider: user.authProvider === "local" ? "local+google" : user.authProvider, emailVerified: true },
+        });
+      } else {
+        // Create a new user via Google
+        user = await prisma.user.create({
+          data: {
+            email: email.toLowerCase(),
+            passwordHash: "", // No password for Google-only users
+            firstName: given_name || "User",
+            lastName: family_name || "",
+            role: "ADMIN",
+            googleId,
+            authProvider: "google",
+            emailVerified: email_verified ?? true,
+          },
+        });
+      }
+    }
+
+    // Issue JWT tokens
+    const refreshToken = signRefreshToken(user.id);
+    await prisma.user.update({ where: { id: user.id }, data: { refreshToken } });
+
+    const accessToken = signAccessToken({ id: user.id, role: user.role, email: user.email });
+
+    res.json({
+      status: "success",
+      token: accessToken,
+      refreshToken,
+      user: { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName },
+    });
+  } catch (err: any) {
+    res.status(401).json({ status: "error", message: err.message || "Google authentication failed." });
+  }
 });
 
 

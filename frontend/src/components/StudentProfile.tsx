@@ -112,7 +112,7 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
             </div>
 
             {/* Parent/Guardian */}
-            <h3 style={{ margin: "20px 0 12px", fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.8px" }}>Parent / Guardian</h3>
+            <h3 style={{ margin: "20px 0 12px", fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.8px" }}>Father / Guardian</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {[
                 { label: "Name", value: profile.parentName },
@@ -125,6 +125,23 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
                 </div>
               ))}
             </div>
+
+            {(profile.motherName || profile.motherPhone) && (
+              <>
+                <h3 style={{ margin: "20px 0 12px", fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.8px" }}>Mother</h3>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {[
+                    { label: "Name", value: profile.motherName },
+                    { label: "Phone", value: profile.motherPhone },
+                  ].filter(item => item.value).map((item, i) => (
+                    <div key={i} style={{ padding: "8px 12px", background: "var(--bg-secondary)", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>{item.label}</span>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
 
             {/* Batch Info */}
             <h3 style={{ margin: "20px 0 12px", fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.8px" }}>Enrollment</h3>
