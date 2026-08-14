@@ -50,16 +50,16 @@ export function ExamsManagement() {
             Generate student report cards, track grades & publish exam results.
           </p>
         </div>
-        <Button variant="primary" leftIcon={<Plus size={14} />}>Create New Exam</Button>
+        <Button variant="primary" leftIcon={<Plus size={14} />} onClick={() => alert("Exam creation coming soon — use Report Cards below to track results.")}>Create New Exam</Button>
       </div>
 
       {/* KPI Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
         {[
-          { icon: <Award size={22} />, value: "12", label: "TOTAL EXAMS", color: "hsl(328,100%,54%)", bg: "hsla(328,100%,54%,0.08)" },
-          { icon: <CheckCircle2 size={22} />, value: "94.2%", label: "PASS RATE", color: "hsl(160,70%,40%)", bg: "hsla(160,70%,40%,0.08)" },
-          { icon: <GraduationCap size={22} />, value: String(totalStudents), label: "REPORT CARDS", color: "hsl(271,91%,60%)", bg: "hsla(271,91%,60%,0.08)" },
-          { icon: <Sparkles size={22} />, value: "A+", label: "TOP GRADE", color: "hsl(38,92%,50%)", bg: "hsla(38,92%,50%,0.08)" },
+          { icon: <Award size={22} />, value: String(batches.length), label: "TOTAL BATCHES", color: "hsl(328,100%,54%)", bg: "hsla(328,100%,54%,0.08)" },
+          { icon: <CheckCircle2 size={22} />, value: `${totalStudents}`, label: "TOTAL STUDENTS", color: "hsl(160,70%,40%)", bg: "hsla(160,70%,40%,0.08)" },
+          { icon: <GraduationCap size={22} />, value: String(batchStudents.length), label: "IN SELECTED BATCH", color: "hsl(271,91%,60%)", bg: "hsla(271,91%,60%,0.08)" },
+          { icon: <Sparkles size={22} />, value: selectedBatch || "—", label: "CURRENT BATCH", color: "hsl(38,92%,50%)", bg: "hsla(38,92%,50%,0.08)" },
         ].map((stat, i) => (
           <div key={i} style={{
             background: "#fff", borderRadius: "16px", padding: "20px", border: "1px solid var(--border-glass)",

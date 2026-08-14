@@ -42,7 +42,9 @@ export function Dashboard({
   }).length;
 
   const totalBatches = batchesList.length;
-  const totalStaff = staffList.length;
+  const totalTeachers = staffList.filter(s => s.role === "TEACHER").length;
+  const totalStaffOnly = staffList.filter(s => s.role !== "TEACHER").length;
+  const totalParents = leadsList.length; // Each student has parent info
 
   const totalFeesCollected = invoicesList.reduce((sum, inv) => {
     const paid = inv.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0;
@@ -111,8 +113,9 @@ export function Dashboard({
     { icon: <BookOpen size={22} />, label: "Exams", desc: "Results & reports", color: "hsl(342,90%,48%)", view: "exams" },
     { icon: <GraduationCap size={22} />, label: "Academics", desc: "Subjects & courses", color: "hsl(260,80%,55%)", view: "academics" },
     { icon: <Activity size={22} />, label: "Homework", desc: "Assignments & grading", color: "hsl(200,70%,45%)", view: "homework" },
-    { icon: <Layers size={22} />, label: "Staff", desc: `${totalStaff} members`, color: "hsl(260,91%,55%)", view: "staff" },
-    { icon: <Users2 size={22} />, label: "Parents", desc: "Directory & contacts", color: "hsl(172,70%,35%)", view: "parents" },
+    { icon: <Layers size={22} />, label: "Staff", desc: `${totalStaffOnly} members`, color: "hsl(260,91%,55%)", view: "staff" },
+    { icon: <GraduationCap size={22} />, label: "Teachers", desc: `${totalTeachers} registered`, color: "hsl(142,70%,42%)", view: "teachers" },
+    { icon: <Users2 size={22} />, label: "Parents", desc: `${totalParents} contacts`, color: "hsl(172,70%,35%)", view: "parents" },
     { icon: <Activity size={22} />, label: "Reports", desc: "Analytics & insights", color: "hsl(38,70%,45%)", view: "reports" },
   ];
 
@@ -382,10 +385,10 @@ export function Dashboard({
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               {[
-                { label: "Enrolled", count: enrolledStudents, color: "var(--color-success)", pct: totalStudents > 0 ? Math.round((enrolledStudents / totalStudents) * 100) : 0 },
-                { label: "New (Pending)", count: newStudents, color: "var(--color-info)", pct: totalStudents > 0 ? Math.round((newStudents / totalStudents) * 100) : 0 },
+                { label: "Total Students", count: totalStudents, color: "var(--color-success)", pct: 100 },
+                { label: "Total Teachers", count: totalTeachers, color: "hsl(142,70%,42%)", pct: 100 },
                 { label: "Total Batches", count: totalBatches, color: "hsl(271,91%,60%)", pct: 100 },
-                { label: "Total Staff", count: totalStaff, color: "hsl(38,92%,50%)", pct: 100 },
+                { label: "Total Staff", count: totalStaffOnly, color: "hsl(38,92%,50%)", pct: 100 },
               ].map((item) => (
                 <div key={item.label} style={{ padding: "14px", background: `${item.color}08`, borderRadius: "12px", border: `1px solid ${item.color}18` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>

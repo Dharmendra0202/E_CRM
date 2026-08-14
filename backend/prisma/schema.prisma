@@ -207,6 +207,8 @@ model Student {
   parentEmail String
   motherName  String?
   motherPhone String?
+  gender      String?
+  address     String?
   dateOfBirth DateTime          @db.Date
   createdAt   DateTime          @default(now()) @db.Timestamptz(6)
   attendance  Attendance[]

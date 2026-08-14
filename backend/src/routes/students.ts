@@ -37,7 +37,7 @@ router.get("/:id", authenticate, async (req: AuthRequest, res: Response): Promis
 // POST /api/v1/students
 router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { parentName, parentPhone, parentEmail, dateOfBirth, firstName, lastName, email, phone, batch, feeAmount, motherName, motherPhone } = req.body;
+    const { parentName, parentPhone, parentEmail, dateOfBirth, firstName, lastName, email, phone, batch, feeAmount, motherName, motherPhone, gender, address } = req.body;
     if (!parentName || !parentPhone || !parentEmail || !dateOfBirth || !firstName || !email) {
       res.status(400).json({ status: "error", message: "Required fields missing." }); return;
     }
@@ -74,12 +74,12 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
     if (student) {
       student = await prisma.student.update({
         where: { id: student.id },
-        data: { parentName, parentPhone, parentEmail, motherName: motherName || null, motherPhone: motherPhone || null, dateOfBirth: new Date(dateOfBirth) },
+        data: { parentName, parentPhone, parentEmail, motherName: motherName || null, motherPhone: motherPhone || null, gender: gender || null, address: address || null, dateOfBirth: new Date(dateOfBirth) },
         include: { user: true, enrollments: { include: { batch: true } }, invoices: true }
       });
     } else {
       student = await prisma.student.create({
-        data: { userId: user.id, parentName, parentPhone, parentEmail, motherName: motherName || null, motherPhone: motherPhone || null, dateOfBirth: new Date(dateOfBirth) },
+        data: { userId: user.id, parentName, parentPhone, parentEmail, motherName: motherName || null, motherPhone: motherPhone || null, gender: gender || null, address: address || null, dateOfBirth: new Date(dateOfBirth) },
         include: { user: true, enrollments: { include: { batch: true } }, invoices: true }
       });
     }
@@ -92,32 +92,47 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
       if (!foundBatch) {
         // Auto-create the batch if it doesn't exist
         const now = new Date();
-        const endDate = new Date(now.getFullYear() + 1, 2, 31); // End of academic year
-        foundBatch = await prisma.batch.create({
-          data: {
-            name: batch,
-            subject: "General",
-            startDate: now,
-            endDate,
-            capacity: 60,
-            teacherId: (await prisma.teacher.findFirst())?.id || "",
-            feeAmount: feeAmount ? parseFloat(feeAmount) : 0,
-            feeFrequency: "MONTHLY",
+        const endDate = new Date(now.getFullYear() + 1, 2, 31);
+        // Find or create a default teacher
+        let teacher = await prisma.teacher.findFirst();
+        if (!teacher) {
+          // Create a placeholder teacher from the admin user
+          const adminUser = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+          if (adminUser) {
+            teacher = await prisma.teacher.create({
+              data: { userId: adminUser.id, qualification: "Admin", hourlyRate: 0 }
+            });
           }
-        });
+        }
+        if (teacher) {
+          foundBatch = await prisma.batch.create({
+            data: {
+              name: batch,
+              subject: "General",
+              startDate: now,
+              endDate,
+              capacity: 60,
+              teacherId: teacher.id,
+              feeAmount: feeAmount ? parseFloat(feeAmount) : 0,
+              feeFrequency: "MONTHLY",
+            }
+          });
+        }
       }
-      // Check if already enrolled in this batch
-      const existingEnrollment = await prisma.batchEnrollment.findFirst({
-        where: { studentId: student.id, batchId: foundBatch.id }
-      });
-      if (!existingEnrollment) {
-        await prisma.batchEnrollment.create({
-          data: {
-            studentId: student.id,
-            batchId: foundBatch.id,
-            status: "ACTIVE"
-          }
+      if (foundBatch) {
+        // Check if already enrolled in this batch
+        const existingEnrollment = await prisma.batchEnrollment.findFirst({
+          where: { studentId: student.id, batchId: foundBatch.id }
         });
+        if (!existingEnrollment) {
+          await prisma.batchEnrollment.create({
+            data: {
+              studentId: student.id,
+              batchId: foundBatch.id,
+              status: "ACTIVE"
+            }
+          });
+        }
       }
     }
 

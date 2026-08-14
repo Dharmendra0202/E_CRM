@@ -125,6 +125,8 @@ export const NewEnrollment: React.FC = () => {
           lastName: personal.lastName || "",
           email: personal.email || `${personal.phone}@placeholder.com`,
           phone: personal.phone,
+          gender: personal.gender,
+          address: personal.address || "",
           parentName: guardian.fatherName,
           parentPhone: guardian.fatherPhone,
           parentEmail: personal.email || `${personal.phone}@placeholder.com`,
@@ -392,7 +394,7 @@ export const NewEnrollment: React.FC = () => {
               <SelectField
                 label="Class / Batch / Standard *"
                 value={personal.batch}
-                options={["", "5th Class", "6th Class", "7th Class", "8th Class", "9th Class", "10th Class", "11th Class", "12th Class"]}
+                options={["", "1st Standard", "2nd Standard", "3rd Standard", "4th Standard", "5th Standard", "6th Standard", "7th Standard", "8th Standard", "9th Standard", "10th Standard", "11th Science", "11th Commerce", "12th Science", "12th Commerce"]}
                 onChange={(v) => setPersonal({ ...personal, batch: v })}
                 error={errors.batch}
               />

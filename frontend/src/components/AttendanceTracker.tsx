@@ -38,7 +38,7 @@ interface AttendanceSession {
 export function AttendanceTracker() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [selectedBatch, setSelectedBatch] = useState("Grade 10 Algebra");
+  const [selectedBatch, setSelectedBatch] = useState("");
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().substring(0, 10));
   const [absenceAlertChecked, setAbsenceAlertChecked] = useState(true);

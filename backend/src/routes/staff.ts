@@ -63,4 +63,24 @@ router.delete("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest,
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });
 
+// GET /api/v1/staff/all-users — all registered login users for export
+router.get("/all-users", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const users = await prisma.user.findMany({
+      select: { id: true, email: true, firstName: true, lastName: true, phone: true, role: true, emailVerified: true, createdAt: true },
+      orderBy: { createdAt: "desc" },
+    });
+    const mapped = users.map(u => ({
+      id: u.id,
+      name: `${u.firstName} ${u.lastName}`,
+      email: u.email,
+      phone: u.phone || "",
+      role: u.role,
+      emailVerified: u.emailVerified ? "Yes" : "No",
+      createdAt: u.createdAt?.toISOString().split("T")[0] || "",
+    }));
+    res.json({ status: "success", data: mapped });
+  } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
+});
+
 export default router;

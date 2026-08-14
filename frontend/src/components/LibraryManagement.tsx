@@ -15,6 +15,12 @@ export function LibraryManagement() {
   const [showAddBook, setShowAddBook] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newBook, setNewBook] = useState({ title: "", author: "", isbn: "", category: "", totalCopies: "1" });
+  const [showIssueBook, setShowIssueBook] = useState(false);
+  const [issueBookId, setIssueBookId] = useState("");
+  const [issueStudentId, setIssueStudentId] = useState("");
+  const [issueDays, setIssueDays] = useState("14");
+  const [issuing, setIssuing] = useState(false);
+  const [studentsList, setStudentsList] = useState<any[]>([]);
 
   useEffect(() => { loadData(); }, []);
   useEffect(() => { if (activeTab === "catalog") loadBooks(); }, [searchQuery]);
@@ -42,6 +48,30 @@ export function LibraryManagement() {
 
   const handleReturn = async (issueId: string) => {
     try { await api.library.returnBook(issueId); loadData(); } catch (err) { console.error(err); }
+  };
+
+  const handleIssueBook = async () => {
+    if (!issueBookId || !issueStudentId) return;
+    setIssuing(true);
+    try {
+      await api.library.issueBook(issueBookId, { studentId: issueStudentId, days: parseInt(issueDays) || 14 });
+      setShowIssueBook(false);
+      setIssueBookId("");
+      setIssueStudentId("");
+      loadData();
+    } catch (err) { console.error(err); }
+    setIssuing(false);
+  };
+
+  const openIssueModal = async (bookId: string) => {
+    setIssueBookId(bookId);
+    setShowIssueBook(true);
+    if (studentsList.length === 0) {
+      try {
+        const res = await api.students.getAll();
+        if (res.data) setStudentsList(res.data);
+      } catch (err) { console.error(err); }
+    }
   };
 
   
@@ -108,6 +138,9 @@ export function LibraryManagement() {
               </div>
               <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{book.author} {book.category ? `· ${book.category}` : ""}</p>
               {book.isbn && <p style={{ margin: "2px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>ISBN: {book.isbn}</p>}
+              {book.availableCopies > 0 && (
+                <button onClick={() => openIssueModal(book.id)} style={{ marginTop: "8px", fontSize: "11px", fontWeight: 700, color: "hsl(271,91%,60%)", background: "hsla(271,91%,60%,0.08)", border: "1px solid hsla(271,91%,60%,0.2)", padding: "5px 10px", borderRadius: "8px", cursor: "pointer" }}>Issue Book</button>
+              )}
             </div>
           ))}
         </div>
@@ -146,6 +179,33 @@ export function LibraryManagement() {
             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "20px" }}>
               <Button variant="secondary" onClick={() => setShowAddBook(false)}>Cancel</Button>
               <Button variant="primary" isLoading={creating} onClick={handleCreateBook} leftIcon={<Plus size={14} />}>Add</Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Issue Book Modal */}
+      {showIssueBook && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowIssueBook(false)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "420px" }} className="animate-slide-up">
+            <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Issue Book</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div>
+                <label style={labelStyle}>Select Student *</label>
+                <select style={inputStyle} value={issueStudentId} onChange={(e) => setIssueStudentId(e.target.value)}>
+                  <option value="">-- Choose a student --</option>
+                  {studentsList.map((s: any) => (
+                    <option key={s.id} value={s.id}>{s.user ? `${s.user.firstName} ${s.user.lastName}` : s.parentName}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Loan Duration (days)</label>
+                <input style={inputStyle} type="number" value={issueDays} onChange={(e) => setIssueDays(e.target.value)} />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "20px" }}>
+              <Button variant="secondary" onClick={() => setShowIssueBook(false)}>Cancel</Button>
+              <Button variant="primary" isLoading={issuing} onClick={handleIssueBook}>Issue</Button>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./components/ui/Button";
 import { Card } from "./components/ui/Card";
+import { exportStaff, exportTeachers, exportLoginUsers } from "./utils/exportExcel";
 import { Skeleton } from "./components/ui/Skeleton";
 import { Toggle } from "./components/ui/Toggle";
 import { api, setToken, getToken } from "./utils/api";
@@ -33,7 +34,7 @@ import {
   Search, Plus, Check, GraduationCap, TrendingUp,
   Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
   Filter, Settings, LogOut, ShieldCheck, Sparkles,
-  Activity, BookOpen, IndianRupee, History, Sun, Moon
+  Activity, BookOpen, IndianRupee, History, Sun, Moon, Download
 } from "lucide-react";
 
 type ViewType = "dashboard" | "leads" | "new-enrollment" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding";
@@ -170,6 +171,7 @@ function App() {
 
   const [showLogin, setShowLogin] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("ecrm_theme") === "dark");
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
@@ -219,6 +221,8 @@ function App() {
         onNavigate={(view) => { setCurrentView(view as ViewType); if (view === "leads") setStudentTab("all"); }}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        mobileOpen={mobileSidebarOpen}
+        onMobileClose={() => setMobileSidebarOpen(false)}
       />
 
       {/* ── Command Palette ── */}
@@ -250,6 +254,18 @@ function App() {
         {/* ── Header ── */}
         <header className="crm-top-header">
           <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+            {/* Mobile hamburger */}
+            <button
+              className="mobile-menu-btn"
+              onClick={() => setMobileSidebarOpen(true)}
+              style={{
+                display: "none", alignItems: "center", justifyContent: "center",
+                width: "36px", height: "36px", borderRadius: "10px", border: "none",
+                background: "hsla(285,30%,20%,0.06)", cursor: "pointer",
+              }}
+            >
+              <Menu size={20} style={{ color: "var(--text-primary)" }} />
+            </button>
             <GraduationCap size={26} style={{ color: "var(--color-accent)" }} />
             <h2 style={{ fontSize: "19px", fontWeight: 800, margin: 0 }} className="text-gradient-indigo">E-CRM Portal</h2>
             <span className="navbar-logo-badge">PRO</span>
@@ -396,8 +412,8 @@ function App() {
                     <div className="dropdown-user-name">{userName}</div>
                     <div className="dropdown-user-role">{userRole}</div>
                   </div>
-                  <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}><Settings size={14} /><span>Settings</span></button>
-                  <button className="dropdown-item" onClick={() => setIsProfileOpen(false)}><ShieldCheck size={14} /><span>Security</span></button>
+                  <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); setCurrentView("settings" as ViewType); }}><Settings size={14} /><span>Settings</span></button>
+                  <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); setCurrentView("roles" as ViewType); }}><ShieldCheck size={14} /><span>Security</span></button>
                   <hr style={{ border: 0, borderTop: "1px solid var(--border-glass)", margin: "4px 0" }} />
                   <button className="dropdown-item dropdown-item-danger" onClick={() => { setIsProfileOpen(false); setToken(null); setUserProfile(null); }}>
                     <LogOut size={14} /><span>Log Out</span>
@@ -509,6 +525,19 @@ function App() {
                 <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Staff Directory</h1>
                 <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>All registered staff members</p>
               </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px", gap: "10px" }}>
+                <Button variant="ghost" size="sm" style={{ fontSize: "12px", gap: "4px" }} onClick={() => exportStaff(filteredStaff)}>
+                  <Download size={14} /> Export Staff
+                </Button>
+                <Button variant="ghost" size="sm" style={{ fontSize: "12px", gap: "4px" }} onClick={async () => {
+                  try {
+                    const res = await api.staff.getAllUsers();
+                    if (res.data) exportLoginUsers(res.data);
+                  } catch (e) { console.error(e); }
+                }}>
+                  <Download size={14} /> Export All Login Users
+                </Button>
+              </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
                 {filteredStaff.length === 0 ? (
@@ -546,6 +575,11 @@ function App() {
               <div style={{ marginBottom: "28px" }}>
                 <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Teachers</h1>
                 <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>All registered teachers and instructors</p>
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "16px" }}>
+                <Button variant="ghost" size="sm" style={{ fontSize: "12px", gap: "4px" }} onClick={() => exportTeachers(staffList.filter(s => s.role === "TEACHER"))}>
+                  <Download size={14} /> Export Excel
+                </Button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
                 {staffList.filter(s => s.role === "TEACHER").length === 0 ? (

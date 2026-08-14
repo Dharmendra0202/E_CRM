@@ -77,24 +77,22 @@ const COLOR_PALETTE = [
   { color: "#84cc16", bg: "rgba(132,204,22,0.09)" },
 ];
 
-// Static fallback batches Grade 5 – 12
+// Static fallback batches 1st – 12th Standard
 const STATIC_BATCHES: ApiBatch[] = [
-  { id: "sb-5", name: "Grade 5 – Foundation", subject: "General Studies", capacity: 30, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-6", name: "Grade 6 – Foundation", subject: "General Studies", capacity: 30, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-7", name: "Grade 7 – Science & Maths", subject: "Science & Maths", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-8", name: "Grade 8 – Science & Maths", subject: "Science & Maths", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-9", name: "Grade 9 – Science & Maths", subject: "Science & Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-10", name: "Grade 10 – Science & Maths", subject: "Science & Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-10c", name: "Grade 10 – Commerce", subject: "Commerce & Accounts", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-11s", name: "Grade 11 – Science (PCM)", subject: "Physics, Chemistry, Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-11b", name: "Grade 11 – Science (PCB)", subject: "Physics, Chemistry, Biology", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-11c", name: "Grade 11 – Commerce", subject: "Commerce & Economics", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-12s", name: "Grade 12 – Science (PCM)", subject: "Physics, Chemistry, Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-12b", name: "Grade 12 – Science (PCB)", subject: "Physics, Chemistry, Biology", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-12c", name: "Grade 12 – Commerce", subject: "Commerce & Economics", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-jee", name: "JEE Mains Preparation", subject: "Physics, Chemistry, Maths", capacity: 45, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-neet", name: "NEET Preparation", subject: "Physics, Chemistry, Biology", capacity: 45, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-olym", name: "Maths Olympiad 2026", subject: "Advanced Mathematics", capacity: 25, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-1", name: "1st Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-2", name: "2nd Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-3", name: "3rd Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-4", name: "4th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-5", name: "5th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-6", name: "6th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-7", name: "7th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-8", name: "8th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-9", name: "9th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-10", name: "10th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-11s", name: "11th Science", subject: "Physics, Chemistry, Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-11c", name: "11th Commerce", subject: "Commerce & Economics", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-12s", name: "12th Science", subject: "Physics, Chemistry, Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-12c", name: "12th Commerce", subject: "Commerce & Economics", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
 ];
 
 // Room number options
@@ -673,9 +671,9 @@ export function TimetableScheduler() {
 
       {/* ── HERO HEADER ─────────────────────────────────────────────────────── */}
       <div style={{
-        background: "linear-gradient(135deg,#1e1b4b 0%,#31104b 50%,#4c1d95 100%)",
+        background: "linear-gradient(135deg, hsl(328,100%,54%) 0%, hsl(271,91%,60%) 55%, hsl(240,80%,65%) 100%)",
         borderRadius: "20px", padding: "24px 30px", color: "#fff",
-        boxShadow: "0 12px 36px -6px rgba(49,16,75,0.35)",
+        boxShadow: "0 12px 36px -6px hsla(328,100%,54%,0.25)",
         display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px"
       }}>
         <div>
@@ -686,13 +684,13 @@ export function TimetableScheduler() {
             border: "1px solid rgba(255,255,255,0.2)", marginBottom: "8px"
           }}>
             <Sparkles size={13} style={{ color: "#fbbf24" }} />
-            Grade 5–12 · 7-Day Timetable · {useLocal ? "Local Mode" : "Live DB + Auto Email"}
+            1st–12th Standard · 7-Day Timetable · {useLocal ? "Local Mode" : "Live DB + Auto Email"}
           </div>
           <h1 style={{ margin: "0 0 6px", fontSize: "24px", fontWeight: 800, letterSpacing: "-0.5px" }}>
-            Timetable Scheduler & Class Manager
+            Timetable & Class Schedule
           </h1>
           <p style={{ margin: 0, fontSize: "13px", color: "rgba(255,255,255,0.75)" }}>
-            Schedule classes for Grade 5–12, assign rooms & teachers. {useLocal ? "Saving locally — login to sync with server." : "Auto-emails sent to teachers & students."}
+            Schedule classes, assign rooms & teachers. {useLocal ? "Saving locally — login to sync with server." : "Auto-emails sent to teachers & students on changes."}
           </p>
         </div>
 
@@ -1034,13 +1032,13 @@ export function TimetableScheduler() {
           position: "fixed", inset: 0, zIndex: 9999,
           background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          padding: "16px 16px 100px 16px" // 100px bottom clearance for floating dock!
+          padding: "16px"
         }}>
           <div style={{
             background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "500px",
             padding: "24px", boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
             display: "flex", flexDirection: "column", gap: "14px",
-            maxHeight: "calc(100vh - 140px)", overflow: "hidden"
+            maxHeight: "85vh", overflowY: "auto"
           }}>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid rgba(0,0,0,0.08)", paddingBottom: "12px" }}>
@@ -1066,7 +1064,7 @@ export function TimetableScheduler() {
               <div style={{ display: "flex", flexDirection: "column", gap: "16px", paddingRight: "4px", overflowY: "auto", flex: 1, paddingBottom: "16px" }}>
                 {/* Batch ScrollWheelPicker */}
                 <ScrollWheelPicker
-                  label="Target Batch (Grade 5–12) *"
+                  label="Select Batch / Class *"
                   items={batches.map(b => ({ label: b.name, value: b.id }))}
                   value={form.batchId}
                   onChange={val => handleFormChange("batchId", val)}

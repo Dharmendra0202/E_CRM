@@ -11,6 +11,8 @@ interface SidebarProps {
   onNavigate: (view: string) => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
 }
 
 const NAV_ITEMS = [
@@ -44,9 +46,13 @@ const NAV_ITEMS = [
   ]},
 ];
 
-export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse }: SidebarProps) {
+export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, mobileOpen, onMobileClose }: SidebarProps) {
   return (
+    <>
+    {/* Mobile overlay */}
+    {mobileOpen && <div className={`sidebar-overlay ${mobileOpen ? "visible" : ""}`} onClick={onMobileClose} />}
     <aside
+      className={mobileOpen ? "mobile-open" : ""}
       style={{
         width: collapsed ? "64px" : "220px",
         height: "100vh",
@@ -86,7 +92,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse }
               return (
                 <button
                   key={item.view}
-                  onClick={() => onNavigate(item.view)}
+                  onClick={() => { onNavigate(item.view); if (onMobileClose) onMobileClose(); }}
                   title={collapsed ? item.label : undefined}
                   style={{
                     display: "flex",
@@ -140,5 +146,6 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse }
         {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
       </button>
     </aside>
+    </>
   );
 }

@@ -3,6 +3,7 @@ import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 import { api } from "../utils/api";
 import { addHistoryItem } from "../utils/history";
+import { exportStudents } from "../utils/exportExcel";
 import { WhatsAppStatusWidget } from "./ui/WhatsAppStatusWidget";
 import { StudentProfile } from "./StudentProfile";
 import {
@@ -876,7 +877,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                   Attendance <SortIcon field="attendanceRate" />
                 </div>
                 <div className="stu-th stu-th-status">Status</div>
-                <div className="stu-th stu-th-fee">Fee (?)</div>
+                <div className="stu-th stu-th-fee">Fee</div>
                 <div className="stu-th stu-th-actions">Actions</div>
               </div>
 

@@ -94,6 +94,7 @@ export const api = {
   // ── Staff ────────────────────────────────────────────────
   staff: {
     getAll: () => request<any>("/staff"),
+    getAllUsers: () => request<any>("/staff/all-users"),
     create: (body: object) => request<any>("/staff", { method: "POST", body: JSON.stringify(body) }),
     update: (id: string, body: object) => request<any>(`/staff/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     delete: (id: string) => request<any>(`/staff/${id}`, { method: "DELETE" }),

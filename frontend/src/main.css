@@ -3639,7 +3639,7 @@ div[style*="linear-gradient(135deg, hsl(328"] {
 
 /* Isolate component paint layers to prevent full-page repaints */
 .crm-viewport {
-  contain: layout style;
+  contain: style;
 }
 
 /* Reduce paint area on hover effects — use transform instead of box-shadow animation */
@@ -3658,5 +3658,205 @@ div[style*="linear-gradient(135deg, hsl(328"] {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE: Mobile & Tablet (< 1024px)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Sidebar: hidden off-screen on mobile, slide-in when toggled ── */
+@media (max-width: 1023px) {
+  .has-sidebar aside {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 999;
+  }
+  .has-sidebar aside.mobile-open {
+    transform: translateX(0);
+  }
+  /* Overlay behind sidebar when open */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 998;
+  }
+  .sidebar-overlay.visible {
+    display: block;
+  }
+
+  /* Header: full width on mobile */
+  .has-sidebar .crm-top-header,
+  .has-sidebar.sidebar-collapsed .crm-top-header {
+    left: 0 !important;
+    padding: 10px 16px;
+  }
+
+  /* Main content: no margin on mobile */
+  .has-sidebar .crm-main-content,
+  .has-sidebar.sidebar-collapsed .crm-main-content {
+    margin-left: 0 !important;
+  }
+
+  /* Viewport: less padding on mobile */
+  .crm-viewport {
+    padding: 16px !important;
+    padding-top: 70px !important;
+    padding-bottom: 100px !important;
+  }
+
+  /* Bottom dock: show on mobile */
+  .has-sidebar .crm-bottom-dock {
+    display: flex !important;
+  }
+}
+
+/* ── Tablet tweaks (768px - 1023px) ── */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .crm-viewport {
+    padding: 20px !important;
+    padding-top: 72px !important;
+  }
+}
+
+/* ── Small mobile (< 600px) ── */
+@media (max-width: 600px) {
+  /* Header search box hidden on small screens */
+  .navbar-search-box {
+    display: none !important;
+  }
+
+  /* New Enrollment form: single column */
+  .ne-container { padding: 16px !important; }
+
+  /* Dashboard hero */
+  .crm-viewport h1 { font-size: 20px !important; }
+
+  /* Grid overrides: force single column */
+  .staff-layout-grid,
+  .ne-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Student table: horizontal scroll */
+  .stu-table-header,
+  .stu-table-row {
+    min-width: 700px;
+  }
+
+  /* Bottom dock adjustments */
+  .crm-bottom-dock {
+    bottom: 10px !important;
+    padding: 8px 12px !important;
+    border-radius: 16px !important;
+  }
+
+  /* Module cards grid on dashboard */
+  .module-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ── Extra small mobile (< 400px) ── */
+@media (max-width: 400px) {
+  .crm-top-header {
+    padding: 8px 12px !important;
+  }
+  .crm-viewport {
+    padding: 12px !important;
+    padding-top: 64px !important;
+    padding-bottom: 90px !important;
+  }
+  .module-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* ── Mobile hamburger button visibility ── */
+.mobile-menu-btn { display: none !important; }
+@media (max-width: 1023px) {
+  .mobile-menu-btn { display: flex !important; }
+}
+
+
+/* ── Responsive form grids ── */
+@media (max-width: 600px) {
+  /* NewEnrollment role grid */
+  [style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* NewEnrollment 2-col form grid */
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* Payment plan grid */
+  [style*="grid-template-columns: repeat(2, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* Dashboard stat cards */
+  [style*="grid-template-columns: repeat(auto-fill"] {
+    grid-template-columns: 1fr !important;
+  }
+  /* Timetable header */
+  [style*="justify-content: space-between"][style*="flex-wrap: wrap"] {
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+}
+
+/* ── Student table scrollable on mobile ── */
+@media (max-width: 768px) {
+  .stu-filters-card {
+    flex-direction: column !important;
+  }
+  .stu-table-header,
+  .stu-table-row {
+    min-width: 700px;
+  }
+  [style*="overflow: hidden"] {
+    overflow-x: auto !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL MODAL FIX: All modals centered, scrollable, max height
+   ═══════════════════════════════════════════════════════════════ */
+.animate-slide-up {
+  max-height: 85vh !important;
+  overflow-y: auto !important;
+}
+
+/* Ensure modal backdrop padding for mobile */
+@media (max-width: 600px) {
+  .animate-slide-up {
+    max-height: 90vh !important;
+    max-width: calc(100vw - 32px) !important;
+    padding: 20px !important;
+    border-radius: 16px !important;
+  }
+}
+
+
+/* ── StudentProfile modal responsive ── */
+@media (max-width: 768px) {
+  .animate-fade-in[style*="maxWidth: \"1100px\""],
+  div[style*="max-width: 1100px"] {
+    max-width: 100vw !important;
+    height: 95vh !important;
+    border-radius: 12px !important;
+    margin: 8px !important;
+  }
+}
+
+/* ── All fixed overlay modals: ensure proper mobile sizing ── */
+@media (max-width: 600px) {
+  div[style*="position: fixed"][style*="inset: 0"] > div {
+    margin: 12px;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 }

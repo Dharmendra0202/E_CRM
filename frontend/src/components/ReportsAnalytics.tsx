@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Skeleton } from "./ui/Skeleton";
+import { Button } from "./ui/Button";
 import { api } from "../utils/api";
+import { exportStudents, exportStaff, exportLoginUsers } from "../utils/exportExcel";
 import {
   BarChart3, Users2, IndianRupee, Activity, TrendingUp,
-  GraduationCap, BookOpen, Target, CheckCircle2, XCircle, Clock,
+  GraduationCap, BookOpen, Target, CheckCircle2, XCircle, Clock, Download,
 } from "lucide-react";
 
 export function ReportsAnalytics() {
@@ -41,11 +43,24 @@ export function ReportsAnalytics() {
 
   return (
     <div className="animate-fade-in">
-      <div style={{ marginBottom: "24px" }}>
-        <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Reports & Analytics</h1>
-        <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>
-          Comprehensive overview of your institution's performance.
-        </p>
+      <div style={{ marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "12px" }}>
+        <div>
+          <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Reports & Analytics</h1>
+          <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>
+            Comprehensive overview of your institution's performance.
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          <Button variant="ghost" size="sm" style={{ fontSize: "12px", gap: "4px" }} onClick={async () => {
+            try { const res = await api.students.getAll(); if (res.data) exportStudents(res.data.map((s: any) => ({ name: s.user ? `${s.user.firstName} ${s.user.lastName}` : s.parentName, email: s.user?.email || s.parentEmail, phone: s.user?.phone || s.parentPhone, dob: s.dateOfBirth?.split("T")[0] || "", gender: s.gender || "—", batch: s.enrollments?.[0]?.batch?.name || "Unassigned", guardianName: s.parentName, guardianPhone: s.parentPhone, motherName: s.motherName || "", motherPhone: s.motherPhone || "", address: s.address || "", feeAmount: s.invoices?.[0]?.totalAmount || 0, feeStatus: s.invoices?.[0]?.status || "—", enrollmentDate: s.createdAt?.split("T")[0] || "", status: "Active" }))); } catch (e) { console.error(e); }
+          }}><Download size={14} /> Export Students</Button>
+          <Button variant="ghost" size="sm" style={{ fontSize: "12px", gap: "4px" }} onClick={async () => {
+            try { const res = await api.staff.getAll(); if (res.data) exportStaff(res.data.map((s: any) => ({ name: `${s.firstName} ${s.lastName}`, email: s.email, phone: s.phone || "", role: s.role, title: s.teacher?.qualification || s.role }))); } catch (e) { console.error(e); }
+          }}><Download size={14} /> Export Staff</Button>
+          <Button variant="ghost" size="sm" style={{ fontSize: "12px", gap: "4px" }} onClick={async () => {
+            try { const res = await api.staff.getAllUsers(); if (res.data) exportLoginUsers(res.data); } catch (e) { console.error(e); }
+          }}><Download size={14} /> Export All Users</Button>
+        </div>
       </div>
 
       {/* Top KPI Row */}
