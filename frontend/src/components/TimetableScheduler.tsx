@@ -61,9 +61,10 @@ interface ScheduleCard {
 const WEEK_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 const TIME_SLOTS = [
-  "08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM",
-  "12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM",
-  "04:00 PM", "05:00 PM", "06:00 PM"
+  "07:00 AM", "07:30 AM", "08:00 AM", "08:30 AM", "09:00 AM", "09:30 AM",
+  "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM",
+  "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM",
+  "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM"
 ];
 
 const COLOR_PALETTE = [
@@ -349,6 +350,7 @@ export function TimetableScheduler() {
   const [viewMode, setViewMode] = useState<"grid" | "batch" | "teacher">("grid");
   const [schedules, setSchedules] = useState<ScheduleCard[]>([]);
   const [batches, setBatches] = useState<ApiBatch[]>([]);
+  const [staffMembers, setStaffMembers] = useState<{ id: string; name: string; role: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
   const [useLocal, setUseLocal] = useState(false); // true = localStorage mode
@@ -385,6 +387,9 @@ export function TimetableScheduler() {
     startTime: "08:00 AM",
     endTime: "09:30 AM",
     roomNo: "",
+    subject: "",
+    teacher: "",
+    notes: "",
   });
   const [conflictMsg, setConflictMsg] = useState<string | null>(null);
 
@@ -403,10 +408,16 @@ export function TimetableScheduler() {
         return;
       }
 
-      const [schRes, batRes] = await Promise.all([
+      const [schRes, batRes, staffRes] = await Promise.all([
         callApi("/schedules"),
         callApi("/batches"),
+        callApi("/staff"),
       ]);
+
+      // Load staff members
+      if (staffRes.data) {
+        setStaffMembers(staffRes.data.map((s: any) => ({ id: s.id, name: `${s.firstName} ${s.lastName}`, role: s.role })));
+      }
 
       const apiBatches: ApiBatch[] = batRes.data || [];
       // Merge: API batches first, then static ones not already present by name
@@ -449,6 +460,14 @@ export function TimetableScheduler() {
 
   const handleFormChange = (field: string, value: any) => {
     const updated = { ...form, [field]: value };
+    // Auto-fill subject and teacher when batch changes
+    if (field === "batchId") {
+      const batch = batches.find(b => b.id === value);
+      if (batch) {
+        updated.subject = updated.subject || batch.subject || "";
+        updated.teacher = updated.teacher || `${batch.teacher.user.firstName} ${batch.teacher.user.lastName}`;
+      }
+    }
     setForm(updated);
     const c = checkConflict(updated.batchId, Number(updated.dayOfWeek), updated.startTime, updated.roomNo, updated.id);
     setConflictMsg(c);
@@ -456,13 +475,13 @@ export function TimetableScheduler() {
 
   // ── Open modals ───────────────────────────────────────────────────────────
   const openNew = (dayOfWeek = 0, startTime = "08:00 AM") => {
-    setForm({ id: "", batchId: batches[0]?.id || "", dayOfWeek, startTime, endTime: "09:30 AM", roomNo: "" });
+    setForm({ id: "", batchId: batches[0]?.id || "", dayOfWeek, startTime, endTime: "09:30 AM", roomNo: "", subject: "", teacher: "", notes: "" });
     setConflictMsg(null);
     setIsFormOpen(true);
   };
 
   const openEdit = (s: ScheduleCard) => {
-    setForm({ id: s.id, batchId: s.batchId, dayOfWeek: s.dayOfWeek, startTime: s.startTime, endTime: s.endTime, roomNo: s.roomOrLink === "TBD" ? "" : s.roomOrLink });
+    setForm({ id: s.id, batchId: s.batchId, dayOfWeek: s.dayOfWeek, startTime: s.startTime, endTime: s.endTime, roomNo: s.roomOrLink === "TBD" ? "" : s.roomOrLink, subject: s.subject || "", teacher: s.teacherName || "", notes: "" });
     setConflictMsg(null);
     setDetailSession(null);
     setIsFormOpen(true);
@@ -1030,120 +1049,153 @@ export function TimetableScheduler() {
       {isFormOpen && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 9999,
-          background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)",
+          background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)",
           display: "flex", alignItems: "center", justifyContent: "center",
           padding: "16px"
-        }}>
-          <div style={{
-            background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "500px",
-            padding: "24px", boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
-            display: "flex", flexDirection: "column", gap: "14px",
+        }} onClick={() => setIsFormOpen(false)}>
+          <div onClick={(e) => e.stopPropagation()} style={{
+            background: "#fff", borderRadius: "20px", width: "100%", maxWidth: "480px",
+            padding: "28px", boxShadow: "0 25px 60px rgba(0,0,0,0.2)",
+            display: "flex", flexDirection: "column", gap: "20px",
             maxHeight: "85vh", overflowY: "auto"
           }}>
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid rgba(0,0,0,0.08)", paddingBottom: "12px" }}>
+            {/* Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <h3 style={{ margin: "0 0 4px", fontSize: "18px", fontWeight: 800, color: "var(--text-primary)" }}>
-                  {form.id ? "Edit Class Session" : "Schedule New Class"}
+                <h3 style={{ margin: "0 0 2px", fontSize: "18px", fontWeight: 800 }}>
+                  {form.id ? "Edit Class" : "Schedule New Class"}
                 </h3>
-                <span style={{ fontSize: "11px", color: "var(--color-success)", fontWeight: 600 }}>
-                  {useLocal ? "✓ Saves locally in browser" : "⚡ Auto-emails teacher & all enrolled students on save"}
-                </span>
+                <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>
+                  {useLocal ? "Saves locally in browser" : "Auto-notifies teacher & students on save"}
+                </p>
               </div>
-              <button onClick={() => setIsFormOpen(false)} style={{ background: "transparent", border: "none", cursor: "pointer" }}><X size={20} /></button>
+              <button onClick={() => setIsFormOpen(false)} style={{ background: "hsla(0,0%,0%,0.05)", border: "none", cursor: "pointer", width: "32px", height: "32px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={18} /></button>
             </div>
 
+            {/* Conflict Warning */}
             {conflictMsg && (
-              <div style={{ background: "hsla(342,90%,48%,0.1)", border: "1px solid hsla(342,90%,48%,0.2)", padding: "12px", borderRadius: "12px", color: "var(--color-danger)", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
-                <AlertCircle size={16} /> {conflictMsg}
+              <div style={{ background: "hsla(342,90%,48%,0.08)", border: "1px solid hsla(342,90%,48%,0.2)", padding: "10px 14px", borderRadius: "10px", color: "var(--color-danger)", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px" }}>
+                <AlertCircle size={15} /> {conflictMsg}
               </div>
             )}
 
-            <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
-              {/* Scrollable Form Body */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px", paddingRight: "4px", overflowY: "auto", flex: 1, paddingBottom: "16px" }}>
-                {/* Batch ScrollWheelPicker */}
-                <ScrollWheelPicker
-                  label="Select Batch / Class *"
-                  items={batches.map(b => ({ label: b.name, value: b.id }))}
+            {/* Form */}
+            <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+              {/* Batch / Class */}
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>Class / Batch *</label>
+                <select
                   value={form.batchId}
-                  onChange={val => handleFormChange("batchId", val)}
-                  accent="hsl(328,100%,54%)"
-                />
+                  onChange={(e) => handleFormChange("batchId", e.target.value)}
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", fontWeight: 600, outline: "none", background: "#fff", cursor: "pointer" }}
+                >
+                  <option value="">Select a class...</option>
+                  {batches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                </select>
+              </div>
 
-                {/* Auto-fill teacher info */}
-                {selectedBatchInfo && (
-                  <div style={{ background: "hsl(320,20%,97%)", padding: "10px 14px", borderRadius: "10px", fontSize: "12px", color: "var(--text-secondary)" }}>
-                    📚 Subject: <strong style={{ color: "var(--text-primary)" }}>{selectedBatchInfo.subject}</strong>
-                    {" "}· 👨‍🏫 <strong style={{ color: "var(--text-primary)" }}>{selectedBatchInfo.teacher.user.firstName} {selectedBatchInfo.teacher.user.lastName}</strong>
-                    {" "}· {selectedBatchInfo.enrollments.length} students enrolled
-                  </div>
-                )}
+              {/* Batch Info */}
+              {selectedBatchInfo && (
+                <div style={{ background: "hsla(271,91%,60%,0.04)", padding: "10px 14px", borderRadius: "10px", fontSize: "12px", color: "var(--text-secondary)", border: "1px solid hsla(271,91%,60%,0.1)" }}>
+                  <strong style={{ color: "var(--text-primary)" }}>{selectedBatchInfo.subject}</strong> · Teacher: {selectedBatchInfo.teacher.user.firstName} {selectedBatchInfo.teacher.user.lastName} · {selectedBatchInfo.enrollments.length} students
+                </div>
+              )}
 
-                {/* Day ScrollWheelPicker */}
-                <ScrollWheelPicker
-                  label="Day of Week *"
-                  items={WEEK_DAYS.map((d, i) => ({ label: d, value: i.toString() }))}
-                  value={form.dayOfWeek.toString()}
-                  onChange={val => handleFormChange("dayOfWeek", Number(val))}
-                  accent="hsl(271,91%,60%)"
-                />
-
-                {/* Digital Time Pickers for Start & End Time */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", background: "hsl(320,20%,98%)", padding: "14px", borderRadius: "16px", border: "1px solid rgba(0,0,0,0.06)" }}>
-                  <DigitalTimePicker
-                    label="Start Time *"
-                    value={form.startTime}
-                    onChange={val => handleFormChange("startTime", val)}
-                  />
-                  <DigitalTimePicker
-                    label="End Time *"
-                    value={form.endTime}
-                    onChange={val => handleFormChange("endTime", val)}
+              {/* Subject & Teacher Row */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>Subject</label>
+                  <input
+                    type="text"
+                    value={form.subject}
+                    onChange={(e) => handleFormChange("subject", e.target.value)}
+                    placeholder="e.g. Maths, Science, English"
+                    style={{ width: "100%", padding: "11px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", outline: "none", boxSizing: "border-box" }}
                   />
                 </div>
+                <div>
+                  <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>Teacher / Staff</label>
+                  <select
+                    value={form.teacher}
+                    onChange={(e) => handleFormChange("teacher", e.target.value)}
+                    style={{ width: "100%", padding: "11px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", fontWeight: 600, outline: "none", background: "#fff", cursor: "pointer", boxSizing: "border-box" }}
+                  >
+                    <option value="">Select teacher...</option>
+                    {staffMembers.map(s => <option key={s.id} value={s.name}>{s.name} ({s.role})</option>)}
+                  </select>
+                </div>
+              </div>
 
-                {/* Room Number ScrollWheelPicker */}
-                <ScrollWheelPicker
-                  label="Room Number *"
-                  items={ROOM_OPTIONS.map(r => ({ label: r, value: r }))}
+              {/* Day of Week */}
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>Day *</label>
+                <select
+                  value={form.dayOfWeek}
+                  onChange={(e) => handleFormChange("dayOfWeek", Number(e.target.value))}
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", fontWeight: 600, outline: "none", background: "#fff", cursor: "pointer" }}
+                >
+                  {WEEK_DAYS.map((d, i) => <option key={i} value={i}>{d}</option>)}
+                </select>
+              </div>
+
+              {/* Time Row */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div>
+                  <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>Start Time *</label>
+                  <select
+                    value={form.startTime}
+                    onChange={(e) => handleFormChange("startTime", e.target.value)}
+                    style={{ width: "100%", padding: "11px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", fontWeight: 600, outline: "none", background: "#fff", cursor: "pointer" }}
+                  >
+                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>End Time *</label>
+                  <select
+                    value={form.endTime}
+                    onChange={(e) => handleFormChange("endTime", e.target.value)}
+                    style={{ width: "100%", padding: "11px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", fontWeight: 600, outline: "none", background: "#fff", cursor: "pointer" }}
+                  >
+                    {TIME_SLOTS.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Room */}
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>Room / Location</label>
+                <select
                   value={form.roomNo}
-                  onChange={val => handleFormChange("roomNo", val)}
-                  accent="hsl(142,70%,45%)"
+                  onChange={(e) => handleFormChange("roomNo", e.target.value)}
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", fontWeight: 600, outline: "none", background: "#fff", cursor: "pointer" }}
+                >
+                  <option value="">Select room...</option>
+                  {ROOM_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
+
+              {/* Notes / Message */}
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>Notes / Remarks</label>
+                <textarea
+                  value={form.notes}
+                  onChange={(e) => handleFormChange("notes", e.target.value)}
+                  placeholder="e.g. Unit Test, Prelims, Revision, Lab Session, Parent Meeting..."
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", outline: "none", minHeight: "60px", resize: "vertical", fontFamily: "inherit", boxSizing: "border-box" }}
                 />
               </div>
 
-              {/* Sticky Professional Footer Actions */}
-              <div style={{
-                display: "flex", gap: "12px", paddingTop: "14px", marginTop: "auto",
-                borderTop: "1px solid rgba(0,0,0,0.08)", background: "#ffffff",
-                position: "sticky", bottom: 0, zIndex: 10
-              }}>
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  style={{
-                    flex: 1, padding: "12px 20px", borderRadius: "14px", border: "1px solid rgba(0,0,0,0.12)",
-                    background: "hsl(320,20%,96%)", color: "var(--text-primary)", fontSize: "13px", fontWeight: 700,
-                    cursor: "pointer", transition: "all 0.15s"
-                  }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={!!conflictMsg || isSaving}
-                  style={{
-                    flex: 1.5, padding: "12px 20px", borderRadius: "14px", border: "none",
-                    background: conflictMsg ? "#cbd5e1" : "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
-                    color: "#ffffff", fontSize: "13px", fontWeight: 800,
-                    cursor: conflictMsg || isSaving ? "not-allowed" : "pointer",
-                    boxShadow: conflictMsg ? "none" : "0 6px 20px hsla(328,100%,54%,0.35)",
-                    transition: "all 0.15s", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px"
-                  }}
-                >
-                  {isSaving ? "Saving..." : form.id ? "Update Class Slot" : "Save & Schedule Class"}
-                </button>
+              {/* Actions */}
+              <div style={{ display: "flex", gap: "10px", paddingTop: "8px", borderTop: "1px solid hsla(285,30%,20%,0.06)" }}>
+                <button type="button" onClick={() => setIsFormOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", background: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer", color: "hsl(285,20%,40%)" }}>Cancel</button>
+                <button type="submit" disabled={!!conflictMsg || isSaving} style={{
+                  flex: 1.5, padding: "12px", borderRadius: "10px", border: "none", fontSize: "13px", fontWeight: 700,
+                  background: conflictMsg ? "#e2e8f0" : "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))",
+                  color: conflictMsg ? "#94a3b8" : "#fff", cursor: conflictMsg || isSaving ? "not-allowed" : "pointer",
+                }}>{isSaving ? "Saving..." : form.id ? "Update Class" : "Schedule Class"}</button>
               </div>
             </form>
           </div>
