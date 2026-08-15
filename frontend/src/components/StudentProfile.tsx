@@ -31,7 +31,7 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
 
   if (isLoading) {
     return (
-      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
+      <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
         <div style={{ width: "90vw", maxWidth: "1100px", height: "85vh", background: "#fff", borderRadius: "20px", padding: "32px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <Skeleton variant="rect" height={60} />
           <div style={{ display: "flex", gap: "20px", flex: 1 }}>
@@ -66,7 +66,7 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: "20px" }} onClick={onClose}>
+    <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: "20px" }} onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: "1100px", height: "85vh", background: "#fff", borderRadius: "20px", overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px -12px rgba(29,10,39,0.25)" }} className="animate-fade-in">
 
         {/* Top Bar */}

@@ -79,25 +79,25 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
   };
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 99999,
+    <div className="modal-overlay" style={{
+      zIndex: 99999,
       background: "rgba(15,23,42,0.65)", backdropFilter: "blur(6px)",
       display: "flex", alignItems: "center", justifyContent: "center",
       padding: "20px 16px 80px 16px"
     }}>
-      <div style={{
+      <div className="modal-overlay" style={{
         background: "#ffffff", borderRadius: "24px", width: "100%", maxWidth: "640px",
         boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
         display: "flex", flexDirection: "column", maxHeight: "85vh", overflow: "hidden"
       }}>
         {/* Header */}
-        <div style={{
+        <div className="modal-overlay" style={{
           background: "linear-gradient(135deg, #1e1b4b 0%, #31104b 100%)",
           color: "#ffffff", padding: "20px 24px",
           display: "flex", justifyContent: "space-between", alignItems: "center"
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{
+          <div className="modal-overlay" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div className="modal-overlay" style={{
               width: "38px", height: "38px", borderRadius: "12px",
               background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)",
               display: "flex", alignItems: "center", justifyContent: "center"
@@ -127,12 +127,12 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
         </div>
 
         {/* Search & Category Filter Bar */}
-        <div style={{
+        <div className="modal-overlay" style={{
           padding: "16px 24px 12px 24px", background: "hsl(320,20%,98%)",
           borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", flexDirection: "column", gap: "12px"
         }}>
           {/* Search Box */}
-          <div style={{
+          <div className="modal-overlay" style={{
             display: "flex", alignItems: "center", gap: "10px",
             background: "#ffffff", border: "1px solid rgba(0,0,0,0.1)",
             borderRadius: "12px", padding: "8px 14px"
@@ -156,7 +156,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
           </div>
 
           {/* Category Chips */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", overflowX: "auto", scrollbarWidth: "none" }}>
+          <div className="modal-overlay" style={{ display: "flex", alignItems: "center", gap: "6px", overflowX: "auto", scrollbarWidth: "none" }}>
             <Filter size={13} style={{ color: "var(--text-secondary)", flexShrink: 0, marginRight: "4px" }} />
             {categories.map(cat => (
               <button
@@ -178,12 +178,12 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
         </div>
 
         {/* History Item Timeline List */}
-        <div style={{
+        <div className="modal-overlay" style={{
           flex: 1, overflowY: "auto", padding: "16px 24px",
           display: "flex", flexDirection: "column", gap: "10px"
         }}>
           {filtered.length === 0 ? (
-            <div style={{
+            <div className="modal-overlay" style={{
               textAlign: "center", padding: "40px 20px", color: "var(--text-secondary)",
               display: "flex", flexDirection: "column", alignItems: "center", gap: "10px"
             }}>
@@ -203,7 +203,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                   transition: "transform 0.15s, boxShadow 0.15s"
                 }}
               >
-                <div style={{
+                <div className="modal-overlay" style={{
                   width: "36px", height: "36px", borderRadius: "10px",
                   background: item.badgeColor ? `${item.badgeColor}15` : "rgba(139,92,246,0.1)",
                   display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
@@ -212,8 +212,8 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                   {getActionIcon(item.action)}
                 </div>
 
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
+                <div className="modal-overlay" style={{ flex: 1, minWidth: 0 }}>
+                  <div className="modal-overlay" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
                     <span style={{
                       fontSize: "10px", fontWeight: 800, textTransform: "uppercase",
                       color: item.badgeColor || "hsl(271,91%,60%)",
@@ -240,7 +240,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
         </div>
 
         {/* Footer */}
-        <div style={{
+        <div className="modal-overlay" style={{
           padding: "12px 24px", background: "hsl(320,20%,98%)",
           borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center"
         }}>

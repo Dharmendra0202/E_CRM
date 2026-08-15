@@ -69,13 +69,24 @@ export function AttendanceTracker() {
     const fetchBatches = async () => {
       try {
         const res = await api.batches.getAll();
-        if (res.data) {
+        if (res.data && res.data.length > 0) {
           setBatches(res.data);
           // Set default batch
           if (res.data.length > 0) {
             setSelectedBatch(res.data[0].name);
             setSelectedBatchId(res.data[0].id);
           }
+        } else {
+          // Fallback: show standard batches if none exist in DB
+          const fallbackBatches = [
+            "1st Standard", "2nd Standard", "3rd Standard", "4th Standard",
+            "5th Standard", "6th Standard", "7th Standard", "8th Standard",
+            "9th Standard", "10th Standard", "11th Science", "11th Commerce",
+            "12th Science", "12th Commerce"
+          ].map((name, i) => ({ id: `fb-${i}`, name, subject: "General" }));
+          setBatches(fallbackBatches);
+          setSelectedBatch(fallbackBatches[0].name);
+          setSelectedBatchId(fallbackBatches[0].id);
         }
       } catch (err) {
         console.error("Failed to load batches:", err);

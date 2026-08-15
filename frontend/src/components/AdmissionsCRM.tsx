@@ -250,6 +250,36 @@ export function AdmissionsCRM() {
               ))}
             </div>
 
+            {/* Direct Enrollment Button */}
+            <div style={{ marginBottom: "20px", padding: "14px", background: "hsla(142,70%,42%,0.06)", borderRadius: "12px", border: "1px solid hsla(142,70%,42%,0.15)" }}>
+              <p style={{ margin: "0 0 8px", fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>Quick Actions</p>
+              <button
+                onClick={async () => {
+                  try {
+                    const nameParts = selectedLead.name?.split(" ") || ["Student"];
+                    await api.students.create({
+                      firstName: nameParts[0],
+                      lastName: nameParts.slice(1).join(" ") || "",
+                      email: selectedLead.email,
+                      phone: selectedLead.phone || "",
+                      parentName: selectedLead.name,
+                      parentPhone: selectedLead.phone || "",
+                      parentEmail: selectedLead.email,
+                      dateOfBirth: "2005-01-01",
+                      batch: selectedLead.course || "",
+                    });
+                    await api.leads.update(selectedLead.id, { status: "ENROLLED" });
+                    alert(`${selectedLead.name} enrolled successfully!`);
+                    setSelectedLead(null);
+                    loadData();
+                  } catch (err: any) { alert(err.message || "Enrollment failed"); }
+                }}
+                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 16px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, hsl(142,70%,42%), hsl(160,70%,35%))", color: "#fff", fontSize: "12px", fontWeight: 700, cursor: "pointer", width: "100%" }}
+              >
+                <UserPlus size={15} /> Direct Enrollment (Convert to Student)
+              </button>
+            </div>
+
             {/* Add Note */}
             <div style={{ marginBottom: "20px" }}>
               <label style={labelStyle}>Add Note</label>
@@ -293,7 +323,7 @@ export function AdmissionsCRM() {
 
       {/* ═══ ADD LEAD MODAL ═══ */}
       {showAddLead && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowAddLead(false)}>
+        <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowAddLead(false)}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "480px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>New Enquiry</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>

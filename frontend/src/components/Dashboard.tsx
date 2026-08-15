@@ -469,6 +469,62 @@ export function Dashboard({
           ))}
         </div>
       </div>
+
+      {/* ── Phase 1: Pending Fees Widget (Clickable → opens billing) ── */}
+      {!isLoading && invoicesList.filter(inv => inv.status === "UNPAID").length > 0 && (
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", marginTop: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+            <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
+              <AlertCircle size={16} style={{ color: "var(--color-danger)" }} /> Pending Student Fees
+            </h3>
+            <button onClick={() => onNavigate("billing")} style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.07)", border: "1px solid hsla(328,100%,54%,0.18)", borderRadius: "8px", padding: "5px 11px", cursor: "pointer" }}>
+              View All <ArrowUpRight size={11} />
+            </button>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {invoicesList.filter(inv => inv.status === "UNPAID").slice(0, 5).map((inv, idx) => (
+              <div key={inv.id || idx} onClick={() => onNavigate("billing")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "hsla(342,90%,48%,0.04)", borderRadius: "10px", border: "1px solid hsla(342,90%,48%,0.1)", cursor: "pointer" }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : "Student"}</p>
+                  <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>Due: {new Date(inv.dueDate).toLocaleDateString("en-IN")}</p>
+                </div>
+                <span style={{ fontSize: "14px", fontWeight: 800, color: "var(--color-danger)" }}>₹{Number(inv.totalAmount).toLocaleString("en-IN")}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Phase 1: Batch-wise Attendance Summary ── */}
+      {!isLoading && batchesList.length > 0 && (
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", marginTop: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)" }}>
+          <h3 style={{ margin: "0 0 14px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
+            <CheckCircle2 size={16} style={{ color: "hsl(142,70%,42%)" }} /> Batch-wise Overview
+          </h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px" }}>
+            {batchesList.slice(0, 8).map((batch: any) => (
+              <div key={batch.id} onClick={() => onNavigate("attendance")} style={{ padding: "12px 14px", borderRadius: "10px", background: "hsla(271,91%,60%,0.04)", border: "1px solid hsla(271,91%,60%,0.1)", cursor: "pointer" }}>
+                <p style={{ margin: "0 0 4px", fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{batch.name}</p>
+                <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{batch.enrollments?.length || 0} students · {batch.subject || "General"}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Phase 1: Dynamic Greeting with Server Time ── */}
+      {!isLoading && (
+        <div style={{ background: "linear-gradient(135deg, hsla(271,91%,60%,0.06), hsla(328,100%,54%,0.04))", borderRadius: "14px", padding: "16px 20px", marginTop: "16px", border: "1px solid hsla(271,91%,60%,0.1)" }}>
+          <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
+            {(() => {
+              const hour = new Date().getHours();
+              if (hour < 12) return "🌅 Good Morning";
+              if (hour < 17) return "☀️ Good Afternoon";
+              return "🌙 Good Evening";
+            })()} — You have <strong style={{ color: "var(--color-danger)" }}>{invoicesList.filter(inv => inv.status === "UNPAID").length}</strong> pending fee{invoicesList.filter(inv => inv.status === "UNPAID").length !== 1 ? "s" : ""} and <strong style={{ color: "var(--color-success)" }}>{totalStudents}</strong> enrolled students across <strong>{totalBatches}</strong> batches.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

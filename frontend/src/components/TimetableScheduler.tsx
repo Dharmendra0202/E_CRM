@@ -1204,7 +1204,7 @@ export function TimetableScheduler() {
 
       {/* ── MODAL: SESSION DETAILS ───────────────────────────────────────────── */}
       {detailSession && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 999, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+        <div className="modal-overlay" style={{ background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", zIndex: 999 }}>
           <div style={{ background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "440px", padding: "24px", boxShadow: "0 20px 50px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
@@ -1350,7 +1350,7 @@ export function TimetableScheduler() {
 
       {/* ── MODAL: NOTIFY CONFIRMATION ──────────────────────────────────────── */}
       {isNotifyOpen && notifyTarget && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+        <div className="modal-overlay" style={{ background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", zIndex: 9999 }}>
           <div style={{ background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "460px", padding: "24px", boxShadow: "0 20px 50px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(0,0,0,0.08)", paddingBottom: "10px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>

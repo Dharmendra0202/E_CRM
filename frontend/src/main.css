@@ -3860,3 +3860,31 @@ div[style*="linear-gradient(135deg, hsl(328"] {
     overflow-y: auto;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   MODAL POSITIONING: Open within content area (respect sidebar + header)
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --sidebar-width: 220px;
+  --header-height: 56px;
+}
+.sidebar-collapsed {
+  --sidebar-width: 64px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* On desktop with sidebar: modals open within the content area */
+@media (min-width: 1024px) {
+  .has-sidebar .modal-overlay {
+    top: var(--header-height);
+    left: var(--sidebar-width);
+  }
+}

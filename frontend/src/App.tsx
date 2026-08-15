@@ -26,6 +26,11 @@ import { CommunicationCenter } from "./components/CommunicationCenter";
 import { ReportsAnalytics } from "./components/ReportsAnalytics";
 import { SettingsPage } from "./components/SettingsPage";
 import { NewEnrollment } from "./components/NewEnrollment";
+import { OnlineAdmissions } from "./components/OnlineAdmissions";
+import { BulkPromotion } from "./components/BulkPromotion";
+import { ExaminationSystem } from "./components/ExaminationSystem";
+import { MarksheetSystem } from "./components/MarksheetSystem";
+import { WeakStudentModule } from "./components/WeakStudentModule";
 import { LandingPage } from "./components/LandingPage";
 import { Sidebar } from "./components/ui/Sidebar";
 import { CommandPalette } from "./components/ui/CommandPalette";
@@ -37,7 +42,7 @@ import {
   Activity, BookOpen, IndianRupee, History, Sun, Moon, Download
 } from "lucide-react";
 
-type ViewType = "dashboard" | "leads" | "new-enrollment" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding";
+type ViewType = "dashboard" | "leads" | "new-enrollment" | "online-admissions" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
@@ -473,6 +478,21 @@ function App() {
           {/* ══════════════ STUDENTS VIEW ══════════════ */}
           {/* ══════════════ ADMISSIONS CRM VIEW ══════════════ */}
           {currentView === "admissions" && <AdmissionsCRM />}
+
+          {/* ══════════════ ONLINE ADMISSIONS VIEW ══════════════ */}
+          {currentView === "online-admissions" && <OnlineAdmissions />}
+
+          {/* ══════════════ BULK PROMOTION VIEW ══════════════ */}
+          {currentView === "bulk-promotion" && <BulkPromotion />}
+
+          {/* ══════════════ EXAMINATION SYSTEM VIEW ══════════════ */}
+          {currentView === "examination" && <ExaminationSystem />}
+
+          {/* ══════════════ MARKSHEET VIEW ══════════════ */}
+          {currentView === "marksheet" && <MarksheetSystem />}
+
+          {/* ══════════════ WEAK STUDENT VIEW ══════════════ */}
+          {currentView === "weak-students" && <WeakStudentModule />}
 
           {/* ══════════════ NEW ENROLLMENT VIEW ══════════════ */}
           {currentView === "new-enrollment" && (

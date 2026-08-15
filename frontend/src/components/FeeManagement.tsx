@@ -178,9 +178,41 @@ export function FeeManagement() {
         )}
       </div>
 
+      {/* Installment Tracking & Payment History */}
+      {!isLoading && invoices.length > 0 && (
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", marginTop: "16px", border: "1px solid var(--border-glass)" }}>
+          <h3 style={{ margin: "0 0 14px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
+            <CreditCard size={16} style={{ color: "hsl(271,91%,60%)" }} /> Installment Tracking
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {invoices.filter(inv => inv.payments && inv.payments.length > 0).slice(0, 8).map((inv) => {
+              const name = inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : "Student";
+              const totalPaidInv = inv.payments.reduce((s: number, p: any) => s + Number(p.amount), 0);
+              const pct = Math.min(100, Math.round((totalPaidInv / Number(inv.totalAmount)) * 100));
+              return (
+                <div key={inv.id} style={{ padding: "12px 14px", borderRadius: "10px", background: "rgba(29,10,39,0.02)", border: "1px solid var(--border-glass)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{name}</span>
+                    <span style={{ fontSize: "11px", fontWeight: 600, color: pct >= 100 ? "var(--color-success)" : "hsl(38,92%,50%)" }}>
+                      ₹{totalPaidInv.toLocaleString("en-IN")} / ₹{Number(inv.totalAmount).toLocaleString("en-IN")} ({inv.payments.length} payment{inv.payments.length !== 1 ? "s" : ""})
+                    </span>
+                  </div>
+                  <div style={{ height: "4px", background: "hsla(271,91%,60%,0.1)", borderRadius: "2px", overflow: "hidden" }}>
+                    <div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? "var(--color-success)" : "hsl(271,91%,60%)", borderRadius: "2px" }} />
+                  </div>
+                </div>
+              );
+            })}
+            {invoices.filter(inv => inv.payments && inv.payments.length > 0).length === 0 && (
+              <p style={{ fontSize: "12px", color: "var(--text-secondary)", textAlign: "center", padding: "16px 0" }}>No payment records yet.</p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Create Invoice Modal */}
       {showCreate && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowCreate(false)}>
+        <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowCreate(false)}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Issue Invoice</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -204,7 +236,7 @@ export function FeeManagement() {
 
       {/* Record Payment Modal */}
       {showPay && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowPay(null)}>
+        <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowPay(null)}>
           <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Record Payment</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
