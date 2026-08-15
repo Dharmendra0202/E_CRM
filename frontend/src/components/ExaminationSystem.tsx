@@ -31,60 +31,96 @@ const STATUS_COLORS: Record<ExamStatus, string> = {
   PUBLISHED: "hsl(142,70%,42%)",
 };
 
-const LS_KEY = "ecrm_exams";
+const LS_KEY = "ecrm_exams"; // kept for migration fallback
 
 export function ExaminationSystem() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
   const [showCreate, setShowCreate] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({
     title: "", type: EXAM_TYPES[0], subject: "", batch: "", date: "",
     totalMarks: "100", passingMarks: "35",
   });
 
-  useEffect(() => {
-    const saved = localStorage.getItem(LS_KEY);
-    if (saved) setExams(JSON.parse(saved));
-    loadBatches();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
-  const save = (list: Exam[]) => { setExams(list); localStorage.setItem(LS_KEY, JSON.stringify(list)); };
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [examRes, batchRes] = await Promise.all([
+        api.exams2.getAll(),
+        api.batches.getAll(),
+      ]);
+      if (examRes.data) {
+        setExams(examRes.data.map((e: any) => ({
+          id: e.id,
+          title: e.title,
+          type: e.type,
+          subject: e.subject,
+          batch: e.batchName || "",
+          date: e.date?.split("T")[0] || "",
+          totalMarks: e.totalMarks,
+          passingMarks: e.passingMarks,
+          status: e.status,
+          createdAt: e.createdAt,
+        })));
+      }
+      if (batchRes.data) setBatches(batchRes.data);
+    } catch {
+      // Fallback to localStorage if API fails (offline mode)
+      const saved = localStorage.getItem(LS_KEY);
+      if (saved) setExams(JSON.parse(saved));
+    }
+    setIsLoading(false);
+  };
 
   const loadBatches = async () => {
     try { const res = await api.batches.getAll(); if (res.data) setBatches(res.data); } catch {}
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!form.title || !form.subject || !form.batch || !form.date) return;
-    const newExam: Exam = {
-      id: `exam-${Date.now()}`,
-      title: form.title,
-      type: form.type,
-      subject: form.subject,
-      batch: form.batch,
-      date: form.date,
-      totalMarks: Number(form.totalMarks) || 100,
-      passingMarks: Number(form.passingMarks) || 35,
-      status: "DRAFT",
-      createdAt: new Date().toISOString(),
-    };
-    save([newExam, ...exams]);
-    setForm({ title: "", type: EXAM_TYPES[0], subject: "", batch: "", date: "", totalMarks: "100", passingMarks: "35" });
-    setShowCreate(false);
+    try {
+      await api.exams2.create({
+        title: form.title,
+        type: form.type,
+        subject: form.subject,
+        batchName: form.batch,
+        date: form.date,
+        totalMarks: Number(form.totalMarks) || 100,
+        passingMarks: Number(form.passingMarks) || 35,
+      });
+      setForm({ title: "", type: EXAM_TYPES[0], subject: "", batch: "", date: "", totalMarks: "100", passingMarks: "35" });
+      setShowCreate(false);
+      loadData();
+    } catch (err: any) {
+      alert(err.message || "Failed to create exam");
+    }
   };
 
-  const advanceStatus = (id: string) => {
-    save(exams.map(e => {
-      if (e.id !== id) return e;
-      const idx = STATUS_FLOW.indexOf(e.status);
-      if (idx < STATUS_FLOW.length - 1) return { ...e, status: STATUS_FLOW[idx + 1] };
-      return e;
-    }));
+  const advanceStatus = async (id: string) => {
+    const exam = exams.find(e => e.id === id);
+    if (!exam) return;
+    const idx = STATUS_FLOW.indexOf(exam.status);
+    if (idx >= STATUS_FLOW.length - 1) return;
+    try {
+      await api.exams2.update(id, { status: STATUS_FLOW[idx + 1] });
+      loadData();
+    } catch (err: any) {
+      alert(err.message || "Failed to update status");
+    }
   };
 
-  const deleteExam = (id: string) => {
-    if (confirm("Delete this exam?")) save(exams.filter(e => e.id !== id));
+  const deleteExam = async (id: string) => {
+    if (!confirm("Delete this exam?")) return;
+    try {
+      await api.exams2.delete(id);
+      loadData();
+    } catch (err: any) {
+      alert(err.message || "Failed to delete exam");
+    }
   };
 
   const filtered = filterStatus ? exams.filter(e => e.status === filterStatus) : exams;

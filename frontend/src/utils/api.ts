@@ -126,6 +126,7 @@ export const api = {
     getAll: () => request<any>("/invoices"),
     create: (body: object) => request<any>("/invoices", { method: "POST", body: JSON.stringify(body) }),
     update: (id: string, body: object) => request<any>(`/invoices/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    approve: (id: string, body: { newStatus: string; reason?: string }) => request<any>(`/invoices/${id}/approve`, { method: "POST", body: JSON.stringify(body) }),
     pay: (id: string, body: object) => request<any>(`/invoices/${id}/pay`, { method: "POST", body: JSON.stringify(body) }),
   },
 
@@ -225,6 +226,42 @@ export const api = {
       return request<any>(`/reports/attendance${q ? `?${q}` : ""}`);
     },
     getFinance: () => request<any>("/reports/finance"),
+  },
+
+  // ── Notifications ───────────────────────────────────────
+  notifications: {
+    getAll: (params?: { unread_only?: string; type?: string; limit?: string }) => {
+      const q = new URLSearchParams(params as any).toString();
+      return request<any>(`/notifications${q ? `?${q}` : ""}`);
+    },
+    create: (body: object) => request<any>("/notifications", { method: "POST", body: JSON.stringify(body) }),
+    createBulk: (body: object) => request<any>("/notifications/bulk", { method: "POST", body: JSON.stringify(body) }),
+    markRead: (id: string) => request<any>(`/notifications/${id}/read`, { method: "PATCH" }),
+    markAllRead: () => request<any>("/notifications/read-all", { method: "POST" }),
+    delete: (id: string) => request<any>(`/notifications/${id}`, { method: "DELETE" }),
+  },
+
+  // ── Exams (DB-persisted) ─────────────────────────────────
+  exams2: {
+    getAll: (params?: { status?: string; batch_id?: string }) => {
+      const q = new URLSearchParams(params as any).toString();
+      return request<any>(`/exams${q ? `?${q}` : ""}`);
+    },
+    create: (body: object) => request<any>("/exams", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: object) => request<any>(`/exams/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    delete: (id: string) => request<any>(`/exams/${id}`, { method: "DELETE" }),
+    addResult: (examId: string, body: object) => request<any>(`/exams/${examId}/results`, { method: "POST", body: JSON.stringify(body) }),
+  },
+
+  // ── Marksheets (DB-persisted) ──────────────────────────
+  marksheets: {
+    getAll: (params?: { batch?: string; student_id?: string }) => {
+      const q = new URLSearchParams(params as any).toString();
+      return request<any>(`/marksheets${q ? `?${q}` : ""}`);
+    },
+    create: (body: object) => request<any>("/marksheets", { method: "POST", body: JSON.stringify(body) }),
+    delete: (id: string) => request<any>(`/marksheets/${id}`, { method: "DELETE" }),
+    getResults: (batch: string) => request<any>(`/marksheets/results?batch=${encodeURIComponent(batch)}`),
   },
 
   // ── Settings & Configuration ───────────────────────────

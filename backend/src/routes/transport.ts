@@ -1,4 +1,5 @@
 import { prisma } from "../utils/prisma";
+import { logAudit } from "../utils/auditLog";
 import { Router, Response } from "express";
 
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";

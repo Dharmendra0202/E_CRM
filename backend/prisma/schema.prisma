@@ -180,6 +180,9 @@ model Lead {
   expectedJoining DateTime?      @db.Date
   course          String?
   createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
+  deletedAt       DateTime?      @db.Timestamptz(6)
+  deletedBy       String?
   assignedAdmin   User?          @relation("assignedAdmin", fields: [assignedAdminId], references: [id], onUpdate: NoAction)
   activities      LeadActivity[]
 
@@ -211,6 +214,9 @@ model Student {
   address     String?
   dateOfBirth DateTime          @db.Date
   createdAt   DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime?         @db.Timestamptz(6)
+  deletedBy   String?
   attendance  Attendance[]
   enrollments BatchEnrollment[]
   invoices    Invoice[]
@@ -237,6 +243,9 @@ model Batch {
   teacherId    String
   feeAmount    Decimal           @default(0) @db.Decimal(10, 2)
   feeFrequency String
+  updatedAt    DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+  deletedAt    DateTime?         @db.Timestamptz(6)
+  deletedBy    String?
   teacher      Teacher           @relation(fields: [teacherId], references: [id], onUpdate: NoAction)
   enrollments  BatchEnrollment[]
   schedules    Schedule[]
@@ -292,7 +301,10 @@ model Invoice {
   totalAmount           Decimal   @db.Decimal(10, 2)
   status                String    @default("UNPAID")
   dueDate               DateTime  @db.Date
+  updatedAt             DateTime  @default(now()) @updatedAt @db.Timestamptz(6)
   paidAt                DateTime? @db.Timestamptz(6)
+  deletedAt             DateTime? @db.Timestamptz(6)
+  deletedBy             String?
   stripePaymentIntentId String?   @unique
   student               Student   @relation(fields: [studentId], references: [id], onUpdate: NoAction)
   payments              Payment[]
@@ -321,6 +333,8 @@ model Subject {
   code        String?
   description String?
   createdAt   DateTime     @default(now()) @db.Timestamptz(6)
+  deletedAt   DateTime?    @db.Timestamptz(6)
+  deletedBy   String?
   homework    Homework[]
 
   @@unique([name])
@@ -343,6 +357,8 @@ model Homework {
   attachments String?              // JSON array of file URLs
   createdAt   DateTime             @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime             @default(now()) @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime?            @db.Timestamptz(6)
+  deletedBy   String?
   subject     Subject?             @relation(fields: [subjectId], references: [id])
   submissions HomeworkSubmission[]
 
@@ -383,6 +399,8 @@ model TransportRoute {
   fee         Decimal         @default(0) @db.Decimal(10, 2)
   status      String          @default("ACTIVE") // ACTIVE, INACTIVE
   createdAt   DateTime        @default(now()) @db.Timestamptz(6)
+  deletedAt   DateTime?       @db.Timestamptz(6)
+  deletedBy   String?
   stops       TransportStop[]
   vehicle     Vehicle?        @relation(fields: [vehicleId], references: [id])
 
@@ -467,7 +485,117 @@ model Announcement {
   expiresAt   DateTime? @db.Timestamptz(6)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  deletedAt   DateTime? @db.Timestamptz(6)
+  deletedBy   String?
 
   @@index([type, isActive])
   @@index([audience])
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// NOTIFICATION CENTER
+// ═══════════════════════════════════════════════════════════════
+
+model Notification {
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  userId     String   // recipient user ID
+  title      String
+  message    String
+  type       String   @default("GENERAL") // GENERAL, FEE, ATTENDANCE, EXAM, HOMEWORK, ANNOUNCEMENT, SYSTEM
+  priority   String   @default("NORMAL") // LOW, NORMAL, HIGH, URGENT
+  isRead     Boolean  @default(false)
+  link       String?  // optional navigation link (e.g. "/billing", "/attendance")
+  metadata   String?  // JSON for extra context
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([userId, isRead, createdAt(sort: Desc)])
+  @@index([userId, type])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXAMINATION SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+model Exam {
+  id           String       @id @default(dbgenerated("(gen_random_uuid())::text"))
+  title        String
+  type         String       // UNIT_TEST, MID_TERM, PRELIMS, FINAL, PRACTICE, QUIZ, ASSIGNMENT
+  subject      String
+  batchId      String?
+  batchName    String?
+  date         DateTime     @db.Date
+  totalMarks   Int          @default(100)
+  passingMarks Int          @default(35)
+  status       String       @default("DRAFT") // DRAFT, SCHEDULED, CONDUCTED, EVALUATED, PUBLISHED
+  createdBy    String?
+  createdAt    DateTime     @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
+  deletedAt    DateTime?    @db.Timestamptz(6)
+  results      ExamResult[]
+
+  @@index([status, date(sort: Desc)])
+  @@index([batchId])
+}
+
+model ExamResult {
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  examId     String
+  studentId  String
+  marks      Int
+  grade      String?
+  remarks    String?
+  evaluatedBy String?
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  exam       Exam     @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@unique([examId, studentId])
+  @@index([studentId])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MARKSHEET SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+model MarksheetEntry {
+  id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  studentId   String
+  studentName String
+  subject     String
+  marks       Int
+  totalMarks  Int      @default(100)
+  examTitle   String
+  batch       String
+  percentage  Decimal? @db.Decimal(5, 2)
+  grade       String?
+  createdBy   String?
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([studentId, batch])
+  @@index([batch, examTitle])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// AUDIT LOG SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+model AuditLog {
+  id            String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  userId        String?  // who performed the action
+  userEmail     String?  // email for quick reference
+  module        String   // e.g. "students", "invoices", "attendance"
+  action        String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, APPROVE, REJECT, REVERT
+  entityId      String?  // ID of the affected record
+  previousValue String?  // JSON of previous state (for updates/deletes)
+  newValue      String?  // JSON of new state (for creates/updates)
+  ipAddress     String?
+  userAgent     String?
+  metadata      String?  // additional context as JSON
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([module, action])
+  @@index([entityId])
+  @@index([createdAt(sort: Desc)])
 }

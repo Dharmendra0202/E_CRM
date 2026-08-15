@@ -1,91 +1,112 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
+import * as React from "react";
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 cursor-pointer",
-  {
-    variants: {
-      variant: {
-        default:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 active:scale-[0.97]",
-        primary:
-          "bg-gradient-to-r from-[hsl(328,100%,54%)] to-[hsl(271,91%,60%)] text-white shadow-md hover:shadow-lg hover:opacity-95 active:scale-[0.97] focus-visible:ring-[hsl(328,100%,54%)]",
-        destructive:
-          "bg-destructive text-white shadow-sm hover:bg-destructive/90 active:scale-[0.97]",
-        danger:
-          "bg-gradient-to-r from-[hsl(342,90%,48%)] to-[hsl(350,90%,42%)] text-white shadow-sm hover:opacity-90 active:scale-[0.97]",
-        outline:
-          "border border-input bg-background shadow-sm hover:bg-accent/10 hover:text-accent-foreground active:scale-[0.97]",
-        secondary:
-          "bg-[hsl(320,20%,94%)] text-[hsl(285,50%,12%)] shadow-sm hover:bg-[hsl(320,20%,90%)] active:scale-[0.97]",
-        success:
-          "bg-gradient-to-r from-[hsl(142,70%,40%)] to-[hsl(160,70%,35%)] text-white shadow-sm hover:opacity-90 active:scale-[0.97]",
-        warning:
-          "bg-gradient-to-r from-[hsl(271,91%,60%)] to-[hsl(260,91%,55%)] text-white shadow-sm hover:opacity-90 active:scale-[0.97]",
-        ghost:
-          "hover:bg-accent/10 hover:text-accent-foreground active:scale-[0.97]",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-10 px-5 py-2.5 text-[13px]",
-        sm: "h-8 rounded-lg px-3.5 py-1.5 text-xs",
-        lg: "h-12 rounded-xl px-7 py-3 text-base",
-        icon: "size-10 rounded-xl",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
-
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean
-  isLoading?: boolean
-  leftIcon?: React.ReactNode
-  rightIcon?: React.ReactNode
+export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "success" | "outline" | "default";
+  size?: "default" | "sm" | "lg" | "icon";
+  isLoading?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
+const VARIANT_STYLES: Record<string, React.CSSProperties> = {
+  primary: {
+    background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+    color: "#fff",
+    border: "none",
+    boxShadow: "0 4px 14px hsla(328,100%,54%,0.25)",
+  },
+  secondary: {
+    background: "hsl(320,20%,94%)",
+    color: "hsl(285,50%,12%)",
+    border: "1px solid hsla(285,30%,20%,0.1)",
+  },
+  ghost: {
+    background: "transparent",
+    color: "hsl(285,50%,12%)",
+    border: "1px solid hsla(285,30%,20%,0.1)",
+  },
+  danger: {
+    background: "linear-gradient(135deg, hsl(342,90%,48%), hsl(350,90%,42%))",
+    color: "#fff",
+    border: "none",
+  },
+  success: {
+    background: "linear-gradient(135deg, hsl(142,70%,40%), hsl(160,70%,35%))",
+    color: "#fff",
+    border: "none",
+  },
+  outline: {
+    background: "#fff",
+    color: "hsl(285,50%,12%)",
+    border: "1.5px solid hsla(285,30%,20%,0.15)",
+  },
+  default: {
+    background: "hsl(271,91%,60%)",
+    color: "#fff",
+    border: "none",
+  },
+};
+
+const SIZE_STYLES: Record<string, React.CSSProperties> = {
+  default: { height: "38px", padding: "0 18px", fontSize: "13px", borderRadius: "10px" },
+  sm: { height: "32px", padding: "0 12px", fontSize: "12px", borderRadius: "8px" },
+  lg: { height: "44px", padding: "0 24px", fontSize: "14px", borderRadius: "12px" },
+  icon: { width: "38px", height: "38px", padding: "0", borderRadius: "10px" },
+};
+
 function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
+  variant = "default",
+  size = "default",
   isLoading = false,
   leftIcon,
   rightIcon,
   children,
   disabled,
+  style,
   ...props
 }: ButtonProps) {
-  const Comp = asChild ? Slot : "button"
+  const variantStyle = VARIANT_STYLES[variant] || VARIANT_STYLES.default;
+  const sizeStyle = SIZE_STYLES[size] || SIZE_STYLES.default;
+
+  const baseStyle: React.CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "7px",
+    fontWeight: 700,
+    fontFamily: "inherit",
+    cursor: disabled || isLoading ? "not-allowed" : "pointer",
+    opacity: disabled || isLoading ? 0.6 : 1,
+    whiteSpace: "nowrap",
+    transition: "all 0.15s ease",
+    outline: "none",
+    boxSizing: "border-box",
+    ...sizeStyle,
+    ...variantStyle,
+    ...style,
+  };
 
   return (
-    <Comp
+    <button
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
       disabled={disabled || isLoading}
+      style={baseStyle}
       {...props}
     >
       {isLoading ? (
         <>
-          <span className="inline-block size-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <span style={{ width: "14px", height: "14px", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.6s linear infinite", display: "inline-block" }} />
           {children}
         </>
       ) : (
         <>
-          {leftIcon && <span className="inline-flex items-center">{leftIcon}</span>}
+          {leftIcon && <span style={{ display: "inline-flex", alignItems: "center" }}>{leftIcon}</span>}
           {children}
-          {rightIcon && <span className="inline-flex items-center">{rightIcon}</span>}
+          {rightIcon && <span style={{ display: "inline-flex", alignItems: "center" }}>{rightIcon}</span>}
         </>
       )}
-    </Comp>
-  )
+    </button>
+  );
 }
 
-export { Button, buttonVariants }
+export { Button };

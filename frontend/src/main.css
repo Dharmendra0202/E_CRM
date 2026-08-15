@@ -3888,3 +3888,33 @@ div[style*="linear-gradient(135deg, hsl(328"] {
     left: var(--sidebar-width);
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   FIX: Restore form element styling (Tailwind preflight resets them)
+   ═══════════════════════════════════════════════════════════════ */
+select, input[type="text"], input[type="email"], input[type="tel"],
+input[type="number"], input[type="date"], input[type="password"], textarea {
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+/* Ensure selects with inline styles render correctly */
+select[style] {
+  appearance: auto;
+  -webkit-appearance: auto;
+}
+
+/* Fix buttons with inline styles - ensure text is visible */
+button[style] {
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+
+/* Fix Button component rendering */
+[data-slot="button"] {
+  line-height: 1.2;
+  font-family: inherit;
+  letter-spacing: normal;
+}

@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { Router, Response } from "express";
+import { logAudit } from "../utils/auditLog";
 
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 
@@ -220,8 +221,12 @@ router.get("/:id/activities", authenticate, async (req: AuthRequest, res: Respon
 // ══════════════════════════════════════════════════════════════
 router.delete("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    await prisma.lead.delete({ where: { id: req.params.id } });
-    res.json({ status: "success", message: "Lead deleted." });
+    await prisma.lead.update({
+      where: { id: req.params.id },
+      data: { deletedAt: new Date(), deletedBy: (req as any).user?.id || null },
+    });
+    logAudit({ module: "leads", action: "DELETE", entityId: req.params.id }, req);
+    res.json({ status: "success", message: "Lead archived." });
   } catch (err: any) {
     res.status(500).json({ status: "error", message: err.message });
   }

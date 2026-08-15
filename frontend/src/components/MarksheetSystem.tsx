@@ -3,7 +3,7 @@ import { api } from "../utils/api";
 import { Award, BookOpen, TrendingUp, Users2, Download } from "lucide-react";
 import { Button } from "./ui/Button";
 
-const LS_KEY = "ecrm_marksheets";
+const LS_KEY = "ecrm_marksheets"; // kept for migration fallback
 
 interface MarkEntry {
   studentId: string;
@@ -21,36 +21,66 @@ export function MarksheetSystem() {
   const [batches, setBatches] = useState<any[]>([]);
   const [selectedBatch, setSelectedBatch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({ studentId: "", subject: "", marks: "", totalMarks: "100", examTitle: "" });
 
-  useEffect(() => {
-    const saved = localStorage.getItem(LS_KEY);
-    if (saved) setEntries(JSON.parse(saved));
-    loadData();
-  }, []);
-
-  const save = (list: MarkEntry[]) => { setEntries(list); localStorage.setItem(LS_KEY, JSON.stringify(list)); };
+  useEffect(() => { loadData(); }, []);
+  useEffect(() => { if (selectedBatch) loadMarksheets(); }, [selectedBatch]);
 
   const loadData = async () => {
+    setIsLoading(true);
     try {
       const [stuRes, batRes] = await Promise.all([api.students.getAll(), api.batches.getAll()]);
       if (stuRes.data) setStudents(stuRes.data);
-      if (batRes.data) { setBatches(batRes.data); if (batRes.data.length > 0 && !selectedBatch) setSelectedBatch(batRes.data[0].name); }
+      if (batRes.data) {
+        setBatches(batRes.data);
+        if (batRes.data.length > 0 && !selectedBatch) setSelectedBatch(batRes.data[0].name);
+      }
     } catch {}
+    setIsLoading(false);
   };
 
-  const handleAdd = () => {
+  const loadMarksheets = async () => {
+    try {
+      const res = await api.marksheets.getAll({ batch: selectedBatch });
+      if (res.data) {
+        setEntries(res.data.map((e: any) => ({
+          studentId: e.studentId,
+          studentName: e.studentName,
+          subject: e.subject,
+          marks: e.marks,
+          totalMarks: e.totalMarks,
+          examTitle: e.examTitle,
+          batch: e.batch,
+        })));
+      }
+    } catch {
+      // Fallback to localStorage if API fails
+      const saved = localStorage.getItem(LS_KEY);
+      if (saved) setEntries(JSON.parse(saved).filter((e: any) => e.batch === selectedBatch));
+    }
+  };
+
+  const handleAdd = async () => {
     if (!form.studentId || !form.subject || !form.marks || !form.examTitle) return;
     const student = students.find(s => s.id === form.studentId);
     const name = student?.user ? `${student.user.firstName} ${student.user.lastName}` : "Student";
-    const entry: MarkEntry = {
-      studentId: form.studentId, studentName: name, subject: form.subject,
-      marks: Number(form.marks), totalMarks: Number(form.totalMarks) || 100,
-      examTitle: form.examTitle, batch: selectedBatch,
-    };
-    save([...entries, entry]);
-    setForm({ studentId: "", subject: "", marks: "", totalMarks: "100", examTitle: "" });
-    setShowAdd(false);
+    try {
+      await api.marksheets.create({
+        studentId: form.studentId,
+        studentName: name,
+        subject: form.subject,
+        marks: Number(form.marks),
+        totalMarks: Number(form.totalMarks) || 100,
+        examTitle: form.examTitle,
+        batch: selectedBatch,
+      });
+      setForm({ studentId: "", subject: "", marks: "", totalMarks: "100", examTitle: "" });
+      setShowAdd(false);
+      loadMarksheets();
+    } catch (err: any) {
+      alert(err.message || "Failed to save marks");
+    }
   };
 
   const batchEntries = entries.filter(e => e.batch === selectedBatch);

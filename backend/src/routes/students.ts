@@ -4,6 +4,7 @@ import { Router, Response } from "express";
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 import bcrypt from "bcryptjs";
 import { sendStudentOnboardingEmail } from "../utils/email";
+import { logAudit } from "../utils/auditLog";
 
 const router = Router();
 
@@ -11,6 +12,7 @@ const router = Router();
 router.get("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const students = await prisma.student.findMany({
+      where: { deletedAt: null },
       include: { 
         user: { select: { email: true, firstName: true, lastName: true, phone: true } }, 
         enrollments: { include: { batch: true } },
@@ -182,6 +184,9 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
       whatsappLink,
       onboardingEmailSent: true
     });
+
+    // Audit log
+    logAudit({ module: "students", action: "CREATE", entityId: completedStudent?.id, newValue: { firstName, lastName: finalLastName, email, batch } }, req);
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });
 
@@ -197,17 +202,19 @@ router.patch("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest, 
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });
 
-// DELETE /api/v1/students/:id
+// DELETE /api/v1/students/:id — soft delete (preserves financial records)
 router.delete("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const student = await prisma.student.findUnique({ where: { id: req.params.id } });
-    if (student) {
-      await prisma.student.delete({ where: { id: req.params.id } });
-      if (student.userId) {
-        await prisma.user.delete({ where: { id: student.userId } }).catch(() => {});
-      }
-    }
-    res.json({ status: "success", message: "Student deleted." });
+    if (!student) { res.status(404).json({ status: "error", message: "Student not found." }); return; }
+    // Soft delete — mark as deleted but preserve record and all related financial data
+    await prisma.student.update({
+      where: { id: req.params.id },
+      data: { deletedAt: new Date(), deletedBy: (req as any).user?.id || null },
+    });
+    // Audit log
+    logAudit({ module: "students", action: "DELETE", entityId: req.params.id, previousValue: { name: student.parentName } }, req);
+    res.json({ status: "success", message: "Student archived (soft deleted). Financial records preserved." });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });
 

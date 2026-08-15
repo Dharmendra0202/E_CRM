@@ -26,8 +26,21 @@ import libraryRoutes from "./routes/library";
 import announcementsRoutes from "./routes/announcements";
 import reportsRoutes from "./routes/reports";
 import settingsRoutes from "./routes/settings";
+import examsRoutes from "./routes/exams";
+import marksheetsRoutes from "./routes/marksheets";
+import notificationsRoutes from "./routes/notifications";
 
 dotenv.config();
+
+// ── Startup Validation ─────────────────────────────────────────
+if (!process.env.JWT_SECRET) {
+  console.error("FATAL: JWT_SECRET environment variable is not set. Server cannot start.");
+  process.exit(1);
+}
+if (!process.env.DATABASE_URL) {
+  console.error("FATAL: DATABASE_URL environment variable is not set. Server cannot start.");
+  process.exit(1);
+}
 
 const app = express();
 const httpServer = createServer(app);
@@ -64,15 +77,26 @@ app.use(helmet({
   contentSecurityPolicy: false, // disable for API
   crossOriginEmbedderPolicy: false,
 }));
+
+// CORS - Environment-specific whitelist (rejects unknown origins)
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "http://localhost:5173,http://localhost:3000")
+  .split(",")
+  .map(o => o.trim());
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || /^http:\/\/localhost:\d+$/.test(origin)) {
+    // Allow requests with no origin (mobile apps, Postman, server-to-server)
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, true);
+      logger.warn(`CORS blocked: ${origin}`);
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
     }
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
 }));
 app.use(express.json());
 app.use(sanitizeInput);
@@ -107,6 +131,9 @@ app.use("/api/v1/library",    libraryRoutes);
 app.use("/api/v1/announcements", announcementsRoutes);
 app.use("/api/v1/reports",    reportsRoutes);
 app.use("/api/v1/settings",   settingsRoutes);
+app.use("/api/v1/exams",      examsRoutes);
+app.use("/api/v1/marksheets", marksheetsRoutes);
+app.use("/api/v1/notifications", notificationsRoutes);
 
 // ── Health Check ────────────────────────────────────────────
 app.get("/api/v1/health", async (_req: Request, res: Response) => {

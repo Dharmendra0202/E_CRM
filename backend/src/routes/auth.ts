@@ -7,6 +7,7 @@ import { z } from "zod";
 import { OAuth2Client } from "google-auth-library";
 
 import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/email";
+import { logAudit } from "../utils/auditLog";
 
 const googleClient = new OAuth2Client();
 
@@ -42,10 +43,10 @@ const ResetSchema = z.object({
 
 // ── Helpers ──────────────────────────────────────────────────
 const signAccessToken = (user: { id: string; role: string; email: string }) =>
-  jwt.sign(user, process.env.JWT_SECRET || "secret", { expiresIn: "15m" } as any);
+  jwt.sign(user, process.env.JWT_SECRET!, { expiresIn: "15m" } as any);
 
 const signRefreshToken = (userId: string) =>
-  jwt.sign({ id: userId }, process.env.JWT_SECRET || "secret", { expiresIn: "7d" } as any);
+  jwt.sign({ id: userId }, process.env.JWT_SECRET!, { expiresIn: "7d" } as any);
 
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_DURATION_MINUTES = 15;
@@ -147,6 +148,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
       refreshToken,
       user: { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName },
     });
+    logAudit({ userId: user.id, userEmail: user.email, module: "auth", action: "LOGIN", metadata: { role: user.role } }, req);
   } catch (err: any) {
     res.status(500).json({ status: "error", message: err.message });
   }
@@ -240,7 +242,7 @@ router.post("/refresh", async (req: Request, res: Response): Promise<void> => {
   const { refreshToken } = req.body;
   if (!refreshToken) { res.status(400).json({ status: "error", message: "Refresh token required." }); return; }
   try {
-    const payload = jwt.verify(refreshToken, process.env.JWT_SECRET || "secret") as any;
+    const payload = jwt.verify(refreshToken, process.env.JWT_SECRET!) as any;
     const user = await prisma.user.findFirst({ where: { id: payload.id, refreshToken } });
     if (!user) { res.status(401).json({ status: "error", message: "Invalid refresh token." }); return; }
     const newToken = signAccessToken({ id: user.id, role: user.role, email: user.email });
@@ -260,7 +262,7 @@ router.get("/profile", async (req: Request, res: Response): Promise<void> => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret") as any;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { id: true, email: true, firstName: true, lastName: true, role: true, phone: true, emailVerified: true, createdAt: true },
@@ -275,7 +277,7 @@ router.put("/change-password", async (req: Request, res: Response): Promise<void
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
-    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET || "secret") as any;
+    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET!) as any;
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) { res.status(400).json({ status: "error", message: "currentPassword and newPassword required." }); return; }
     if (newPassword.length < 8) { res.status(400).json({ status: "error", message: "New password must be at least 8 characters." }); return; }
@@ -294,8 +296,9 @@ router.delete("/logout-all", async (req: Request, res: Response): Promise<void> 
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
-    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET || "secret") as any;
+    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET!) as any;
     await prisma.user.update({ where: { id: decoded.id }, data: { refreshToken: null } });
+    logAudit({ userId: decoded.id, module: "auth", action: "LOGOUT" }, req);
     res.json({ status: "success", message: "All sessions terminated." });
   } catch { res.status(401).json({ status: "error", message: "Invalid token." }); }
 });
@@ -344,7 +347,7 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
             passwordHash: "", // No password for Google-only users
             firstName: given_name || "User",
             lastName: family_name || "",
-            role: "ADMIN",
+            role: "STUDENT", // Default to STUDENT for security — admin can upgrade later
             googleId,
             authProvider: "google",
             emailVerified: email_verified ?? true,
