@@ -45,9 +45,38 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
     }
     const finalLastName = lastName || firstName;
     
-    // 1. Create or find the User account
-    let user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
-    if (!user) {
+    // 1. Create a NEW User account for this student (each student gets their own user)
+    let user: any;
+    const existingUser = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    
+    if (existingUser) {
+      // Email already exists — check if it's a student with no changes needed or a different person
+      const existingStudent = await prisma.student.findUnique({ where: { userId: existingUser.id } });
+      
+      if (existingStudent) {
+        // Another student already uses this email — create a unique email for the new student
+        const uniqueEmail = `${firstName.toLowerCase()}.${Date.now()}@student.local`;
+        const hash = await bcrypt.hash("Student@123", 12);
+        user = await prisma.user.create({
+          data: {
+            email: uniqueEmail,
+            passwordHash: hash,
+            firstName,
+            lastName: finalLastName,
+            role: "STUDENT",
+            phone: phone || null,
+            emailVerified: true,
+          }
+        });
+      } else {
+        // User exists but has no student profile — link them
+        user = await prisma.user.update({
+          where: { id: existingUser.id },
+          data: { firstName, lastName: finalLastName, phone: phone || existingUser.phone },
+        });
+      }
+    } else {
+      // Brand new email — create fresh user
       const hash = await bcrypt.hash("Student@123", 12);
       user = await prisma.user.create({
         data: {
@@ -60,31 +89,13 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
           emailVerified: true,
         }
       });
-    } else {
-      // Update user's name and phone to match enrollment data
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { firstName, lastName: finalLastName, phone: phone || user.phone },
-      });
     }
 
-    // 2. Create or update student profile
-    let student = await prisma.student.findUnique({
-      where: { userId: user.id }
+    // 2. Always create a NEW student profile for this enrollment
+    let student: any = await prisma.student.create({
+      data: { userId: user.id, parentName, parentPhone, parentEmail, motherName: motherName || null, motherPhone: motherPhone || null, gender: gender || null, address: address || null, dateOfBirth: new Date(dateOfBirth) },
+      include: { user: true, enrollments: { include: { batch: true } }, invoices: true }
     });
-
-    if (student) {
-      student = await prisma.student.update({
-        where: { id: student.id },
-        data: { parentName, parentPhone, parentEmail, motherName: motherName || null, motherPhone: motherPhone || null, gender: gender || null, address: address || null, dateOfBirth: new Date(dateOfBirth) },
-        include: { user: true, enrollments: { include: { batch: true } }, invoices: true }
-      });
-    } else {
-      student = await prisma.student.create({
-        data: { userId: user.id, parentName, parentPhone, parentEmail, motherName: motherName || null, motherPhone: motherPhone || null, gender: gender || null, address: address || null, dateOfBirth: new Date(dateOfBirth) },
-        include: { user: true, enrollments: { include: { batch: true } }, invoices: true }
-      });
-    }
 
     // 3. Batch enrollment if a batch is specified
     if (batch) {

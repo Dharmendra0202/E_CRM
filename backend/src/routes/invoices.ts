@@ -109,7 +109,7 @@ router.post("/:id/pay", authenticate, authorize("ADMIN"), async (req: AuthReques
     if (!amount) { res.status(400).json({ status: "error", message: "amount is required." }); return; }
 
     const payment = await prisma.payment.create({
-      data: { invoiceId: req.params.id, amount: parseFloat(amount), paymentMethod: paymentMethod || "CASH", transactionReference },
+      data: { invoiceId: req.params.id, amount: parseFloat(amount), paymentMethod: paymentMethod || "CASH", transactionReference: transactionReference || null },
     });
 
     const totalPaid = invoice.payments.reduce((s, p) => s + Number(p.amount), 0) + parseFloat(amount);

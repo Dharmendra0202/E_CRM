@@ -38,7 +38,8 @@ import {
   Activity,
   Eye,
   X,
-  ExternalLink
+  ExternalLink,
+  Edit3
 } from "lucide-react";
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -181,6 +182,9 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
   const [profileStudentId, setProfileStudentId] = useState<string | null>(null);
+  const [editStudent, setEditStudent] = useState<Student | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", phone: "", email: "", batch: "", guardianName: "", guardianPhone: "" });
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   // Search & Profile state
   const [profileSearchQuery, setProfileSearchQuery] = useState("");
@@ -932,7 +936,10 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                         <button className="stu-action-btn" onClick={() => setExpandedRow(isExpanded ? null : stu.id)} title="Quick View">
                           {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
                         </button>
-                        <button className="stu-action-btn stu-action-danger" onClick={() => handleDeleteStudent(stu.id)} title="Remove">
+                        <button className="stu-action-btn" onClick={(e) => { e.stopPropagation(); setProfileStudentId(stu.id); }} title="Edit / View Details">
+                          <Edit3 size={15} />
+                        </button>
+                        <button className="stu-action-btn stu-action-danger" onClick={(e) => { e.stopPropagation(); if(confirm("Delete this student? This action cannot be undone.")) handleDeleteStudent(stu.id); }} title="Delete">
                           <Trash2 size={15} />
                         </button>
                       </div>

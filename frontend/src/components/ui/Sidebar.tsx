@@ -52,7 +52,7 @@ const NAV_ITEMS = [
 ];
 
 export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, mobileOpen, onMobileClose }: SidebarProps) {
-  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(["Main"]));
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(["Main", "People", "Academics"]));
 
   const toggleGroup = (group: string) => {
     const next = new Set(openGroups);

@@ -104,8 +104,8 @@ app.use(requestId);
 app.use(securityHeaders);
 
 // Rate limiting — general + strict for auth
-const limiter     = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false });
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10,  standardHeaders: true, legacyHeaders: false, message: { status: "error", message: "Too many requests, please try again later." } });
+const limiter     = rateLimit({ windowMs: 15 * 60 * 1000, max: 500, standardHeaders: true, legacyHeaders: false, message: { status: "error", message: "Too many requests, please try again later." } });
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 20,  standardHeaders: true, legacyHeaders: false, message: { status: "error", message: "Too many login attempts, please try again later." } });
 app.use("/api/",        limiter);
 app.use("/api/v1/auth", authLimiter);
 

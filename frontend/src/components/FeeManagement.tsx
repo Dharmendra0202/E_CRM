@@ -59,7 +59,7 @@ export function FeeManagement() {
       setPayForm({ amount: "", paymentMethod: "CASH", transactionReference: "" });
       setShowPay(null);
       loadData();
-    } catch (err) { console.error(err); }
+    } catch (err: any) { alert(err.message || "Payment failed. Please try again."); }
     setPaying(false);
   };
 

@@ -7,6 +7,7 @@ import { Toggle } from "./components/ui/Toggle";
 import { api, setToken, getToken } from "./utils/api";
 import { Login } from "./components/Login";
 import { StudentManagement } from "./components/StudentManagement";
+import { StudentProfile } from "./components/StudentProfile";
 import { TimetableScheduler } from "./components/TimetableScheduler";
 import { HistoryModal } from "./components/HistoryModal";
 import { AttendanceTracker } from "./components/AttendanceTracker";
@@ -177,6 +178,9 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [editStaffMember, setEditStaffMember] = useState<any>(null);
+  const [editStaffForm, setEditStaffForm] = useState({ name: "", phone: "", email: "", role: "", salary: "" });
+  const [savingStaff, setSavingStaff] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("ecrm_theme") === "dark");
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
 
@@ -280,7 +284,7 @@ function App() {
             <Search size={15} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
             <input
               type="text"
-              placeholder="Search student by name..."
+              placeholder="Search student, staff, teacher..."
               className="navbar-search-input"
               value={globalSearch}
               onChange={e => setGlobalSearch(e.target.value)}
@@ -288,7 +292,7 @@ function App() {
                 if (e.key === "Escape") setGlobalSearch("");
                 if (e.key === "Enter") {
                   const q = globalSearch.toLowerCase().trim();
-                  const hits = leadsList.filter(s => s.name?.toLowerCase().startsWith(q));
+                  const hits = leadsList.filter(s => s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q) || s.phone?.includes(q));
                   if (hits.length === 1) {
                     setGlobalSearchCard(hits[0]);
                     setGlobalSearch("");
@@ -301,7 +305,9 @@ function App() {
             {/* Live suggestions dropdown */}
             {globalSearch.trim().length > 0 && (() => {
               const q = globalSearch.toLowerCase().trim();
-              const hits = leadsList.filter(s => s.name?.toLowerCase().startsWith(q));
+              const studentHits = leadsList.filter(s => s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q) || s.phone?.includes(q));
+              const staffHits = staffList.filter(s => s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q)).map(s => ({ ...s, status: s.role, source: s.role, phone: s.phone || "" }));
+              const hits = [...studentHits, ...staffHits];
               if (hits.length === 0) return (
                 <div style={{
                   position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
@@ -310,7 +316,7 @@ function App() {
                   border: "1px solid hsla(285,30%,20%,0.08)", overflow: "hidden"
                 }}>
                   <div style={{ padding: "14px 16px", fontSize: "12px", color: "hsl(285,20%,55%)", textAlign: "center" }}>
-                    No student found for <strong>"{globalSearch}"</strong>
+                    No results found for <strong>"{globalSearch}"</strong>
                   </div>
                 </div>
               );
@@ -322,7 +328,7 @@ function App() {
                   border: "1px solid hsla(285,30%,20%,0.08)", overflow: "hidden"
                 }}>
                   <div style={{ padding: "8px 14px 5px", fontSize: "9px", fontWeight: 800, color: "hsl(285,20%,55%)", textTransform: "uppercase", letterSpacing: "0.6px", borderBottom: "1px solid hsla(285,30%,20%,0.06)" }}>
-                    {hits.length} student{hits.length !== 1 ? "s" : ""} found
+                    {hits.length} result{hits.length !== 1 ? "s" : ""} found
                   </div>
                   {hits.slice(0, 10).map(s => {
                     const initials = s.name?.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase() || "??";
@@ -350,9 +356,7 @@ function App() {
                         }}>{initials}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: "13px", fontWeight: 700, color: "hsl(285,50%,12%)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {/* Highlight matching prefix */}
-                            <span style={{ color: "hsl(328,100%,48%)", fontWeight: 900 }}>{s.name?.substring(0, globalSearch.length)}</span>
-                            <span>{s.name?.substring(globalSearch.length)}</span>
+                            {s.name}
                           </div>
                           <div style={{ fontSize: "11px", color: "hsl(285,20%,55%)", marginTop: "1px" }}>{s.source || "Not Enrolled"} · {s.phone || s.email || ""}</div>
                         </div>
@@ -565,7 +569,11 @@ function App() {
                 ) : filteredStaff.map(staff => {
                   const rm = ROLE_META[staff.role] || { color: "var(--text-secondary)", bg: "rgba(0,0,0,0.05)" };
                   return (
-                    <Card key={staff.id} hoverLift style={{ padding: "20px", gap: 0 }}>
+                    <div key={staff.id} onClick={() => { setEditStaffMember(staff); setEditStaffForm({ name: staff.name, phone: staff.phone, email: staff.email, role: staff.role, salary: "" }); }}
+                      style={{ background: "#fff", borderRadius: "16px", padding: "20px", border: `1.5px solid ${rm.color}22`, cursor: "pointer", transition: "all 0.2s", boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${rm.color}55`; e.currentTarget.style.boxShadow = `0 4px 16px ${rm.color}15`; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = `${rm.color}22`; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.03)"; }}
+                    >
                       <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "12px" }}>
                         <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: rm.bg, border: `2px solid ${rm.color}44`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: rm.color, flexShrink: 0 }}>
                           {staff.initials}
@@ -576,10 +584,11 @@ function App() {
                         </div>
                         <span style={{ fontSize: "10px", fontWeight: 700, color: rm.color, background: rm.bg, padding: "3px 8px", borderRadius: "20px", flexShrink: 0 }}>{staff.role}</span>
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "12px", color: "var(--text-secondary)" }}>
                         {staff.phone && <span>📞 {staff.phone}</span>}
                       </div>
-                    </Card>
+                      <p style={{ margin: "10px 0 0", fontSize: "10px", color: "hsl(271,91%,60%)", fontWeight: 600 }}>Click to edit details & salary</p>
+                    </div>
                   );
                 })}
               </div>
@@ -601,11 +610,15 @@ function App() {
                   <Download size={14} /> Export Excel
                 </Button>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "16px" }}>
                 {staffList.filter(s => s.role === "TEACHER").length === 0 ? (
                   <p style={{ fontSize: "14px", color: "var(--text-secondary)", gridColumn: "1 / -1" }}>No teachers registered yet. Add one via New Enrollment.</p>
                 ) : staffList.filter(s => s.role === "TEACHER").map(teacher => (
-                  <Card key={teacher.id} hoverLift style={{ padding: "20px", gap: 0 }}>
+                  <div key={teacher.id} onClick={() => { setEditStaffMember(teacher); setEditStaffForm({ name: teacher.name, phone: teacher.phone, email: teacher.email, role: teacher.role, salary: "" }); }}
+                    style={{ background: "#fff", borderRadius: "16px", padding: "20px", border: "1.5px solid hsla(142,70%,45%,0.15)", cursor: "pointer", transition: "all 0.2s", boxShadow: "0 2px 8px rgba(0,0,0,0.03)" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "hsla(142,70%,45%,0.4)"; e.currentTarget.style.boxShadow = "0 4px 16px hsla(142,70%,45%,0.1)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "hsla(142,70%,45%,0.15)"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.03)"; }}
+                  >
                     <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "12px" }}>
                       <div style={{ width: "46px", height: "46px", borderRadius: "50%", background: "hsla(142,70%,45%,0.1)", border: "2px solid hsla(142,70%,45%,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 700, color: "var(--color-success)", flexShrink: 0 }}>
                         {teacher.initials}
@@ -614,12 +627,14 @@ function App() {
                         <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "var(--text-primary)" }}>{teacher.name}</p>
                         <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{teacher.email}</p>
                       </div>
+                      <span style={{ fontSize: "9px", fontWeight: 700, color: "var(--color-success)", background: "hsla(142,70%,45%,0.1)", padding: "3px 8px", borderRadius: "8px" }}>TEACHER</span>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12px", color: "var(--text-secondary)" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "12px", color: "var(--text-secondary)" }}>
                       {teacher.phone && <span>📞 {teacher.phone}</span>}
                       <span>📚 {teacher.title || "General"}</span>
                     </div>
-                  </Card>
+                    <p style={{ margin: "10px 0 0", fontSize: "10px", color: "hsl(271,91%,60%)", fontWeight: 600 }}>Click to edit details & salary</p>
+                  </div>
                 ))}
               </div>
             </div>
@@ -648,136 +663,67 @@ function App() {
         </div>{/* end crm-viewport */}
       </div>{/* end crm-main-content */}
 
-      {/* ── STUDENT ID CARD MODAL (macOS Genie animation) ────────────── */}
-      {globalSearchCard && (() => {
-        const s = globalSearchCard;
-        const initials = s.name?.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase() || "??";
-        const isEnrolled = s.status === "ENROLLED";
-        return (
-          <div
-            onClick={closeCard}
-            style={{
-              position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-              background: "rgba(10,4,22,0.65)", backdropFilter: "blur(6px)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              zIndex: 99998, padding: "16px",
-              animation: isCardClosing
-                ? "genieBackdropOut 1.2s ease forwards"
-                : "genieBackdropIn 0.9s ease forwards"
-            }}
-          >
-            {/* ID Card */}
-            <div
-              onClick={e => e.stopPropagation()}
-              style={{
-                background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "380px",
-                boxShadow: "0 32px 80px rgba(0,0,0,0.32)", overflow: "hidden",
-                border: "1px solid hsla(285,30%,20%,0.08)",
-                transformOrigin: "top center",
-                animation: isCardClosing
-                  ? "genieOut 1.2s cubic-bezier(0.4, 0, 0.6, 1) forwards"
-                  : "genieIn 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-              }}
-            >
-              {/* Card Header */}
-              <div style={{
-                background: "linear-gradient(135deg, hsl(271,91%,44%) 0%, hsl(328,100%,48%) 100%)",
-                padding: "28px 24px 60px", position: "relative", overflow: "hidden"
-              }}>
-                <div style={{ position: "absolute", top: "-50px", right: "-50px", width: "200px", height: "200px", borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
-                <div style={{ position: "absolute", bottom: "-60px", left: "-20px", width: "160px", height: "160px", borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
-                {/* X Button */}
-                <button
-                  onClick={closeCard}
-                  style={{
-                    position: "absolute", top: "14px", right: "14px",
-                    width: "30px", height: "30px", borderRadius: "50%",
-                    background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.28)",
-                    color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-                    cursor: "pointer", fontSize: "16px", lineHeight: 1, transition: "background 0.2s"
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.3)")}
-                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.18)")}
-                >✕</button>
-                {/* School label */}
-                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "18px" }}>
-                  <span style={{ fontSize: "10px", fontWeight: 900, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "1px" }}>E-CRM Academy</span>
-                  <span style={{ fontSize: "9px", background: "rgba(255,255,255,0.2)", color: "#fff", padding: "2px 7px", borderRadius: "10px", fontWeight: 800 }}>STUDENT ID</span>
-                </div>
-                {/* Avatar */}
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <div style={{
-                    width: "72px", height: "72px", borderRadius: "20px",
-                    background: "linear-gradient(135deg, rgba(255,255,255,0.28), rgba(255,255,255,0.1))",
-                    border: "2.5px solid rgba(255,255,255,0.4)", display: "flex",
-                    alignItems: "center", justifyContent: "center",
-                    fontSize: "24px", fontWeight: 900, color: "#fff",
-                    boxShadow: "0 6px 24px rgba(0,0,0,0.18)", flexShrink: 0,
-                    backdropFilter: "blur(6px)", userSelect: "none"
-                  }}>{initials}</div>
-                  <div>
-                    <div style={{ fontSize: "20px", fontWeight: 900, color: "#fff", lineHeight: 1.2, marginBottom: "4px" }}>{s.name}</div>
-                    <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>{s.source || "Not Enrolled"}</div>
-                  </div>
-                </div>
+      {/* ── SEARCH RESULT: Full Student Profile ────────────── */}
+      {globalSearchCard && (
+        <StudentProfile
+          studentId={globalSearchCard.id}
+          onClose={() => { setGlobalSearchCard(null); setIsCardClosing(false); }}
+        />
+      )}
+
+      {/* ── EDIT STAFF/TEACHER MODAL ───────────────────────────────── */}
+      {editStaffMember && (
+        <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setEditStaffMember(null)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "440px" }} className="animate-slide-up">
+            <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Edit {editStaffMember.role === "TEACHER" ? "Teacher" : "Staff"}</h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "6px" }}>Name</label>
+                <input value={editStaffForm.name} onChange={(e) => setEditStaffForm({ ...editStaffForm, name: e.target.value })}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
               </div>
-
-              {/* Status chip (overlapping) */}
-              <div style={{ margin: "-18px 24px 0", display: "flex", justifyContent: "flex-start", position: "relative", zIndex: 2, marginBottom: "0" }}>
-                <span style={{
-                  background: isEnrolled ? "hsl(142,70%,40%)" : "hsl(285,30%,50%)",
-                  color: "#fff", fontSize: "10px", fontWeight: 900, padding: "6px 16px",
-                  borderRadius: "20px", boxShadow: "0 4px 14px rgba(0,0,0,0.18)",
-                  display: "inline-block"
-                }}>{isEnrolled ? "✓ Enrolled" : "◌ New Student"}</span>
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "6px" }}>Phone</label>
+                <input value={editStaffForm.phone} onChange={(e) => setEditStaffForm({ ...editStaffForm, phone: e.target.value })}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
               </div>
-
-              {/* Info rows */}
-              <div style={{ padding: "20px 24px 24px" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {[
-                    { icon: "📧", label: "Email", val: s.email || "—" },
-                    { icon: "📞", label: "Phone", val: s.phone || "—" },
-                    { icon: "🎓", label: "Batch", val: s.source || "Not Enrolled" },
-                    { icon: "📅", label: "Joined", val: s.createdAt ? new Date(s.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—" },
-                  ].map((row, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", background: "hsl(285,25%,98%)", borderRadius: "12px", border: "1px solid hsla(285,30%,20%,0.06)" }}>
-                      <span style={{ fontSize: "16px", flexShrink: 0 }}>{row.icon}</span>
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ fontSize: "9px", fontWeight: 800, color: "hsl(285,20%,55%)", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "2px" }}>{row.label}</div>
-                        <div style={{ fontSize: "13px", fontWeight: 600, color: "hsl(285,50%,12%)", wordBreak: "break-all" }}>{row.val}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Bottom strip */}
-                <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
-                  <button
-                    onClick={() => { setCurrentView("leads"); setStudentTab("all"); closeCard(); }}
-                    style={{
-                      flex: 1, height: "40px", borderRadius: "12px", border: "none",
-                      background: "linear-gradient(135deg,hsl(271,91%,60%),hsl(328,100%,54%))",
-                      color: "#fff", fontSize: "12px", fontWeight: 800, cursor: "pointer",
-                      boxShadow: "0 4px 16px -2px hsla(328,100%,54%,0.35)", transition: "all 0.2s"
-                    }}
-                    onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-1px)")}
-                    onMouseLeave={e => (e.currentTarget.style.transform = "none")}
-                  >View Full Profile</button>
-                  <button
-                    onClick={closeCard}
-                    style={{
-                      height: "40px", padding: "0 16px", borderRadius: "12px",
-                      border: "1.5px solid hsla(285,30%,20%,0.14)", background: "#fff",
-                      fontSize: "12px", fontWeight: 700, cursor: "pointer", color: "hsl(285,50%,12%)"
-                    }}
-                  >Close</button>
-                </div>
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "6px" }}>Email</label>
+                <input value={editStaffForm.email} readOnly
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", outline: "none", boxSizing: "border-box", background: "#f9f9f9" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "6px" }}>Monthly Salary (₹)</label>
+                <input value={editStaffForm.salary} onChange={(e) => setEditStaffForm({ ...editStaffForm, salary: e.target.value.replace(/[^0-9]/g, "") })}
+                  placeholder="e.g. 25000"
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, display: "block", marginBottom: "6px" }}>Role</label>
+                <select value={editStaffForm.role} onChange={(e) => setEditStaffForm({ ...editStaffForm, role: e.target.value })}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", outline: "none", boxSizing: "border-box", background: "#fff" }}>
+                  <option value="TEACHER">Teacher</option>
+                  <option value="ADMIN">Admin</option>
+                  <option value="SUPPORT">Support Staff</option>
+                </select>
               </div>
             </div>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "20px" }}>
+              <Button variant="secondary" onClick={() => setEditStaffMember(null)}>Cancel</Button>
+              <Button variant="primary" isLoading={savingStaff} onClick={async () => {
+                setSavingStaff(true);
+                try {
+                  const nameParts = editStaffForm.name.split(" ");
+                  await api.staff.update(editStaffMember.id, { firstName: nameParts[0], lastName: nameParts.slice(1).join(" ") || nameParts[0], phone: editStaffForm.phone, role: editStaffForm.role });
+                  setEditStaffMember(null);
+                  fetchStaff();
+                } catch (err: any) { alert(err.message || "Update failed"); }
+                setSavingStaff(false);
+              }}>Save Changes</Button>
+            </div>
           </div>
-        );
-      })()}
+        </div>
+      )}
 
       {/* ── GLOBAL HISTORY MODAL ───────────────────────────────────────── */}
       <HistoryModal isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />

@@ -18,7 +18,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
 
   const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
-  const data = await res.json();
+  let data: any;
+  try {
+    data = await res.json();
+  } catch {
+    // Response is not JSON (e.g. rate limiter plain text)
+    const text = await res.text().catch(() => "Request failed");
+    throw new Error(text || `HTTP ${res.status}`);
+  }
   if (!res.ok) {
     // If token expired, clear it and reload to force re-login
     if (res.status === 401 && (data.message === "Invalid or expired token." || data.message === "Token missing.")) {

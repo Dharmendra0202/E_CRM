@@ -3918,3 +3918,171 @@ button[style] {
   font-family: inherit;
   letter-spacing: normal;
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   STUDENT LIST UI IMPROVEMENT - bigger cards, better spacing
+   ═══════════════════════════════════════════════════════════════ */
+.stu-table-header {
+  padding: 14px 24px !important;
+  font-size: 11px !important;
+  background: hsla(285,30%,20%,0.03) !important;
+  border-bottom: 1px solid hsla(285,30%,20%,0.08) !important;
+}
+
+.stu-table-row {
+  padding: 16px 24px !important;
+  border-bottom: 1px solid hsla(285,30%,20%,0.06) !important;
+  transition: background 0.15s ease !important;
+}
+
+.stu-table-row:hover {
+  background: hsla(271,91%,60%,0.03) !important;
+}
+
+.stu-td-name {
+  gap: 12px !important;
+}
+
+.stu-student-name {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: hsl(285,50%,12%) !important;
+  display: block !important;
+  margin-bottom: 2px !important;
+}
+
+.stu-student-email {
+  font-size: 11px !important;
+  color: hsl(285,20%,55%) !important;
+  display: block !important;
+}
+
+.stu-batch-tag {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  background: hsla(271,91%,60%,0.08) !important;
+  color: hsl(271,91%,55%) !important;
+}
+
+.stu-status-badge {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+
+.stu-status-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+}
+
+.stu-fee-badge {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+}
+
+.stu-action-btn {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  border: 1px solid hsla(285,30%,20%,0.1) !important;
+  background: #fff !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: hsl(285,20%,50%) !important;
+  transition: all 0.15s !important;
+}
+
+.stu-action-btn:hover {
+  background: hsla(271,91%,60%,0.08) !important;
+  color: hsl(271,91%,60%) !important;
+  border-color: hsla(271,91%,60%,0.2) !important;
+}
+
+.stu-action-btn.stu-action-danger:hover {
+  background: hsla(342,90%,48%,0.08) !important;
+  color: hsl(342,90%,48%) !important;
+  border-color: hsla(342,90%,48%,0.2) !important;
+}
+
+/* Stats cards in student management */
+.stu-filters-card {
+  padding: 14px 20px !important;
+  border-radius: 14px !important;
+}
+
+/* Make the overall container have more breathing room */
+.stu-tab-content {
+  padding: 0 !important;
+}
+
+
+/* Student stat cards */
+.stu-stats-row {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  gap: 14px !important;
+  margin-bottom: 20px !important;
+}
+
+.stu-stat-card {
+  background: #fff !important;
+  border-radius: 14px !important;
+  padding: 18px 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  border: 1px solid hsla(285,30%,20%,0.06) !important;
+  box-shadow: 0 2px 8px rgba(29,10,39,0.04) !important;
+}
+
+.stu-stat-icon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.stu-stat-label {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: hsl(285,20%,50%) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  display: block !important;
+  margin-bottom: 2px !important;
+}
+
+.stu-stat-value {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: hsl(285,50%,12%) !important;
+  display: block !important;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   REMOVE ALL BLACK BORDERS - use colored/subtle borders only
+   ═══════════════════════════════════════════════════════════════ */
+.glass-card, .clay-card, [class*="Card"] {
+  border-color: hsla(285,30%,20%,0.06) !important;
+}
+
+/* Override any black borders on cards */
+div[style*="border: 1px solid"] {
+  border-color: hsla(285,30%,20%,0.08) !important;
+}

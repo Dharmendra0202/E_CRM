@@ -75,15 +75,15 @@ export function AppsMenuDrawer({ onNavigate, currentView }: AppsMenuDrawerProps)
   return (
     <div
       ref={containerRef}
-      className="relative inline-block z-[99999]"
+      className="relative inline-block z-99999"
     >
       {/* ── Main Trigger Circle Button (Vibrant Magenta-Purple Gradient) ── */}
       <button
         onClick={handleToggle}
         className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer text-white shadow-lg ${
           isOpen
-            ? "bg-gradient-to-r from-[hsl(328,100%,50%)] to-[hsl(271,91%,55%)] scale-110 shadow-pink-500/50 ring-4 ring-pink-500/30"
-            : "bg-gradient-to-r from-[hsl(328,100%,54%)] to-[hsl(271,91%,60%)] hover:scale-108 hover:shadow-pink-500/40"
+            ? "bg-linear-to-r from-[hsl(328,100%,50%)] to-[hsl(271,91%,55%)] scale-110 shadow-pink-500/50 ring-4 ring-pink-500/30"
+            : "bg-linear-to-r from-[hsl(328,100%,54%)] to-[hsl(271,91%,60%)] hover:scale-108 hover:shadow-pink-500/40"
         }`}
         title="Quick Modules"
         aria-expanded={isOpen}
@@ -146,8 +146,8 @@ export function AppsMenuDrawer({ onNavigate, currentView }: AppsMenuDrawerProps)
                   }}
                   className={`w-11 h-11 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-300 cursor-pointer active:scale-95 group-hover:scale-115 ${
                     isActive
-                      ? `bg-gradient-to-tr ${item.gradient} ring-4 ${item.ring} ${item.shadow} scale-105`
-                      : `bg-gradient-to-tr ${item.gradient} ${item.shadow} hover:ring-4 ${item.ring}`
+                      ? `bg-linear-to-tr ${item.gradient} ring-4 ${item.ring} ${item.shadow} scale-105`
+                      : `bg-linear-to-tr ${item.gradient} ${item.shadow} hover:ring-4 ${item.ring}`
                   }`}
                   aria-label={item.name}
                 >
