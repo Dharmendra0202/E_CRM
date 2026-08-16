@@ -199,12 +199,12 @@ function DigitalTimePicker({ value, onChange, label }: { value: string; onChange
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
       <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{label}</div>
-      <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "hsl(320,20%,96%)", padding: "8px 12px", borderRadius: "12px", border: "1px solid rgba(0,0,0,0.1)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "hsl(320,20%,96%)", padding: "8px 12px", borderRadius: "12px", border: "1px solid hsla(285,40%,60%,0.18)" }}>
         {/* Hour Input */}
         <select
           value={hour}
           onChange={e => onChange(fmt(parseInt(e.target.value), minute, ampm))}
-          style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.1)", borderRadius: "8px", padding: "6px 8px", fontSize: "14px", fontWeight: 800, color: "var(--text-primary)", outline: "none", cursor: "pointer" }}
+          style={{ background: "#fff", border: "1px solid hsla(285,40%,60%,0.18)", borderRadius: "8px", padding: "6px 8px", fontSize: "14px", fontWeight: 800, color: "var(--text-primary)", outline: "none", cursor: "pointer" }}
         >
           {Array.from({ length: 12 }, (_, i) => i + 1).map(h => (
             <option key={h} value={h}>{h.toString().padStart(2, "0")}</option>
@@ -217,7 +217,7 @@ function DigitalTimePicker({ value, onChange, label }: { value: string; onChange
         <select
           value={minute}
           onChange={e => onChange(fmt(hour, parseInt(e.target.value), ampm))}
-          style={{ background: "#fff", border: "1px solid rgba(0,0,0,0.1)", borderRadius: "8px", padding: "6px 8px", fontSize: "14px", fontWeight: 800, color: "var(--text-primary)", outline: "none", cursor: "pointer" }}
+          style={{ background: "#fff", border: "1px solid hsla(285,40%,60%,0.18)", borderRadius: "8px", padding: "6px 8px", fontSize: "14px", fontWeight: 800, color: "var(--text-primary)", outline: "none", cursor: "pointer" }}
         >
           {Array.from({ length: 60 }, (_, i) => i).map(m => (
             <option key={m} value={m}>{m.toString().padStart(2, "0")}</option>
@@ -251,7 +251,7 @@ function CustomDropdown<T extends { label: string; value: string }>({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         style={{
-          background: "hsl(320,20%,96%)", border: "1px solid rgba(0,0,0,0.1)",
+          background: "hsl(320,20%,96%)", border: "1px solid hsla(285,40%,60%,0.15)",
           borderRadius: "10px", padding: "6px 12px", fontSize: "12px", fontWeight: 700,
           color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "6px",
           cursor: "pointer"
@@ -266,7 +266,7 @@ function CustomDropdown<T extends { label: string; value: string }>({
           <div style={{ position: "fixed", inset: 0, zIndex: 99 }} onClick={() => setIsOpen(false)} />
           <div style={{
             position: "absolute", top: "calc(100% + 4px)", left: 0, zIndex: 100,
-            background: "#ffffff", border: "1px solid rgba(0,0,0,0.12)",
+            background: "#ffffff", border: "1px solid hsla(285,40%,60%,0.18)",
             borderRadius: "12px", boxShadow: "0 10px 25px rgba(0,0,0,0.15)",
             minWidth: "180px", maxHeight: "200px", overflowY: "auto",
             padding: "4px", display: "flex", flexDirection: "column", gap: "2px"
@@ -313,7 +313,7 @@ function ScrollWheelPicker<T extends { label: string; value: string }>({
       </div>
 
       <div style={{
-        borderRadius: "14px", border: "1px solid rgba(0,0,0,0.1)",
+        borderRadius: "14px", border: "1px solid hsla(285,40%,60%,0.15)",
         background: "#ffffff", padding: "6px",
         maxHeight: "140px", overflowY: "auto",
         display: "flex", flexDirection: "column", gap: "4px",
@@ -777,7 +777,7 @@ export function TimetableScheduler() {
       {/* ── FILTER BAR: Horizontal Scrollable Chips ────────────────────────── */}
       <div style={{
         background: "#fff", borderRadius: "18px", padding: "16px 20px",
-        border: "1px solid rgba(29,10,39,0.08)", boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
+        border: "1px solid hsla(285,40%,60%,0.15)", boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
         display: "flex", flexDirection: "column", gap: "12px"
       }}>
         {/* Row 1: Search & Filter Title */}
@@ -792,7 +792,7 @@ export function TimetableScheduler() {
 
           <div style={{
             display: "flex", alignItems: "center", gap: "8px",
-            background: "hsl(320,20%,96%)", border: "1px solid rgba(0,0,0,0.1)",
+            background: "hsl(320,20%,96%)", border: "1px solid hsla(285,40%,60%,0.15)",
             borderRadius: "12px", padding: "8px 14px", width: "280px"
           }}>
             <Search size={14} style={{ color: "var(--text-secondary)" }} />
@@ -822,7 +822,7 @@ export function TimetableScheduler() {
               onClick={() => setFilterBatch("ALL")}
               style={{
                 padding: "6px 14px", borderRadius: "20px", fontSize: "11px", fontWeight: 800,
-                border: filterBatch === "ALL" ? "none" : "1px solid rgba(0,0,0,0.08)",
+                border: filterBatch === "ALL" ? "none" : "1px solid hsla(285,40%,60%,0.15)",
                 background: filterBatch === "ALL" ? "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))" : "hsl(320,20%,96%)",
                 color: filterBatch === "ALL" ? "#ffffff" : "var(--text-primary)",
                 cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
@@ -838,7 +838,7 @@ export function TimetableScheduler() {
                 onClick={() => setFilterBatch(b.id)}
                 style={{
                   padding: "6px 14px", borderRadius: "20px", fontSize: "11px", fontWeight: 700,
-                  border: filterBatch === b.id ? "none" : "1px solid rgba(0,0,0,0.08)",
+                  border: filterBatch === b.id ? "none" : "1px solid hsla(285,40%,60%,0.15)",
                   background: filterBatch === b.id ? "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))" : "hsl(320,20%,96%)",
                   color: filterBatch === b.id ? "#ffffff" : "var(--text-primary)",
                   cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
@@ -861,7 +861,7 @@ export function TimetableScheduler() {
                 onClick={() => setFilterTeacher("ALL")}
                 style={{
                   padding: "5px 12px", borderRadius: "16px", fontSize: "11px", fontWeight: 700,
-                  border: filterTeacher === "ALL" ? "none" : "1px solid rgba(0,0,0,0.08)",
+                  border: filterTeacher === "ALL" ? "none" : "1px solid hsla(285,40%,60%,0.15)",
                   background: filterTeacher === "ALL" ? "hsl(271,91%,60%)" : "hsl(320,20%,96%)",
                   color: filterTeacher === "ALL" ? "#ffffff" : "var(--text-primary)",
                   cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0
@@ -875,7 +875,7 @@ export function TimetableScheduler() {
                   onClick={() => setFilterTeacher(t)}
                   style={{
                     padding: "5px 12px", borderRadius: "16px", fontSize: "11px", fontWeight: 700,
-                    border: filterTeacher === t ? "none" : "1px solid rgba(0,0,0,0.08)",
+                    border: filterTeacher === t ? "none" : "1px solid hsla(285,40%,60%,0.15)",
                     background: filterTeacher === t ? "hsl(271,91%,60%)" : "hsl(320,20%,96%)",
                     color: filterTeacher === t ? "#ffffff" : "var(--text-primary)",
                     cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0
@@ -910,7 +910,7 @@ export function TimetableScheduler() {
                 boxShadow: isSunday ? "0 4px 20px hsla(328,100%,54%,0.08)" : "0 2px 12px rgba(0,0,0,0.04)",
                 overflow: "hidden"
               }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", background: isSunday ? "linear-gradient(90deg,hsla(328,100%,54%,0.08),transparent)" : "rgba(29,10,39,0.025)", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", background: isSunday ? "linear-gradient(90deg,hsla(328,100%,54%,0.08),transparent)" : "rgba(29,10,39,0.025)", borderBottom: "1px solid hsla(285,40%,60%,0.15)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: isSunday ? "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))" : "linear-gradient(135deg,#1e1b4b,#4c1d95)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 900 }}>
                       {dayName.slice(0, 3).toUpperCase()}
@@ -952,7 +952,7 @@ export function TimetableScheduler() {
                         </div>
                       ))}
                       <div style={{ display: "flex", alignItems: "center", paddingLeft: "14px", flexShrink: 0 }}>
-                        <button onClick={() => openNew(dayIdx)} style={{ width: "80px", height: "90px", border: "2px dashed rgba(0,0,0,0.12)", borderRadius: "14px", background: "transparent", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", color: "var(--color-accent)", opacity: 0.7 }}>
+                        <button onClick={() => openNew(dayIdx)} style={{ width: "80px", height: "90px", border: "2px dashed hsla(328,100%,54%,0.3)", borderRadius: "14px", background: "transparent", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", color: "var(--color-accent)", opacity: 0.7 }}>
                           <Plus size={18} />
                           <span style={{ fontSize: "10px", fontWeight: 700 }}>Add</span>
                         </button>
@@ -973,8 +973,8 @@ export function TimetableScheduler() {
             const cards = filtered.filter(s => s.batchId === batch.id);
             if (cards.length === 0) return null;
             return (
-              <div key={batch.id} style={{ background: "#fff", borderRadius: "20px", padding: "24px", border: "1px solid rgba(29,10,39,0.08)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: "12px" }}>
+              <div key={batch.id} style={{ background: "#fff", borderRadius: "20px", padding: "24px", border: "1px solid hsla(285,40%,60%,0.15)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid hsla(285,40%,60%,0.15)", paddingBottom: "12px" }}>
                   <div>
                     <h3 style={{ margin: "0 0 4px", fontSize: "17px", fontWeight: 800, color: "var(--text-primary)" }}>{batch.name}</h3>
                     <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>{batch.subject} · {cards.length} sessions · {batch.teacher.user.firstName} {batch.teacher.user.lastName}</p>
@@ -1010,8 +1010,8 @@ export function TimetableScheduler() {
             const cards = filtered.filter(s => s.teacherName === teacherName);
             if (cards.length === 0) return null;
             return (
-              <div key={teacherName} style={{ background: "#fff", borderRadius: "20px", padding: "24px", border: "1px solid rgba(29,10,39,0.08)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingBottom: "12px" }}>
+              <div key={teacherName} style={{ background: "#fff", borderRadius: "20px", padding: "24px", border: "1px solid hsla(285,40%,60%,0.15)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid hsla(285,40%,60%,0.15)", paddingBottom: "12px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <div style={{ width: "42px", height: "42px", borderRadius: "12px", background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "16px" }}>
                       {teacherName.split(" ").map(n => n[0]).join("")}
