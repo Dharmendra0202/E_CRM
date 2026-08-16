@@ -328,7 +328,7 @@ function ScrollWheelPicker<T extends { label: string; value: string }>({
               onClick={() => onChange(item.value)}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "space-between",
-                padding: "8px 12px", borderRadius: "10px", border: isSelected ? `1.5px solid ${accent}` : "1px solid rgba(0,0,0,0.05)",
+                padding: "8px 12px", borderRadius: "10px", border: isSelected ? `1.5px solid ${accent}` : "1px solid hsla(285,40%,60%,0.15)",
                 background: isSelected ? `${accent}10` : "hsl(320,20%,98%)",
                 color: isSelected ? accent : "var(--text-primary)",
                 fontWeight: isSelected ? 800 : 600, fontSize: "12px",
@@ -991,7 +991,7 @@ export function TimetableScheduler() {
                         <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{s.startTime} – {s.endTime}</span>
                       </div>
                       <p style={{ margin: "0 0 8px", fontWeight: 800, color: "var(--text-primary)" }}>{s.subject}</p>
-                      <div style={{ fontSize: "11px", color: "var(--text-secondary)", paddingTop: "6px", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                      <div style={{ fontSize: "11px", color: "var(--text-secondary)", paddingTop: "6px", borderTop: "1px solid hsla(285,40%,60%,0.15)" }}>
                         <div>{s.teacherName}</div><div>{s.roomOrLink}</div>
                       </div>
                     </div>
@@ -1033,7 +1033,7 @@ export function TimetableScheduler() {
                         <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{WEEK_DAYS[s.dayOfWeek]}</span>
                       </div>
                       <p style={{ margin: "0 0 6px", fontWeight: 800, color: "var(--text-primary)" }}>{s.subject}</p>
-                      <div style={{ fontSize: "11px", color: "var(--text-secondary)", paddingTop: "6px", borderTop: "1px solid rgba(0,0,0,0.06)" }}>
+                      <div style={{ fontSize: "11px", color: "var(--text-secondary)", paddingTop: "6px", borderTop: "1px solid hsla(285,40%,60%,0.15)" }}>
                         <div>{s.startTime} – {s.endTime}</div><div>{s.roomOrLink}</div>
                       </div>
                     </div>
@@ -1268,7 +1268,7 @@ export function TimetableScheduler() {
             padding: "24px", boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
             display: "flex", flexDirection: "column", gap: "16px"
           }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(0,0,0,0.08)", paddingBottom: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid hsla(285,40%,60%,0.15)", paddingBottom: "10px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <User size={18} style={{ color: "hsl(271,91%,60%)" }} />
                 <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "var(--text-primary)" }}>
@@ -1352,7 +1352,7 @@ export function TimetableScheduler() {
       {isNotifyOpen && notifyTarget && (
         <div className="modal-overlay" style={{ background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", zIndex: 9999 }}>
           <div style={{ background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "460px", padding: "24px", boxShadow: "0 20px 50px rgba(0,0,0,0.25)", display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(0,0,0,0.08)", paddingBottom: "10px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid hsla(285,40%,60%,0.15)", paddingBottom: "10px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <Bell size={18} style={{ color: "var(--color-accent)" }} />
                 <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "var(--text-primary)" }}>Dispatch Lecture Alert</h3>
