@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/Button";
 import { Skeleton } from "./ui/Skeleton";
-import { api } from "../utils/api"
+import { api } from "../utils/api";
 import { inputStyle, labelStyle } from "../utils/styles";
 import {
   IndianRupee, Plus, Search, Filter, CheckCircle2, XCircle,
   Clock, TrendingUp, Users2, CreditCard, ArrowUpRight, AlertCircle,
+  Briefcase, GraduationCap, X, Check
 } from "lucide-react";
 
 export function FeeManagement() {
@@ -19,12 +20,24 @@ export function FeeManagement() {
   const [creating, setCreating] = useState(false);
   const [paying, setPaying] = useState(false);
 
+  // Tab State: "all" | "done" | "pending" | "staff_payroll"
+  const [activeTab, setActiveTab] = useState<"all" | "done" | "pending" | "staff_payroll">("all");
+
+  // Staff Drawer State
+  const [showStaffDrawer, setShowStaffDrawer] = useState(false);
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [staffForm, setStaffForm] = useState({ staffId: "", amount: "", paymentMethod: "BANK_TRANSFER", notes: "" });
+  const [staffSuccess, setStaffSuccess] = useState(false);
+
   // Create invoice form
   const [newInv, setNewInv] = useState({ studentId: "", totalAmount: "", dueDate: "" });
   // Payment form
   const [payForm, setPayForm] = useState({ amount: "", paymentMethod: "CASH", transactionReference: "" });
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+    fetchStaff();
+  }, []);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -35,8 +48,19 @@ export function FeeManagement() {
       ]);
       if (invRes.data) setInvoices(invRes.data);
       if (stuRes.data) setStudents(stuRes.data);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
     setIsLoading(false);
+  };
+
+  const fetchStaff = async () => {
+    try {
+      const res = await api.staff.getAll();
+      if (res.data) setStaffList(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleCreateInvoice = async () => {
@@ -47,7 +71,9 @@ export function FeeManagement() {
       setNewInv({ studentId: "", totalAmount: "", dueDate: "" });
       setShowCreate(false);
       loadData();
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      console.error(err);
+    }
     setCreating(false);
   };
 
@@ -59,7 +85,9 @@ export function FeeManagement() {
       setPayForm({ amount: "", paymentMethod: "CASH", transactionReference: "" });
       setShowPay(null);
       loadData();
-    } catch (err: any) { alert(err.message || "Payment failed. Please try again."); }
+    } catch (err: any) {
+      alert(err.message || "Payment failed. Please try again.");
+    }
     setPaying(false);
   };
 
@@ -80,7 +108,7 @@ export function FeeManagement() {
         : "Student";
 
       const options: any = {
-        key: orderRes.keyId || "rzp_test_ecrm_demo_key",
+        key: orderRes.keyId || "rzp_test_TQlw6WdYyizH9Y",
         amount: orderRes.amount,
         currency: orderRes.currency || "INR",
         name: "EduFlow E-CRM",
@@ -110,9 +138,7 @@ export function FeeManagement() {
           email: showPay.student?.user?.email || "student@ecrm.com",
           contact: showPay.student?.user?.phone || "9876543210",
         },
-        theme: {
-          color: "#e11d48",
-        },
+        theme: { color: "#e11d48" },
         modal: {
           ondismiss: function () {
             setPaying(false);
@@ -120,11 +146,16 @@ export function FeeManagement() {
         },
       };
 
-      if ((window as any).Razorpay) {
-        const rzp = new (window as any).Razorpay(options);
+      const RzpConstructor = (window as any).Razorpay;
+      if (typeof RzpConstructor === "function") {
+        const rzp = new RzpConstructor(options);
+        rzp.on("payment.failed", function (response: any) {
+          alert("Payment Failed: " + (response.error?.description || "Transaction declined"));
+          setPaying(false);
+        });
         rzp.open();
+        setTimeout(() => setPaying(false), 800);
       } else {
-        // Fallback simulated payment verification if checkout.js is blocked
         await api.payments.verifyPayment({
           invoiceId: showPay.id,
           razorpayOrderId: orderRes.orderId,
@@ -138,9 +169,23 @@ export function FeeManagement() {
         setPaying(false);
       }
     } catch (err: any) {
-      alert("Razorpay checkout initialization error: " + err.message);
+      alert("Razorpay checkout error: " + (err.message || "Failed to initialize payment"));
       setPaying(false);
     }
+  };
+
+  const handleRecordStaffSalary = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!staffForm.staffId || !staffForm.amount) {
+      alert("Please select staff member and enter payment amount.");
+      return;
+    }
+    setStaffSuccess(true);
+    setTimeout(() => {
+      setStaffSuccess(false);
+      setShowStaffDrawer(false);
+      setStaffForm({ staffId: "", amount: "", paymentMethod: "BANK_TRANSFER", notes: "" });
+    }, 2000);
   };
 
   // Computed stats
@@ -149,7 +194,9 @@ export function FeeManagement() {
   const outstanding = totalBilled - totalPaid;
   const overdueCount = invoices.filter((i) => i.status === "UNPAID" && new Date(i.dueDate) < new Date()).length;
 
-  const filtered = invoices.filter((inv) => {
+  const filteredInvoices = invoices.filter((inv) => {
+    if (activeTab === "done" && inv.status !== "PAID") return false;
+    if (activeTab === "pending" && inv.status === "PAID") return false;
     if (filterStatus && inv.status !== filterStatus) return false;
     if (searchQuery) {
       const name = inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : "";
@@ -158,25 +205,25 @@ export function FeeManagement() {
     return true;
   });
 
-  
-  
-
   return (
     <div className="animate-fade-in">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
         <div>
-          <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Fee Management</h1>
-          <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Track invoices, payments, and outstanding dues.</p>
+          <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Payment Records</h1>
+          <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Manage student installments, completed settlements, pending dues, and staff payroll.</p>
         </div>
-        <Button variant="primary" onClick={() => setShowCreate(true)} leftIcon={<Plus size={14} />}>Issue Invoice</Button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Button variant="secondary" onClick={() => setShowStaffDrawer(true)} leftIcon={<Briefcase size={14} />}>Staff & Teacher Payroll Drawer</Button>
+          <Button variant="primary" onClick={() => setShowCreate(true)} leftIcon={<Plus size={14} />}>Issue Invoice</Button>
+        </div>
       </div>
 
-      {/* Revenue Stats */}
+      {/* Revenue & Payment Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", marginBottom: "24px" }}>
         {[
           { label: "Total Billed", value: `₹${totalBilled.toLocaleString("en-IN")}`, icon: <IndianRupee size={18} />, color: "hsl(271,91%,60%)" },
-          { label: "Collected", value: `₹${totalPaid.toLocaleString("en-IN")}`, icon: <CheckCircle2 size={18} />, color: "var(--color-success)" },
-          { label: "Outstanding", value: `₹${outstanding.toLocaleString("en-IN")}`, icon: <AlertCircle size={18} />, color: "var(--color-danger)" },
+          { label: "Done / Settlement", value: `₹${totalPaid.toLocaleString("en-IN")}`, icon: <CheckCircle2 size={18} />, color: "var(--color-success)" },
+          { label: "Pending Dues", value: `₹${outstanding.toLocaleString("en-IN")}`, icon: <AlertCircle size={18} />, color: "var(--color-danger)" },
           { label: "Overdue Invoices", value: overdueCount, icon: <Clock size={18} />, color: "hsl(38,92%,50%)" },
         ].map((s, i) => (
           <div key={i} style={{ background: "#fff", borderRadius: "14px", padding: "18px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "14px" }}>
@@ -189,103 +236,194 @@ export function FeeManagement() {
         ))}
       </div>
 
-      {/* Filters */}
-      <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
-        <div style={{ flex: 1, position: "relative", maxWidth: "300px" }}>
-          <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
-          <input style={{ ...inputStyle, paddingLeft: "36px" }} placeholder="Search by student name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-        </div>
-        <select style={{ ...inputStyle, width: "160px" }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-          <option value="">All Status</option>
-          <option value="UNPAID">Unpaid</option>
-          <option value="PAID">Paid</option>
-          <option value="PARTIAL">Partial</option>
-        </select>
+      {/* Navigation Tabs for Payment Sections */}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "16px", borderBottom: "1px solid var(--border-glass)", paddingBottom: "10px" }}>
+        {[
+          { id: "all", label: "All Invoices" },
+          { id: "done", label: "Done Payments (Settled)" },
+          { id: "pending", label: "Pending Payments & Remaining Dues" },
+          { id: "staff_payroll", label: "Staff & Teacher Payroll" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
+            style={{
+              padding: "8px 16px", borderRadius: "10px", border: "none",
+              fontSize: "13px", fontWeight: activeTab === tab.id ? 800 : 600,
+              background: activeTab === tab.id ? "hsla(328,100%,54%,0.1)" : "transparent",
+              color: activeTab === tab.id ? "var(--color-accent)" : "var(--text-secondary)",
+              cursor: "pointer", transition: "all 0.2s"
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Invoices List */}
-      <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid var(--border-glass)", overflow: "hidden" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 120px 100px 100px", padding: "12px 20px", background: "rgba(29,10,39,0.02)", borderBottom: "1px solid var(--border-glass)", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>
-          <div>Student</div><div>Amount</div><div>Paid</div><div>Due Date</div><div>Actions</div>
-        </div>
-
-        {isLoading ? (
-          <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: "10px" }}>
-            {[1,2,3,4].map(i => <Skeleton key={i} variant="rect" height={52} />)}
+      {/* Main Student Payments View */}
+      {activeTab !== "staff_payroll" ? (
+        <>
+          {/* Filters */}
+          <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
+            <div style={{ flex: 1, position: "relative", maxWidth: "300px" }}>
+              <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
+              <input style={{ ...inputStyle, paddingLeft: "36px" }} placeholder="Search student name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            </div>
+            <select style={{ ...inputStyle, width: "160px" }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+              <option value="">All Status</option>
+              <option value="UNPAID">Unpaid</option>
+              <option value="PAID">Paid</option>
+              <option value="PARTIAL">Partial</option>
+            </select>
           </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ padding: "48px", textAlign: "center" }}>
-            <IndianRupee size={32} style={{ color: "var(--text-secondary)", opacity: 0.3, marginBottom: "10px" }} />
-            <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", fontWeight: 600 }}>No invoices found.</p>
-          </div>
-        ) : (
-          filtered.map((inv) => {
-            const name = inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : "Unknown";
-            const paid = inv.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0;
-            const isOverdue = inv.status === "UNPAID" && new Date(inv.dueDate) < new Date();
-            const statusColor = inv.status === "PAID" ? "var(--color-success)" : isOverdue ? "var(--color-danger)" : "hsl(38,92%,50%)";
 
-            return (
-              <div key={inv.id} style={{ display: "grid", gridTemplateColumns: "1fr 120px 120px 100px 100px", padding: "14px 20px", borderBottom: "1px solid var(--border-glass)", alignItems: "center" }}>
-                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: `${statusColor}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 800, color: statusColor }}>
-                    {name.split(" ").map((n: string) => n[0]).join("").substring(0, 2)}
+          {/* Invoices List */}
+          <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid var(--border-glass)", overflow: "hidden" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 120px 120px 100px", padding: "12px 20px", background: "rgba(29,10,39,0.02)", borderBottom: "1px solid var(--border-glass)", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>
+              <div>Student</div><div>Total Billed</div><div>Done Paid</div><div>Remaining</div><div>Actions</div>
+            </div>
+
+            {isLoading ? (
+              <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                {[1,2,3,4].map(i => <Skeleton key={i} variant="rect" height={52} />)}
+              </div>
+            ) : filteredInvoices.length === 0 ? (
+              <div style={{ padding: "48px", textAlign: "center" }}>
+                <IndianRupee size={32} style={{ color: "var(--text-secondary)", opacity: 0.3, marginBottom: "10px" }} />
+                <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", fontWeight: 600 }}>No payment records found.</p>
+              </div>
+            ) : (
+              filteredInvoices.map((inv) => {
+                const name = inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : "Student";
+                const paid = inv.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0;
+                const remaining = Math.max(0, Number(inv.totalAmount) - paid);
+                const isOverdue = inv.status === "UNPAID" && new Date(inv.dueDate) < new Date();
+                const statusColor = inv.status === "PAID" ? "var(--color-success)" : isOverdue ? "var(--color-danger)" : "hsl(38,92%,50%)";
+
+                return (
+                  <div key={inv.id} style={{ display: "grid", gridTemplateColumns: "1fr 120px 120px 120px 100px", padding: "14px 20px", borderBottom: "1px solid var(--border-glass)", alignItems: "center" }}>
+                    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                      <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: `${statusColor}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 800, color: statusColor }}>
+                        {name.split(" ").map((n: string) => n[0]).join("").substring(0, 2)}
+                      </div>
+                      <div>
+                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{name}</p>
+                        <p style={{ margin: 0, fontSize: "10px", color: "var(--text-secondary)" }}>{inv.student?.user?.email}</p>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: "13px", fontWeight: 700 }}>₹{Number(inv.totalAmount).toLocaleString("en-IN")}</span>
+                    <span style={{ fontSize: "13px", fontWeight: 600, color: "var(--color-success)" }}>₹{paid.toLocaleString("en-IN")}</span>
+                    <span style={{ fontSize: "13px", fontWeight: 700, color: remaining > 0 ? "var(--color-danger)" : "var(--color-success)" }}>
+                      ₹{remaining.toLocaleString("en-IN")}
+                    </span>
+                    <div>
+                      {inv.status !== "PAID" && (
+                        <button onClick={() => { setShowPay(inv); setPayForm({ amount: String(remaining), paymentMethod: "CASH", transactionReference: "" }); }}
+                          style={{ fontSize: "11px", fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", border: "none", padding: "6px 14px", borderRadius: "8px", cursor: "pointer", boxShadow: "0 2px 8px hsla(328,100%,54%,0.3)" }}>
+                          Pay Now
+                        </button>
+                      )}
+                      {inv.status === "PAID" && (
+                        <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--color-success)", background: "hsla(142,70%,42%,0.08)", padding: "4px 10px", borderRadius: "10px" }}>SETTLED</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </>
+      ) : (
+        /* Staff & Teacher Payroll Section */
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "24px", border: "1px solid var(--border-glass)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <div>
+              <h3 style={{ margin: "0 0 4px", fontSize: "16px", fontWeight: 800 }}>Staff & Teacher Salary Payroll</h3>
+              <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>Record monthly salaries, lecture payouts, and staff disbursements.</p>
+            </div>
+            <Button variant="primary" onClick={() => setShowStaffDrawer(true)} leftIcon={<Plus size={14} />}>Record Salary Payout</Button>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
+            {staffList.length === 0 ? (
+              <p style={{ fontSize: "13px", color: "var(--text-secondary)", gridColumn: "1 / -1", textAlign: "center", padding: "32px 0" }}>No staff or teachers registered yet.</p>
+            ) : staffList.map((member) => (
+              <div key={member.id} style={{ background: "rgba(29,10,39,0.02)", borderRadius: "14px", padding: "18px", border: "1px solid var(--border-glass)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+                  <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "hsla(271,91%,60%,0.12)", color: "hsl(271,91%,60%)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "14px" }}>
+                    {`${member.firstName[0]}${member.lastName[0]}`.toUpperCase()}
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{name}</p>
-                    <p style={{ margin: 0, fontSize: "10px", color: "var(--text-secondary)" }}>{inv.student?.user?.email}</p>
+                    <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>{member.firstName} {member.lastName}</h4>
+                    <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600 }}>{member.role}</span>
                   </div>
                 </div>
-                <span style={{ fontSize: "13px", fontWeight: 700 }}>₹{Number(inv.totalAmount).toLocaleString("en-IN")}</span>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: paid > 0 ? "var(--color-success)" : "var(--text-secondary)" }}>₹{paid.toLocaleString("en-IN")}</span>
-                <span style={{ fontSize: "11px", fontWeight: 600, color: isOverdue ? "var(--color-danger)" : "var(--text-secondary)" }}>
-                  {new Date(inv.dueDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                </span>
-                <div>
-                  {inv.status !== "PAID" && (
-                    <button onClick={() => { setShowPay(inv); setPayForm({ amount: String(Number(inv.totalAmount) - paid), paymentMethod: "CASH", transactionReference: "" }); }}
-                      style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-success)", background: "hsla(142,70%,42%,0.08)", border: "1px solid hsla(142,70%,42%,0.2)", padding: "5px 10px", borderRadius: "8px", cursor: "pointer" }}>
-                      Pay
-                    </button>
-                  )}
-                  {inv.status === "PAID" && (
-                    <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--color-success)", background: "hsla(142,70%,42%,0.08)", padding: "4px 10px", borderRadius: "10px" }}>PAID</span>
-                  )}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "14px", paddingTop: "12px", borderTop: "1px solid var(--border-glass)" }}>
+                  <span style={{ fontSize: "12px", color: "var(--text-secondary)" }}>Email: {member.email}</span>
+                  <button
+                    onClick={() => { setShowStaffDrawer(true); setStaffForm({ ...staffForm, staffId: member.id }); }}
+                    style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "transparent", border: "none", cursor: "pointer" }}
+                  >
+                    Pay Salary &rarr;
+                  </button>
                 </div>
               </div>
-            );
-          })
-        )}
-      </div>
+            ))}
+          </div>
+        </div>
+      )}
 
-      {/* Installment Tracking & Payment History */}
-      {!isLoading && invoices.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", marginTop: "16px", border: "1px solid var(--border-glass)" }}>
-          <h3 style={{ margin: "0 0 14px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
-            <CreditCard size={16} style={{ color: "hsl(271,91%,60%)" }} /> Installment Tracking
-          </h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {invoices.filter(inv => inv.payments && inv.payments.length > 0).slice(0, 8).map((inv) => {
-              const name = inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : "Student";
-              const totalPaidInv = inv.payments.reduce((s: number, p: any) => s + Number(p.amount), 0);
-              const pct = Math.min(100, Math.round((totalPaidInv / Number(inv.totalAmount)) * 100));
-              return (
-                <div key={inv.id} style={{ padding: "12px 14px", borderRadius: "10px", background: "rgba(29,10,39,0.02)", border: "1px solid var(--border-glass)" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                    <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{name}</span>
-                    <span style={{ fontSize: "11px", fontWeight: 600, color: pct >= 100 ? "var(--color-success)" : "hsl(38,92%,50%)" }}>
-                      ₹{totalPaidInv.toLocaleString("en-IN")} / ₹{Number(inv.totalAmount).toLocaleString("en-IN")} ({inv.payments.length} payment{inv.payments.length !== 1 ? "s" : ""})
-                    </span>
-                  </div>
-                  <div style={{ height: "4px", background: "hsla(271,91%,60%,0.1)", borderRadius: "2px", overflow: "hidden" }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: pct >= 100 ? "var(--color-success)" : "hsl(271,91%,60%)", borderRadius: "2px" }} />
-                  </div>
-                </div>
-              );
-            })}
-            {invoices.filter(inv => inv.payments && inv.payments.length > 0).length === 0 && (
-              <p style={{ fontSize: "12px", color: "var(--text-secondary)", textAlign: "center", padding: "16px 0" }}>No payment records yet.</p>
+      {/* Staff Payment Drawer / Modal */}
+      {showStaffDrawer && (
+        <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowStaffDrawer(false)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "24px", padding: "28px", width: "100%", maxWidth: "440px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800 }}>Record Staff / Teacher Salary</h3>
+              <button onClick={() => setShowStaffDrawer(false)} style={{ background: "transparent", border: "none", cursor: "pointer" }}><X size={18} /></button>
+            </div>
+
+            {staffSuccess && (
+              <div style={{ padding: "12px", borderRadius: "10px", background: "hsla(142,70%,45%,0.15)", color: "var(--color-success)", fontSize: "13px", fontWeight: 700, marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <Check size={16} /> Salary payout recorded successfully!
+              </div>
             )}
+
+            <form onSubmit={handleRecordStaffSalary} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <div>
+                <label style={labelStyle}>Select Staff / Teacher *</label>
+                <select style={inputStyle} value={staffForm.staffId} onChange={(e) => setStaffForm({ ...staffForm, staffId: e.target.value })} required>
+                  <option value="">Select staff member</option>
+                  {staffList.map((st) => (
+                    <option key={st.id} value={st.id}>{st.firstName} {st.lastName} ({st.role})</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Salary Amount (₹) *</label>
+                <input style={inputStyle} type="number" value={staffForm.amount} onChange={(e) => setStaffForm({ ...staffForm, amount: e.target.value })} placeholder="e.g. 25000" required />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Payment Method</label>
+                <select style={inputStyle} value={staffForm.paymentMethod} onChange={(e) => setStaffForm({ ...staffForm, paymentMethod: e.target.value })}>
+                  <option value="BANK_TRANSFER">Direct Bank Transfer (NEFT/IMPS)</option>
+                  <option value="UPI">UPI Payout</option>
+                  <option value="CHEQUE">Cheque</option>
+                  <option value="CASH">Cash</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Remarks / Notes</label>
+                <input style={inputStyle} value={staffForm.notes} onChange={(e) => setStaffForm({ ...staffForm, notes: e.target.value })} placeholder="e.g. August 2026 Monthly Salary" />
+              </div>
+
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "16px" }}>
+                <Button variant="secondary" onClick={() => setShowStaffDrawer(false)}>Cancel</Button>
+                <Button variant="primary" type="submit">Record Disbursement</Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -29,6 +29,7 @@ const NAV_ITEMS = [
   ]},
   { group: "Academics", items: [
     { view: "academics", icon: <GraduationCap size={18} />, label: "Academics" },
+    { view: "batches", icon: <Layers size={18} />, label: "Batches" },
     { view: "schedule", icon: <CalendarDays size={18} />, label: "Timetable" },
     { view: "attendance", icon: <Check size={18} />, label: "Attendance" },
     { view: "homework", icon: <FileText size={18} />, label: "Homework" },
@@ -39,7 +40,7 @@ const NAV_ITEMS = [
     { view: "bulk-promotion", icon: <Users2 size={18} />, label: "Bulk Promotion" },
   ]},
   { group: "Operations", items: [
-    { view: "billing", icon: <CreditCard size={18} />, label: "Fees" },
+    { view: "billing", icon: <CreditCard size={18} />, label: "Payment Records" },
     { view: "transport", icon: <Bus size={18} />, label: "Transport" },
     { view: "library", icon: <Library size={18} />, label: "Library" },
     { view: "communication", icon: <Megaphone size={18} />, label: "Notices" },

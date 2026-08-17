@@ -42,6 +42,8 @@ export const api = {
   auth: {
     login: (email: string, password: string) =>
       request<any>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
+    demoLogin: () =>
+      request<any>("/auth/demo", { method: "POST" }),
     register: (body: object) =>
       request<any>("/auth/register", { method: "POST", body: JSON.stringify(body) }),
     google: (credential: string) =>

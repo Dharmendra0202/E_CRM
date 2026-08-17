@@ -104,11 +104,11 @@ export function ParentManagement() {
                 <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "hsla(271,91%,60%,0.1)", border: "2px solid hsla(271,91%,60%,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 800, color: "hsl(271,91%,60%)" }}>
                   {parent.name?.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>{parent.name}</p>
-                  <div style={{ display: "flex", gap: "12px", marginTop: "2px" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, wordBreak: "break-word" }}>{parent.name}</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "2px" }}>
                     <span style={{ fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px" }}><Phone size={10} /> {parent.phone}</span>
-                    <span style={{ fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px" }}><Mail size={10} /> {parent.email}</span>
+                    <span style={{ fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px", wordBreak: "break-all", overflowWrap: "anywhere" }}><Mail size={10} /> {parent.email}</span>
                   </div>
                 </div>
                 <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.08)", padding: "3px 10px", borderRadius: "16px" }}>

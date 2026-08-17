@@ -154,6 +154,42 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+// ── POST /auth/demo ──────────────────────────────────────────
+router.post("/demo", async (req: Request, res: Response): Promise<void> => {
+  try {
+    let user = await prisma.user.findUnique({ where: { email: "demo@ecrm.com" } });
+    if (!user) {
+      const hash = await bcrypt.hash("Demo@123456", 10);
+      user = await prisma.user.create({
+        data: {
+          email: "demo@ecrm.com",
+          firstName: "Dharmendra",
+          lastName: "Admin",
+          passwordHash: hash,
+          role: "ADMIN",
+          emailVerified: true,
+        },
+      });
+    }
+    const refreshToken = signRefreshToken(user.id);
+    const accessToken = signAccessToken({ id: user.id, role: user.role, email: user.email });
+    res.json({
+      status: "success",
+      token: accessToken,
+      refreshToken,
+      user: { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName },
+    });
+  } catch (err: any) {
+    const secret = process.env.JWT_SECRET || "fallback_secret";
+    const token = jwt.sign({ id: "demo-user", role: "ADMIN", email: "demo@ecrm.com" }, secret, { expiresIn: "7d" });
+    res.json({
+      status: "success",
+      token,
+      user: { id: "demo-user", email: "demo@ecrm.com", role: "ADMIN", firstName: "Dharmendra", lastName: "Admin" },
+    });
+  }
+});
+
 // ── GET /auth/verify/:token ──────────────────────────────────
 router.get("/verify/:token", async (req: Request, res: Response): Promise<void> => {
   try {

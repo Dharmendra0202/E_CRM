@@ -32,6 +32,7 @@ import { BulkPromotion } from "./components/BulkPromotion";
 import { ExaminationSystem } from "./components/ExaminationSystem";
 import { MarksheetSystem } from "./components/MarksheetSystem";
 import { WeakStudentModule } from "./components/WeakStudentModule";
+import { BatchesManagement } from "./components/BatchesManagement";
 import { LandingPage } from "./components/LandingPage";
 import { Sidebar } from "./components/ui/Sidebar";
 import { CommandPalette } from "./components/ui/CommandPalette";
@@ -43,7 +44,7 @@ import {
   Activity, BookOpen, IndianRupee, History, Sun, Moon, Download
 } from "lucide-react";
 
-type ViewType = "dashboard" | "leads" | "new-enrollment" | "online-admissions" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding";
+type ViewType = "dashboard" | "leads" | "batches" | "new-enrollment" | "online-admissions" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
@@ -512,6 +513,13 @@ function App() {
           {currentView === "leads" && (
             <div className="animate-fade-in">
               <StudentManagement initialTab={studentTab} />
+            </div>
+          )}
+
+          {/* ══════════════ BATCHES VIEW ══════════════ */}
+          {currentView === "batches" && (
+            <div className="animate-fade-in">
+              <BatchesManagement onNavigate={(v) => setCurrentView(v as ViewType)} />
             </div>
           )}
 

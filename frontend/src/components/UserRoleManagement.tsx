@@ -203,9 +203,9 @@ export function UserRoleManagement() {
                       <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "hsla(271,91%,60%,0.1)", border: "1.5px solid hsla(271,91%,60%,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, color: "hsl(271,91%,60%)" }}>
                         {member.name?.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
                       </div>
-                      <div>
-                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{member.name}</p>
-                        <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{member.email}</p>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, wordBreak: "break-word" }}>{member.name}</p>
+                        <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)", wordBreak: "break-all", overflowWrap: "anywhere" }}>{member.email}</p>
                       </div>
                     </div>
                     <div>

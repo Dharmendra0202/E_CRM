@@ -38,13 +38,24 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setTimeout(() => setToast(null), 5000);
   };
 
-  const demoLogin = () => {
+  const demoLogin = async () => {
     setLoading(true);
     showToast("Launching Demo Mode...", "info");
-    setTimeout(() => {
+    try {
+      const res = await api.auth.demoLogin();
+      if (res.token) setToken(res.token);
+      onLoginSuccess({
+        id: res.user?.id || "demo-user",
+        email: res.user?.email || "demo@ecrm.com",
+        role: res.user?.role || "ADMIN",
+        user_metadata: { name: res.user ? `${res.user.firstName} ${res.user.lastName}` : "Dharmendra Admin", role: res.user?.role || "ADMIN" }
+      });
+    } catch {
+      setToken("demo-offline-token");
       onLoginSuccess({ id: "demo-user", email: "demo@ecrm.com", user_metadata: { name: "Dharmendra Admin", role: "ADMIN" } });
+    } finally {
       setLoading(false);
-    }, 900);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

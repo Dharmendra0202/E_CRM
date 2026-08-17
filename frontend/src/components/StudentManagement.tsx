@@ -1240,18 +1240,18 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                     <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.88)", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}>
                       <GraduationCap size={12} /> {profileResult.batch}
                     </span>
-                    <span style={{ color: "rgba(255,255,255,0.4)" }}>Â·</span>
+                    <span style={{ color: "rgba(255,255,255,0.4)" }}>·</span>
                     <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.72)" }}>Enrolled {formatDate(profileResult.enrollmentDate)}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* â”€â”€ 3 Key Stats (overlapping banner) â”€â”€ */}
+            {/* — 3 Key Stats (overlapping banner) — */}
             <div style={{ margin: "-32px 24px 0", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", position: "relative", zIndex: 2 }}>
               {[
                 { icon: <Activity size={15} style={{ color: "var(--color-info)" }} />, label: "Attendance", val: `${profileResult.attendanceRate}%`, color: profileResult.attendanceRate >= 85 ? "var(--color-success)" : profileResult.attendanceRate >= 60 ? "hsl(38,92%,45%)" : "var(--color-danger)" },
-                { icon: <IndianRupee size={15} style={{ color: "hsl(38,92%,45%)" }} />, label: "Fee Amount", val: `â‚¹${profileResult.feeAmount.toLocaleString("en-IN")}`, color: "hsl(285,50%,12%)" },
+                { icon: <IndianRupee size={15} style={{ color: "hsl(38,92%,45%)" }} />, label: "Fee Amount", val: `₹${profileResult.feeAmount.toLocaleString("en-IN")}`, color: "hsl(285,50%,12%)" },
                 { icon: <CheckCircle2 size={15} style={{ color: getFeeColor(profileResult.feeStatus).color }} />, label: "Fee Status", val: profileResult.feeStatus, color: getFeeColor(profileResult.feeStatus).color },
               ].map((item, i) => (
                 <div key={i} style={{
@@ -1268,7 +1268,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
               ))}
             </div>
 
-            {/* â”€â”€ Body â”€â”€ */}
+            {/* — Body — */}
             <div style={{ padding: "24px" }}>
 
               {/* Attendance Progress Bar */}

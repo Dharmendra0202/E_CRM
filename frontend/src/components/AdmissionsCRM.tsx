@@ -186,9 +186,9 @@ export function AdmissionsCRM() {
                   <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: `${stageColor}15`, border: `1.5px solid ${stageColor}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, color: stageColor }}>
                     {lead.name?.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
                   </div>
-                  <div>
-                    <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{lead.name}</p>
-                    <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{lead.email} · {lead.phone}</p>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, wordBreak: "break-word" }}>{lead.name}</p>
+                    <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)", wordBreak: "break-all", overflowWrap: "anywhere" }}>{lead.email} · {lead.phone}</p>
                   </div>
                 </div>
                 <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>{lead.source}</span>
@@ -208,10 +208,10 @@ export function AdmissionsCRM() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", justifyContent: "flex-end", zIndex: 9999 }} onClick={() => setSelectedLead(null)}>
           <div onClick={(e) => e.stopPropagation()} style={{ width: "480px", maxWidth: "90vw", background: "#fff", height: "100vh", overflowY: "auto", padding: "24px", boxShadow: "-8px 0 32px rgba(0,0,0,0.12)" }} className="animate-fade-in">
             {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
-              <div>
-                <h2 style={{ margin: "0 0 4px", fontSize: "18px", fontWeight: 800 }}>{selectedLead.name}</h2>
-                <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>{selectedLead.email} · {selectedLead.phone}</p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", gap: "12px" }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <h2 style={{ margin: "0 0 4px", fontSize: "18px", fontWeight: 800, wordBreak: "break-word" }}>{selectedLead.name}</h2>
+                <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", wordBreak: "break-all", overflowWrap: "anywhere" }}>{selectedLead.email} · {selectedLead.phone}</p>
               </div>
               <button onClick={() => setSelectedLead(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-secondary)" }}><X size={20} /></button>
             </div>

@@ -125,6 +125,33 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Global text wrapping & auto-adjustment rules to ensure all placeholders, emails, cards, and detail values fit within bounding containers */
+p, span, div, h1, h2, h3, h4, h5, h6, td, th, label, input, textarea, select {
+  overflow-wrap: break-word;
+}
+
+/* Prevent text overflow out of flex containers, detail boxes, and cards */
+.stu-info-value,
+.stu-student-email,
+.email-field,
+.user-email,
+.detail-value,
+.break-all,
+.auto-wrap-text {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+input, textarea {
+  max-width: 100%;
+}
+
+input::placeholder, textarea::placeholder {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -3963,6 +3990,9 @@ button[style] {
   font-size: 11px !important;
   color: hsl(285,20%,55%) !important;
   display: block !important;
+  word-break: break-all !important;
+  overflow-wrap: anywhere !important;
+  max-width: 100% !important;
 }
 
 .stu-batch-tag {

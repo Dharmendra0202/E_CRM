@@ -106,7 +106,7 @@ export function Dashboard({
   const moduleCards = [
     { icon: <Users2 size={22} />, label: "Students", desc: `${totalStudents} registered`, color: "hsl(328,100%,54%)", view: "leads" },
     { icon: <Target size={22} />, label: "Admissions", desc: "CRM pipeline", color: "hsl(271,91%,60%)", view: "admissions" },
-    { icon: <GraduationCap size={22} />, label: "Batches", desc: `${totalBatches} active`, color: "hsl(200,95%,50%)", view: "schedule" },
+    { icon: <GraduationCap size={22} />, label: "Batches", desc: `${totalBatches} active`, color: "hsl(200,95%,50%)", view: "batches" },
     { icon: <CheckCircle2 size={22} />, label: "Attendance", desc: `${avgAttendance.toFixed(0)}% avg rate`, color: "hsl(142,70%,42%)", view: "attendance" },
     { icon: <IndianRupee size={22} />, label: "Billing", desc: `₹${totalFeesCollected.toLocaleString("en-IN")} collected`, color: "hsl(38,92%,50%)", view: "billing" },
     { icon: <CalendarDays size={22} />, label: "Timetable", desc: "Manage schedules", color: "hsl(200,70%,45%)", view: "schedule" },

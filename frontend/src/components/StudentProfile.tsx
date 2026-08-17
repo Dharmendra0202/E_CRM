@@ -76,9 +76,9 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
             <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 800, color: "#fff" }}>
               {initials}
             </div>
-            <div>
-              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 800 }}>{name}</h2>
-              <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 800, wordBreak: "break-word" }}>{name}</h2>
+              <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", wordBreak: "break-all", overflowWrap: "anywhere" }}>
                 {currentBatch?.name || "No batch"} · {user?.email}
               </p>
             </div>
@@ -101,12 +101,12 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
                 { label: "Date of Birth", value: new Date(profile.dateOfBirth).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }), icon: <Calendar size={14} /> },
                 { label: "Joined", value: new Date(profile.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }), icon: <Clock size={14} /> },
               ].map((item, i) => (
-                <div key={i} style={{ padding: "10px 12px", background: "var(--bg-secondary)", borderRadius: "10px" }}>
+                <div key={i} style={{ padding: "10px 12px", background: "var(--bg-secondary)", borderRadius: "10px", minWidth: 0, overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
-                    <span style={{ color: "var(--text-secondary)", display: "flex" }}>{item.icon}</span>
+                    <span style={{ color: "var(--text-secondary)", display: "flex", flexShrink: 0 }}>{item.icon}</span>
                     <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{item.label}</span>
                   </div>
-                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", paddingLeft: "22px" }}>{item.value}</p>
+                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "var(--text-primary)", paddingLeft: "22px", wordBreak: "break-all", overflowWrap: "anywhere" }}>{item.value}</p>
                 </div>
               ))}
             </div>
@@ -119,9 +119,9 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
                 { label: "Phone", value: profile.parentPhone },
                 { label: "Email", value: profile.parentEmail },
               ].map((item, i) => (
-                <div key={i} style={{ padding: "8px 12px", background: "var(--bg-secondary)", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>{item.label}</span>
-                  <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{item.value}</span>
+                <div key={i} style={{ padding: "8px 12px", background: "var(--bg-secondary)", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                  <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", flexShrink: 0 }}>{item.label}</span>
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)", wordBreak: "break-all", overflowWrap: "anywhere", textAlign: "right", minWidth: 0 }}>{item.value}</span>
                 </div>
               ))}
             </div>
@@ -134,9 +134,9 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
                     { label: "Name", value: profile.motherName },
                     { label: "Phone", value: profile.motherPhone },
                   ].filter(item => item.value).map((item, i) => (
-                    <div key={i} style={{ padding: "8px 12px", background: "var(--bg-secondary)", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>{item.label}</span>
-                      <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{item.value}</span>
+                    <div key={i} style={{ padding: "8px 12px", background: "var(--bg-secondary)", borderRadius: "8px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                      <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", flexShrink: 0 }}>{item.label}</span>
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)", wordBreak: "break-all", overflowWrap: "anywhere", textAlign: "right", minWidth: 0 }}>{item.value}</span>
                     </div>
                   ))}
                 </div>
