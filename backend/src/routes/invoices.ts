@@ -17,7 +17,7 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 // GET /api/v1/invoices
 router.get("/", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const where: any = {};
+    const where: any = { student: { deletedAt: null } };
     if (req.user?.role === "STUDENT" || req.user?.role === "PARENT") {
       const student = await prisma.student.findFirst({ where: { userId: req.user.id } });
       if (student) where.studentId = student.id;

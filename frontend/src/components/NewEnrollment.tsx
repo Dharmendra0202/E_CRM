@@ -159,7 +159,7 @@ export const NewEnrollment: React.FC = () => {
   const resetForm = () => {
     setCurrentStep(1);
     setRole("");
-    setPersonal({ firstName: "", lastName: "", phone: "", gender: "Male", dob: "", email: "", address: "" });
+    setPersonal({ firstName: "", lastName: "", phone: "", gender: "Male", dob: "", email: "", address: "", batch: "" });
     setGuardian({ fatherName: "", fatherPhone: "", motherName: "", motherPhone: "" });
     setFee({ totalAmount: "", paymentPlan: "single", customInstallments: "", notes: "" });
     setErrors({});

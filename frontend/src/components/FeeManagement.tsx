@@ -63,6 +63,86 @@ export function FeeManagement() {
     setPaying(false);
   };
 
+  const handleRazorpayOnlinePayment = async () => {
+    if (!showPay || !payForm.amount) {
+      alert("Please enter the amount to pay via Razorpay.");
+      return;
+    }
+    setPaying(true);
+    try {
+      const orderRes = await api.payments.createOrder({
+        invoiceId: showPay.id,
+        amount: parseFloat(payForm.amount),
+      });
+
+      const studentName = showPay.student?.user
+        ? `${showPay.student.user.firstName} ${showPay.student.user.lastName}`
+        : "Student";
+
+      const options: any = {
+        key: orderRes.keyId || "rzp_test_ecrm_demo_key",
+        amount: orderRes.amount,
+        currency: orderRes.currency || "INR",
+        name: "EduFlow E-CRM",
+        description: `Fee Settlement - Invoice #${showPay.id.substring(0, 8)}`,
+        image: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+        order_id: orderRes.orderId,
+        handler: async function (response: any) {
+          try {
+            await api.payments.verifyPayment({
+              invoiceId: showPay.id,
+              razorpayOrderId: response.razorpay_order_id || orderRes.orderId,
+              razorpayPaymentId: response.razorpay_payment_id || `pay_test_${Date.now()}`,
+              razorpaySignature: response.razorpay_signature || "demo_signature",
+              amount: payForm.amount,
+            });
+            alert("🎉 Razorpay Payment Successful! Invoice status updated.");
+            setShowPay(null);
+            loadData();
+          } catch (err: any) {
+            alert("Verification failed: " + err.message);
+          } finally {
+            setPaying(false);
+          }
+        },
+        prefill: {
+          name: studentName,
+          email: showPay.student?.user?.email || "student@ecrm.com",
+          contact: showPay.student?.user?.phone || "9876543210",
+        },
+        theme: {
+          color: "#e11d48",
+        },
+        modal: {
+          ondismiss: function () {
+            setPaying(false);
+          },
+        },
+      };
+
+      if ((window as any).Razorpay) {
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      } else {
+        // Fallback simulated payment verification if checkout.js is blocked
+        await api.payments.verifyPayment({
+          invoiceId: showPay.id,
+          razorpayOrderId: orderRes.orderId,
+          razorpayPaymentId: `pay_simulated_${Date.now()}`,
+          razorpaySignature: "demo_signature",
+          amount: payForm.amount,
+        });
+        alert("🎉 Razorpay Test Mode Payment Simulated Successfully!");
+        setShowPay(null);
+        loadData();
+        setPaying(false);
+      }
+    } catch (err: any) {
+      alert("Razorpay checkout initialization error: " + err.message);
+      setPaying(false);
+    }
+  };
+
   // Computed stats
   const totalBilled = invoices.reduce((s, i) => s + Number(i.totalAmount), 0);
   const totalPaid = invoices.reduce((s, i) => s + (i.payments?.reduce((ps: number, p: any) => ps + Number(p.amount), 0) || 0), 0);
@@ -253,9 +333,25 @@ export function FeeManagement() {
               </div>
               <div><label style={labelStyle}>Reference / Transaction ID</label><input style={inputStyle} value={payForm.transactionReference} onChange={(e) => setPayForm({ ...payForm, transactionReference: e.target.value })} placeholder="Optional" /></div>
             </div>
-            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "20px" }}>
-              <Button variant="secondary" onClick={() => setShowPay(null)}>Cancel</Button>
-              <Button variant="primary" isLoading={paying} onClick={handleRecordPayment} leftIcon={<CheckCircle2 size={14} />}>Record Payment</Button>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
+              <button
+                type="button"
+                onClick={handleRazorpayOnlinePayment}
+                disabled={paying}
+                style={{
+                  width: "100%", padding: "12px", borderRadius: "10px",
+                  background: "linear-gradient(135deg, #0284c7, #2563eb)", color: "#fff",
+                  border: "none", fontSize: "14px", fontWeight: 800, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                  boxShadow: "0 4px 14px rgba(37,99,235,0.3)"
+                }}
+              >
+                <CreditCard size={16} /> Pay via Razorpay (Test Mode)
+              </button>
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                <Button variant="secondary" onClick={() => setShowPay(null)}>Cancel</Button>
+                <Button variant="primary" isLoading={paying} onClick={handleRecordPayment} leftIcon={<CheckCircle2 size={14} />}>Record Offline Cash/Bank</Button>
+              </div>
             </div>
           </div>
         </div>

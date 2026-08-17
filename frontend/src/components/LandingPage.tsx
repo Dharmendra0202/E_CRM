@@ -1,132 +1,810 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   GraduationCap, Users2, BarChart3, Shield, Zap,
   CheckCircle2, ArrowRight, Star, Globe, IndianRupee,
+  Mail, Phone, MapPin, Download, Send, Sparkles,
+  BookOpen, Calendar, Award, MessageSquare, Clock, Building2,
+  FileSpreadsheet, HelpCircle, ChevronRight, Check
 } from "lucide-react";
+import * as XLSX from "xlsx";
 
 interface LandingPageProps {
   onLogin: () => void;
 }
 
+interface Inquiry {
+  srNo: number;
+  name: string;
+  gmail: string;
+  contact: string;
+  personalInfo: string;
+  date: string;
+}
+
 export function LandingPage({ onLogin }: LandingPageProps) {
+  // Page view state: "all" or specific page tab ("home" | "about" | "modules" | "pricing" | "inquiry")
+  const [activePage, setActivePage] = useState<"all" | "home" | "about" | "modules" | "pricing" | "inquiry">("all");
+
+  // Inquiry form state - starting clean without dummy lead data
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    gmail: "",
+    contact: "",
+    personalInfo: "",
+  });
+
+  const [submittedSuccess, setSubmittedSuccess] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.gmail || !formData.contact) {
+      alert("Please fill in Name, Gmail/Email, and Contact Number.");
+      return;
+    }
+
+    const newInquiry: Inquiry = {
+      srNo: inquiries.length + 1,
+      name: formData.name,
+      gmail: formData.gmail,
+      contact: formData.contact,
+      personalInfo: formData.personalInfo || "N/A",
+      date: new Date().toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }),
+    };
+
+    setInquiries((prev) => [...prev, newInquiry]);
+    setFormData({ name: "", gmail: "", contact: "", personalInfo: "" });
+    setSubmittedSuccess(true);
+    setTimeout(() => setSubmittedSuccess(false), 5000);
+  };
+
+  const handleExportExcel = () => {
+    if (inquiries.length === 0) {
+      alert("No inquiries recorded yet. Please submit an inquiry first to download.");
+      return;
+    }
+
+    const excelData = inquiries.map((item) => ({
+      "Sr. No": item.srNo,
+      "Name": item.name,
+      "Contact": item.contact,
+      "Gmail": item.gmail,
+      "Personal Info": item.personalInfo,
+      "Date & Time": item.date,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    
+    // Set column widths
+    worksheet["!cols"] = [
+      { wch: 8 },  // Sr. No
+      { wch: 22 }, // Name
+      { wch: 18 }, // Contact
+      { wch: 28 }, // Gmail
+      { wch: 45 }, // Personal Info
+      { wch: 22 }, // Date & Time
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "ECRM Inquiries");
+
+    XLSX.writeFile(workbook, `ECRM_Inquiries_Leads_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
   const features = [
-    { icon: <Users2 size={24} />, title: "Student Management", desc: "Complete lifecycle from admission to alumni" },
-    { icon: <GraduationCap size={24} />, title: "Academic Management", desc: "Courses, batches, timetables, homework" },
-    { icon: <IndianRupee size={24} />, title: "Fee Management", desc: "Invoices, payments, reminders, reports" },
-    { icon: <BarChart3 size={24} />, title: "Reports & Analytics", desc: "Real-time insights across all modules" },
-    { icon: <Shield size={24} />, title: "Role-Based Access", desc: "Granular permissions for every role" },
-    { icon: <Zap size={24} />, title: "Real-Time Attendance", desc: "Mark from mobile, sync instantly to web" },
+    { icon: <Users2 size={24} />, title: "Student Management", desc: "Complete lifecycle tracking from inquiry, admission to alumni network." },
+    { icon: <GraduationCap size={24} />, title: "Academic Management", desc: "Interactive class timetable, batch allocations, syllabus & homework tracking." },
+    { icon: <IndianRupee size={24} />, title: "Fee & Invoicing Engine", desc: "Automated fee receipts, installment plans, pending reminders, and GST reports." },
+    { icon: <BarChart3 size={24} />, title: "Reports & Analytics", desc: "Real-time visual insights into student attendance, revenue, and academic progress." },
+    { icon: <Shield size={24} />, title: "Role-Based Security", desc: "Granular access permissions for Admins, Teachers, Accountants, and Parents." },
+    { icon: <Zap size={24} />, title: "Smart Attendance Sync", desc: "Mark attendance via mobile app with instant SMS/WhatsApp alerts to parents." },
+    { icon: <Award size={24} />, title: "Exams & Marksheet", desc: "Generate report cards, marksheets, rank lists, and weak student identification." },
+    { icon: <MessageSquare size={24} />, title: "Communication Hub", desc: "Broadcast announcements, email newsletters, and direct parent notifications." },
+  ];
+
+  const modules = [
+    { name: "Admissions CRM", tag: "Lead Tracking", desc: "Capture prospective leads, manage follow-ups, and convert inquiries into enrollments seamlessly." },
+    { name: "Online Fees & Billing", tag: "Auto Invoicing", desc: "Accept online fee payments, send automated WhatsApp receipts, and track collection history." },
+    { name: "Exam & Marksheet Portal", tag: "Auto Grading", desc: "Create term exams, enter subject marks, auto-calculate grades & print professional report cards." },
+    { name: "Attendance & SMS Sync", tag: "Live Alerts", desc: "Track daily student & staff attendance with instant mobile alerts to parents for absent students." },
+    { name: "Transport & Library", tag: "Asset Care", desc: "Manage bus routes, driver details, library book issuance, and penalty tracking effortlessly." },
+    { name: "Weak Student AI Tracker", tag: "Analytics", desc: "Automatically identify struggling students based on exam trends and trigger extra remedial classes." },
+  ];
+
+  const navItems = [
+    { id: "all", label: "Full Website View" },
+    { id: "home", label: "Home" },
+    { id: "about", label: "About ECRM" },
+    { id: "modules", label: "Modules" },
+    { id: "pricing", label: "Pricing" },
+    { id: "inquiry", label: "Inquiry & Demo" },
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "var(--bg-primary)" }}>
-      {/* Navbar */}
-      <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 40px", position: "sticky", top: 0, background: "hsla(320,30%,98%,0.9)", backdropFilter: "blur(12px)", zIndex: 100, borderBottom: "1px solid var(--border-glass)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <GraduationCap size={18} color="#fff" />
+    <div style={{ minHeight: "100vh", position: "relative", overflowX: "hidden", color: "#1e1b4b", fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" }}>
+      {/* Blurred Wallpaper Background Overlay */}
+      <div style={{
+        position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+        backgroundImage: "url('/landing-bg.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        filter: "blur(6px) brightness(0.96) saturate(1.1)",
+        transform: "scale(1.04)",
+        zIndex: 0
+      }} />
+
+      {/* Subtle Tint Gradient Layer over background */}
+      <div style={{
+        position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
+        background: "linear-gradient(135deg, rgba(255,255,255,0.70) 0%, rgba(248,245,255,0.65) 100%)",
+        zIndex: 1
+      }} />
+
+      {/* Main Content Container */}
+      <div style={{ position: "relative", zIndex: 2 }}>
+        
+        {/* FIXED Completely Transparent Header Navigation Bar */}
+        <nav style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+          padding: "20px 48px", position: "fixed", top: 0, left: 0, right: 0,
+          width: "100%", background: "transparent", backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
+          borderBottom: "none", zIndex: 1000,
+          transition: "all 0.3s ease"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", cursor: "pointer" }} onClick={() => { setActivePage("all"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
+            <div style={{
+              width: "40px", height: "40px", borderRadius: "12px",
+              background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 14px hsla(328,100%,54%,0.35)"
+            }}>
+              <GraduationCap size={22} color="#fff" />
+            </div>
+            <div>
+              <span style={{ fontSize: "22px", fontWeight: 900, letterSpacing: "-0.5px" }}>
+                <span className="text-gradient-indigo">EduFlow</span> <span style={{ color: "#1e1b4b" }}>ECRM</span>
+              </span>
+              <span style={{ display: "block", fontSize: "10px", fontWeight: 800, color: "var(--color-accent)", textTransform: "uppercase", letterSpacing: "1px" }}>
+                Institution OS
+              </span>
+            </div>
           </div>
-          <span style={{ fontSize: "18px", fontWeight: 800, fontFamily: "var(--font-headings)" }}>
-            <span className="text-gradient-indigo">EduFlow</span> CRM
-          </span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <a href="#features" style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)", textDecoration: "none" }}>Features</a>
-          <a href="#pricing" style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)", textDecoration: "none" }}>Pricing</a>
-          <button onClick={onLogin} style={{ padding: "8px 20px", borderRadius: "10px", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", border: "none", fontSize: "13px", fontWeight: 700, cursor: "pointer", boxShadow: "0 4px 14px hsla(328,100%,54%,0.3)" }}>
-            Login
+
+          {/* Completely Transparent Text-Only Navigations */}
+          <div style={{ display: "flex", alignItems: "center", gap: "36px" }}>
+            {[
+              { id: "all", label: "Overview" },
+              { id: "about", label: "About ECRM" },
+              { id: "modules", label: "Modules" },
+              { id: "pricing", label: "Pricing" },
+              { id: "inquiry", label: "Contact & Inquiry" },
+            ].map((item) => {
+              const isActive = activePage === item.id;
+              return (
+                <a
+                  key={item.id}
+                  href={`#${item.id === "all" ? "home" : item.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setActivePage(item.id as any);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  style={{
+                    fontSize: "16px", fontWeight: isActive ? 900 : 700,
+                    color: isActive ? "var(--color-accent)" : "#1e1b4b",
+                    textDecoration: "none", letterSpacing: "0.2px",
+                    padding: "4px 0",
+                    borderBottom: isActive ? "2px solid var(--color-accent)" : "2px solid transparent",
+                    transition: "all 0.2s ease"
+                  }}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
+          </div>
+
+          <button onClick={onLogin} style={{
+            padding: "10px 26px", borderRadius: "10px",
+            background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+            color: "#fff", border: "none", fontSize: "14px", fontWeight: 800,
+            cursor: "pointer", boxShadow: "0 4px 16px hsla(328,100%,54%,0.4)", letterSpacing: "0.3px",
+            transition: "transform 0.2s"
+          }}>
+            Login to ECRM
           </button>
-        </div>
-      </nav>
+        </nav>
 
-      {/* Hero */}
-      <section style={{ padding: "80px 40px 60px", textAlign: "center", maxWidth: "900px", margin: "0 auto" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 16px", borderRadius: "20px", background: "hsla(328,100%,54%,0.08)", border: "1px solid hsla(328,100%,54%,0.2)", marginBottom: "20px", fontSize: "12px", fontWeight: 700, color: "var(--color-accent)" }}>
-          <Star size={12} /> Built for Indian Coaching Institutes & Schools
-        </div>
-        <h1 style={{ fontSize: "48px", fontWeight: 800, lineHeight: 1.15, margin: "0 0 16px", fontFamily: "var(--font-headings)" }}>
-          The All-in-One <span className="text-gradient-indigo">Institution Management</span> Platform
-        </h1>
-        <p style={{ fontSize: "18px", color: "var(--text-secondary)", margin: "0 0 32px", maxWidth: "600px", marginLeft: "auto", marginRight: "auto", lineHeight: 1.6 }}>
-          Admissions, Students, Fees, Attendance, Timetable, Homework, Exams, Library, Transport — all in one beautiful CRM.
-        </p>
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-          <button onClick={onLogin} style={{ padding: "14px 28px", borderRadius: "12px", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", border: "none", fontSize: "15px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "8px", boxShadow: "0 8px 24px hsla(328,100%,54%,0.3)" }}>
-            Start Free Trial <ArrowRight size={16} />
-          </button>
-          <button style={{ padding: "14px 28px", borderRadius: "12px", background: "transparent", color: "var(--text-primary)", border: "1px solid var(--border-glass)", fontSize: "15px", fontWeight: 700, cursor: "pointer" }}>
-            Book Demo
-          </button>
-        </div>
+        {/* Content Wrapper with Extra Top Padding for Fixed Header */}
+        <div style={{ paddingTop: "120px" }}>
 
-        {/* Trust badges */}
-        <div style={{ marginTop: "40px", display: "flex", justifyContent: "center", gap: "24px", fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>
-          {["500+ Institutes", "50,000+ Students", "99.9% Uptime", "24/7 Support"].map((t) => (
-            <span key={t} style={{ display: "flex", alignItems: "center", gap: "6px" }}><CheckCircle2 size={14} style={{ color: "var(--color-success)" }} />{t}</span>
-          ))}
-        </div>
-      </section>
-
-      {/* Features */}
-      <section id="features" style={{ padding: "60px 40px", maxWidth: "1100px", margin: "0 auto" }}>
-        <h2 style={{ textAlign: "center", fontSize: "32px", fontWeight: 800, margin: "0 0 8px", fontFamily: "var(--font-headings)" }}>
-          Everything You Need
-        </h2>
-        <p style={{ textAlign: "center", fontSize: "15px", color: "var(--text-secondary)", margin: "0 0 40px" }}>
-          20+ modules designed specifically for educational institutions.
-        </p>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px" }}>
-          {features.map((f, i) => (
-            <div key={i} style={{ background: "#fff", borderRadius: "16px", padding: "24px", border: "1px solid var(--border-glass)", transition: "all 0.25s", cursor: "default" }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(29,10,39,0.1)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "none"; }}>
-              <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "hsla(328,100%,54%,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-accent)", marginBottom: "16px" }}>
-                {f.icon}
+          {/* Hero Section (Visible in 'all' or 'home') */}
+          {(activePage === "all" || activePage === "home") && (
+            <section id="home" style={{ padding: "100px 40px 60px", textAlign: "center", maxWidth: "950px", margin: "0 auto" }}>
+              <div style={{
+                display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 18px",
+                borderRadius: "20px", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)",
+                border: "1px solid hsla(328,100%,54%,0.3)", marginBottom: "24px", fontSize: "13px",
+                fontWeight: 800, color: "var(--color-accent)", boxShadow: "0 4px 14px rgba(0,0,0,0.04)"
+              }}>
+                <Sparkles size={14} /> Complete Enterprise Education Management Software
               </div>
-              <h3 style={{ margin: "0 0 6px", fontSize: "16px", fontWeight: 700 }}>{f.title}</h3>
-              <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)", lineHeight: 1.5 }}>{f.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+              <h1 style={{ fontSize: "52px", fontWeight: 900, lineHeight: 1.15, margin: "0 0 20px", letterSpacing: "-1px" }}>
+                Transform Your Educational Institution with <span className="text-gradient-indigo">Smart E-CRM</span>
+              </h1>
+              <p style={{ fontSize: "19px", color: "#475569", margin: "0 0 36px", maxWidth: "750px", marginLeft: "auto", marginRight: "auto", lineHeight: 1.6, fontWeight: 500 }}>
+                Manage Student Admissions, Fees & Automated Receipts, Attendance, Exams, Marksheet Generation, Staff Payroll, Timetable & Parent Communication in one seamless, high-performance platform.
+              </p>
 
-      {/* Pricing */}
-      <section id="pricing" style={{ padding: "60px 40px", maxWidth: "900px", margin: "0 auto" }}>
-        <h2 style={{ textAlign: "center", fontSize: "32px", fontWeight: 800, margin: "0 0 40px", fontFamily: "var(--font-headings)" }}>
-          Simple, Transparent Pricing
-        </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px" }}>
-          {[
-            { name: "Starter", price: "Free", desc: "Up to 50 students", features: ["Students & Batches", "Attendance", "Basic Reports", "1 Admin"] },
-            { name: "Pro", price: "₹2,999/mo", desc: "Up to 500 students", features: ["Everything in Starter", "Fees & Invoices", "Homework", "Library", "5 Staff", "WhatsApp"] },
-            { name: "Enterprise", price: "Custom", desc: "Unlimited", features: ["Everything in Pro", "Multi-campus", "Custom Roles", "API Access", "Priority Support", "White-label"] },
-          ].map((plan, i) => (
-            <div key={i} style={{ background: i === 1 ? "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))" : "#fff", borderRadius: "20px", padding: "28px", border: i === 1 ? "none" : "1px solid var(--border-glass)", color: i === 1 ? "#fff" : "var(--text-primary)" }}>
-              <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 700, opacity: 0.8 }}>{plan.name}</p>
-              <h3 style={{ margin: "0 0 4px", fontSize: "28px", fontWeight: 800 }}>{plan.price}</h3>
-              <p style={{ margin: "0 0 16px", fontSize: "12px", opacity: 0.7 }}>{plan.desc}</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {plan.features.map((f) => (
-                  <span key={f} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", fontWeight: 600 }}>
-                    <CheckCircle2 size={14} style={{ opacity: 0.8 }} /> {f}
+              <div style={{ display: "flex", gap: "16px", justifyContent: "center" }}>
+                <button onClick={onLogin} style={{
+                  padding: "16px 34px", borderRadius: "12px",
+                  background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+                  color: "#fff", border: "none", fontSize: "16px", fontWeight: 800,
+                  cursor: "pointer", display: "flex", alignItems: "center", gap: "10px",
+                  boxShadow: "0 8px 24px hsla(328,100%,54%,0.4)"
+                }}>
+                  Try Free Demo <ArrowRight size={18} />
+                </button>
+                <button
+                  onClick={() => {
+                    setActivePage("inquiry");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  style={{
+                    padding: "16px 34px", borderRadius: "12px",
+                    background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)",
+                    color: "#1e1b4b", border: "1px solid hsla(285,40%,60%,0.3)",
+                    fontSize: "16px", fontWeight: 800, cursor: "pointer",
+                    display: "inline-flex", alignItems: "center", gap: "8px", boxShadow: "0 4px 14px rgba(0,0,0,0.05)"
+                  }}
+                >
+                  <FileSpreadsheet size={18} color="var(--color-accent)" /> Book Custom Demo
+                </button>
+              </div>
+            </section>
+          )}
+
+        {/* Section: Comprehensive About ECRM */}
+        {(activePage === "all" || activePage === "about") && (
+          <section id="about" style={{ padding: activePage === "about" ? "60px 40px 80px" : "70px 40px", maxWidth: "1150px", margin: "0 auto", scrollMarginTop: "110px" }}>
+            <div style={{ textAlign: "center", marginBottom: "50px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--color-accent)" }}>
+                Why E-CRM?
+              </span>
+              <h2 style={{ fontSize: "36px", fontWeight: 900, margin: "8px 0 12px" }}>
+                Built Specifically for Indian Schools & Coaching Institutes
+              </h2>
+              <p style={{ fontSize: "16px", color: "#64748b", maxWidth: "650px", margin: "0 auto" }}>
+                Eliminate manual paperwork, track fees in real time, auto-generate report cards, and provide parents with instant attendance updates.
+              </p>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "20px" }}>
+              {features.map((f, i) => (
+                <div key={i} style={{
+                  background: "rgba(255, 255, 255, 0.85)", backdropFilter: "blur(16px)",
+                  borderRadius: "18px", padding: "28px 24px", border: "1px solid hsla(285,40%,60%,0.2)",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.03)", transition: "all 0.25s"
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "hsla(328,100%,54%,0.4)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "hsla(285,40%,60%,0.2)"; }}>
+                  <div style={{
+                    width: "50px", height: "50px", borderRadius: "14px",
+                    background: "hsla(328,100%,54%,0.12)", display: "flex",
+                    alignItems: "center", justifyContent: "center", color: "var(--color-accent)", marginBottom: "18px"
+                  }}>
+                    {f.icon}
+                  </div>
+                  <h3 style={{ margin: "0 0 8px", fontSize: "18px", fontWeight: 800 }}>{f.title}</h3>
+                  <p style={{ margin: 0, fontSize: "14px", color: "#64748b", lineHeight: 1.6 }}>{f.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Section: Modules & Features Grid */}
+        {(activePage === "all" || activePage === "modules") && (
+          <section id="modules" style={{ padding: activePage === "modules" ? "60px 40px 80px" : "70px 40px", maxWidth: "1150px", margin: "0 auto", background: "rgba(255,255,255,0.4)", borderRadius: "30px", backdropFilter: "blur(10px)", scrollMarginTop: "110px" }}>
+            <div style={{ textAlign: "center", marginBottom: "50px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1.5px", color: "hsl(271,91%,60%)" }}>
+                Powerful Suite
+              </span>
+              <h2 style={{ fontSize: "36px", fontWeight: 900, margin: "8px 0 12px" }}>
+                Explore E-CRM Core Modules
+              </h2>
+              <p style={{ fontSize: "16px", color: "#64748b", maxWidth: "650px", margin: "0 auto" }}>
+                Every single tool designed to run your academic and administrative operations with precision.
+              </p>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "24px" }}>
+              {modules.map((m, idx) => (
+                <div key={idx} style={{
+                  background: "rgba(255, 255, 255, 0.9)", backdropFilter: "blur(16px)",
+                  borderRadius: "20px", padding: "28px", border: "1px solid hsla(285,40%,60%,0.2)",
+                  boxShadow: "0 6px 24px rgba(0,0,0,0.03)"
+                }}>
+                  <span style={{
+                    fontSize: "11px", fontWeight: 800, padding: "4px 10px", borderRadius: "12px",
+                    background: "hsla(271,91%,60%,0.12)", color: "hsl(271,91%,60%)", textTransform: "uppercase",
+                    letterSpacing: "0.5px"
+                  }}>
+                    {m.tag}
                   </span>
-                ))}
-              </div>
-              <button onClick={onLogin} style={{ width: "100%", marginTop: "20px", padding: "10px", borderRadius: "10px", border: i === 1 ? "1px solid hsla(0,0%,100%,0.3)" : "1px solid var(--border-glass)", background: i === 1 ? "hsla(0,0%,100%,0.15)" : "transparent", color: i === 1 ? "#fff" : "var(--color-accent)", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}>
-                Get Started
-              </button>
+                  <h3 style={{ fontSize: "20px", fontWeight: 800, margin: "14px 0 8px" }}>{m.name}</h3>
+                  <p style={{ fontSize: "14px", color: "#64748b", margin: 0, lineHeight: 1.6 }}>{m.desc}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
+          </section>
+        )}
 
-      {/* Footer */}
-      <footer style={{ padding: "32px 40px", borderTop: "1px solid var(--border-glass)", textAlign: "center" }}>
-        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>
-          EduFlow CRM · Built for Indian Education · &copy; {new Date().getFullYear()}
-        </p>
-      </footer>
+        {/* Section: Updated Pricing */}
+        {(activePage === "all" || activePage === "pricing") && (
+          <section id="pricing" style={{ padding: activePage === "pricing" ? "60px 40px 80px" : "80px 40px", maxWidth: "1150px", margin: "0 auto", scrollMarginTop: "110px" }}>
+            <div style={{ textAlign: "center", marginBottom: "50px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1.5px", color: "var(--color-accent)" }}>
+                Plans & Pricing
+              </span>
+              <h2 style={{ fontSize: "38px", fontWeight: 900, margin: "8px 0 12px" }}>
+                Transparent Pricing for Every Scale
+              </h2>
+              <p style={{ fontSize: "16px", color: "#64748b", maxWidth: "600px", margin: "0 auto" }}>
+                Start with a free testing demo, upgrade to our standard flat monthly plan, or request custom features for large campuses.
+              </p>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px", alignItems: "stretch" }}>
+              {/* Plan 1: Free Testing Demo */}
+              <div style={{
+                background: "rgba(255, 255, 255, 0.9)", backdropFilter: "blur(16px)",
+                borderRadius: "24px", padding: "36px 28px", border: "1px solid hsla(285,40%,60%,0.25)",
+                boxShadow: "0 6px 24px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column", justifyContent: "space-between"
+              }}>
+                <div>
+                  <span style={{ fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: "#64748b" }}>
+                    Plan 1 · Starter
+                  </span>
+                  <h3 style={{ fontSize: "24px", fontWeight: 900, margin: "6px 0 4px" }}>Testing Demo</h3>
+                  <div style={{ fontSize: "36px", fontWeight: 900, color: "#1e1b4b", margin: "12px 0 4px" }}>
+                    Free <span style={{ fontSize: "14px", fontWeight: 600, color: "#64748b" }}>/ forever trial</span>
+                  </div>
+                  <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "24px" }}>
+                    Perfect for exploring ECRM features with full testing access and sample data.
+                  </p>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "32px" }}>
+                    {[
+                      "Full Access to Testing Demo",
+                      "Sample Student & Fee Records",
+                      "Attendance & Timetable Trial",
+                      "Up to 50 Student Records",
+                      "Community Support"
+                    ].map((feat, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", fontWeight: 600 }}>
+                        <Check size={16} color="var(--color-success)" /> {feat}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button onClick={onLogin} style={{
+                  width: "100%", padding: "14px", borderRadius: "12px",
+                  background: "rgba(255,255,255,0.9)", color: "var(--color-accent)",
+                  border: "2px solid hsla(328,100%,54%,0.4)", fontSize: "15px", fontWeight: 800,
+                  cursor: "pointer", transition: "all 0.2s"
+                }}>
+                  Start Free Testing Demo
+                </button>
+              </div>
+
+              {/* Plan 2: ₹10,000 / month (Popular) */}
+              <div style={{
+                background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+                color: "#fff", borderRadius: "24px", padding: "36px 28px",
+                boxShadow: "0 16px 40px hsla(328,100%,54%,0.4)", display: "flex", flexDirection: "column",
+                justifyContent: "space-between", position: "relative", transform: "scale(1.03)", zIndex: 10
+              }}>
+                <div style={{
+                  position: "absolute", top: "-14px", right: "24px", background: "#fff", color: "var(--color-accent)",
+                  fontSize: "11px", fontWeight: 900, padding: "4px 14px", borderRadius: "20px", textTransform: "uppercase",
+                  letterSpacing: "1px", boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                }}>
+                  Most Popular
+                </div>
+
+                <div>
+                  <span style={{ fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", opacity: 0.9 }}>
+                    Plan 2 · Full Growth
+                  </span>
+                  <h3 style={{ fontSize: "26px", fontWeight: 900, margin: "6px 0 4px" }}>Standard Plan</h3>
+                  <div style={{ fontSize: "38px", fontWeight: 900, margin: "12px 0 4px" }}>
+                    ₹10,000 <span style={{ fontSize: "15px", fontWeight: 600, opacity: 0.9 }}>/ month</span>
+                  </div>
+                  <p style={{ fontSize: "13px", opacity: 0.9, marginBottom: "24px" }}>
+                    All-in-one suite for growing institutes, coaching centers, and schools.
+                  </p>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "32px" }}>
+                    {[
+                      "Everything in Testing Demo",
+                      "Unlimited Students & Batches",
+                      "Automated Fee Receipts & Reminders",
+                      "WhatsApp & Email Integration",
+                      "Exam Marksheet Generator",
+                      "Parent & Staff Mobile Portals",
+                      "24/7 Priority Phone Support"
+                    ].map((feat, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", fontWeight: 700 }}>
+                        <CheckCircle2 size={16} color="#fff" /> {feat}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setActivePage("inquiry");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  style={{
+                    display: "block", textAlign: "center", textDecoration: "none",
+                    width: "100%", padding: "14px", borderRadius: "12px",
+                    background: "#fff", color: "var(--color-accent)", border: "none",
+                    fontSize: "15px", fontWeight: 900, cursor: "pointer",
+                    boxShadow: "0 6px 20px rgba(0,0,0,0.2)"
+                  }}
+                >
+                  Get Started Plan ₹10,000/mo
+                </button>
+              </div>
+
+              {/* Plan 3: Custom Features / Custom Amount */}
+              <div style={{
+                background: "rgba(255, 255, 255, 0.9)", backdropFilter: "blur(16px)",
+                borderRadius: "24px", padding: "36px 28px", border: "1px solid hsla(285,40%,60%,0.25)",
+                boxShadow: "0 6px 24px rgba(0,0,0,0.03)", display: "flex", flexDirection: "column", justifyContent: "space-between"
+              }}>
+                <div>
+                  <span style={{ fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: "#64748b" }}>
+                    Plan 3 · Enterprise
+                  </span>
+                  <h3 style={{ fontSize: "24px", fontWeight: 900, margin: "6px 0 4px" }}>Custom Plan</h3>
+                  <div style={{ fontSize: "36px", fontWeight: 900, color: "#1e1b4b", margin: "12px 0 4px" }}>
+                    Custom Amount
+                  </div>
+                  <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "24px" }}>
+                    Tailored solutions with custom features for multi-branch institutions & universities.
+                  </p>
+                  
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "32px" }}>
+                    {[
+                      "Everything in Standard Plan",
+                      "Custom Module Development",
+                      "Multi-Branch & Chain Management",
+                      "Custom API & Payment Gateway Integrations",
+                      "White-Labeling & Custom Domain",
+                      "Dedicated Account Manager & Training"
+                    ].map((feat, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", fontWeight: 600 }}>
+                        <Check size={16} color="hsl(271,91%,60%)" /> {feat}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setActivePage("inquiry");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  style={{
+                    display: "block", textAlign: "center", textDecoration: "none",
+                    width: "100%", padding: "14px", borderRadius: "12px",
+                    background: "linear-gradient(135deg, #1e1b4b, #312e81)", color: "#fff", border: "none",
+                    fontSize: "15px", fontWeight: 800, cursor: "pointer",
+                    boxShadow: "0 4px 16px rgba(0,0,0,0.15)"
+                  }}
+                >
+                  Contact for Custom Pricing
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Section: Contact & Inquiry Form with Excel Sheet Export */}
+        {(activePage === "all" || activePage === "inquiry") && (
+          <section id="inquiry" style={{ padding: activePage === "inquiry" ? "60px 40px 80px" : "80px 40px", maxWidth: "1150px", margin: "0 auto", scrollMarginTop: "110px" }}>
+          <div style={{
+            background: "rgba(255, 255, 255, 0.92)", backdropFilter: "blur(20px)",
+            borderRadius: "30px", padding: "48px 40px", border: "1px solid hsla(285,40%,60%,0.25)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.06)"
+          }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px" }}>
+              
+              {/* Left Column: Form */}
+              <div>
+                <span style={{ fontSize: "12px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: "var(--color-accent)" }}>
+                  Connect With Us
+                </span>
+                <h2 style={{ fontSize: "32px", fontWeight: 900, margin: "8px 0 12px" }}>
+                  Request Demo & Inquire Details
+                </h2>
+                <p style={{ fontSize: "15px", color: "#64748b", margin: "0 0 28px", lineHeight: 1.6 }}>
+                  Fill in your personal and institution details below. All submitted inquiries are logged in real time and can be exported directly into a formatted Excel sheet.
+                </p>
+
+                {submittedSuccess && (
+                  <div style={{
+                    padding: "14px 18px", borderRadius: "12px", background: "hsla(142,70%,45%,0.15)",
+                    border: "1px solid var(--color-success)", color: "var(--color-success)",
+                    fontSize: "14px", fontWeight: 700, marginBottom: "20px", display: "flex", alignItems: "center", gap: "8px"
+                  }}>
+                    <CheckCircle2 size={18} /> Inquiry submitted successfully! Excel sheet updated.
+                  </div>
+                )}
+
+                <form onSubmit={handleFormSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: 700, marginBottom: "6px" }}>
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="e.g. Dharmendra Sharma"
+                      required
+                      style={{
+                        width: "100%", padding: "12px 16px", borderRadius: "10px",
+                        border: "1px solid #cbd5e1", fontSize: "14px", outline: "none",
+                        background: "rgba(255,255,255,0.8)"
+                      }}
+                    />
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "13px", fontWeight: 700, marginBottom: "6px" }}>
+                        Gmail / Email *
+                      </label>
+                      <input
+                        type="email"
+                        name="gmail"
+                        value={formData.gmail}
+                        onChange={handleInputChange}
+                        placeholder="your.email@gmail.com"
+                        required
+                        style={{
+                          width: "100%", padding: "12px 16px", borderRadius: "10px",
+                          border: "1px solid #cbd5e1", fontSize: "14px", outline: "none",
+                          background: "rgba(255,255,255,0.8)"
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "13px", fontWeight: 700, marginBottom: "6px" }}>
+                        Contact Number *
+                      </label>
+                      <input
+                        type="tel"
+                        name="contact"
+                        value={formData.contact}
+                        onChange={handleInputChange}
+                        placeholder="+91 98765 43210"
+                        required
+                        style={{
+                          width: "100%", padding: "12px 16px", borderRadius: "10px",
+                          border: "1px solid #cbd5e1", fontSize: "14px", outline: "none",
+                          background: "rgba(255,255,255,0.8)"
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: 700, marginBottom: "6px" }}>
+                      Personal Info & Institution Message
+                    </label>
+                    <textarea
+                      name="personalInfo"
+                      value={formData.personalInfo}
+                      onChange={handleInputChange}
+                      rows={3}
+                      placeholder="e.g. Director at Excel Classes. Need info on ₹10,000/mo plan & WhatsApp module..."
+                      style={{
+                        width: "100%", padding: "12px 16px", borderRadius: "10px",
+                        border: "1px solid #cbd5e1", fontSize: "14px", outline: "none",
+                        background: "rgba(255,255,255,0.8)", resize: "vertical"
+                      }}
+                    />
+                  </div>
+
+                  <button type="submit" style={{
+                    padding: "14px 24px", borderRadius: "12px",
+                    background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+                    color: "#fff", border: "none", fontSize: "15px", fontWeight: 800,
+                    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                    gap: "8px", boxShadow: "0 6px 20px hsla(328,100%,54%,0.35)", marginTop: "8px"
+                  }}>
+                    <Send size={16} /> Submit Inquiry
+                  </button>
+                </form>
+              </div>
+
+              {/* Right Column: Excel Sheet Lead Store & Download */}
+              <div style={{
+                background: "rgba(248, 250, 252, 0.9)", borderRadius: "20px",
+                padding: "28px", border: "1px solid #e2e8f0", display: "flex",
+                flexDirection: "column", justifyContent: "space-between"
+              }}>
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <FileSpreadsheet size={22} color="var(--color-success)" />
+                      <h3 style={{ fontSize: "18px", fontWeight: 800, margin: 0 }}>
+                        Live Lead Registry Excel Sheet
+                      </h3>
+                    </div>
+                    <span style={{
+                      fontSize: "11px", fontWeight: 800, padding: "4px 10px",
+                      borderRadius: "10px", background: "hsla(142,70%,45%,0.15)", color: "var(--color-success)"
+                    }}>
+                      {inquiries.length} Inquiries Stored
+                    </span>
+                  </div>
+
+                  <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 16px" }}>
+                    All details entered in the inquiry form are captured with Sr. No, Name, Contact, Gmail, and Personal Info. Download the full Excel sheet anytime below:
+                  </p>
+
+                  {/* Inquiry Table Preview */}
+                  <div style={{
+                    maxHeight: "220px", overflowY: "auto", border: "1px solid #e2e8f0",
+                    borderRadius: "12px", background: "#fff", marginBottom: "20px"
+                  }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", textAlign: "left" }}>
+                      <thead>
+                        <tr style={{ background: "#f1f5f9", borderBottom: "1px solid #e2e8f0", color: "#475569" }}>
+                          <th style={{ padding: "8px 12px" }}>Sr.No</th>
+                          <th style={{ padding: "8px 12px" }}>Name</th>
+                          <th style={{ padding: "8px 12px" }}>Gmail</th>
+                          <th style={{ padding: "8px 12px" }}>Contact</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {inquiries.map((inq) => (
+                          <tr key={inq.srNo} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                            <td style={{ padding: "8px 12px", fontWeight: 700 }}>#{inq.srNo}</td>
+                            <td style={{ padding: "8px 12px", fontWeight: 600 }}>{inq.name}</td>
+                            <td style={{ padding: "8px 12px", color: "#64748b" }}>{inq.gmail}</td>
+                            <td style={{ padding: "8px 12px", color: "#64748b" }}>{inq.contact}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <button onClick={handleExportExcel} style={{
+                  width: "100%", padding: "14px", borderRadius: "12px",
+                  background: "#16a34a", color: "#fff", border: "none",
+                  fontSize: "15px", fontWeight: 800, cursor: "pointer",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "10px",
+                  boxShadow: "0 6px 20px rgba(22, 163, 74, 0.3)"
+                }}>
+                  <Download size={18} /> Download Excel Sheet (.xlsx)
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </section>
+        )}
+
+        {/* Footer: Professional Email Contact & Branding Footer */}
+        <footer style={{
+          background: "rgba(15, 23, 42, 0.95)", backdropFilter: "blur(20px)",
+          color: "#f8fafc", padding: "60px 40px 30px", borderTop: "1px solid rgba(255,255,255,0.1)"
+        }}>
+          <div style={{ maxWidth: "1150px", margin: "0 auto", display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1.5fr", gap: "40px", marginBottom: "40px" }}>
+            
+            {/* Column 1: Brand */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
+                <div style={{
+                  width: "36px", height: "36px", borderRadius: "10px",
+                  background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+                  display: "flex", alignItems: "center", justifyContent: "center"
+                }}>
+                  <GraduationCap size={20} color="#fff" />
+                </div>
+                <span style={{ fontSize: "20px", fontWeight: 900, color: "#fff" }}>
+                  EduFlow <span style={{ color: "var(--color-accent)" }}>ECRM</span>
+                </span>
+              </div>
+              <p style={{ fontSize: "13px", color: "#94a3b8", lineHeight: 1.6, maxWidth: "300px" }}>
+                The complete web-based Institution OS for schools, colleges, and coaching institutes across India. Streamlining admissions, fees, exams, and attendance.
+              </p>
+            </div>
+
+            {/* Column 2: Quick Links */}
+            <div>
+              <h4 style={{ fontSize: "14px", fontWeight: 800, color: "#fff", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                Quick Navigation
+              </h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px", fontSize: "13px", color: "#cbd5e1" }}>
+                <li><a href="#about" style={{ color: "#cbd5e1", textDecoration: "none" }}>About ECRM</a></li>
+                <li><a href="#modules" style={{ color: "#cbd5e1", textDecoration: "none" }}>Modules</a></li>
+                <li><a href="#pricing" style={{ color: "#cbd5e1", textDecoration: "none" }}>Pricing Plans</a></li>
+                <li><a href="#contact-inquiry" style={{ color: "#cbd5e1", textDecoration: "none" }}>Inquiry & Demo</a></li>
+              </ul>
+            </div>
+
+            {/* Column 3: Modules */}
+            <div>
+              <h4 style={{ fontSize: "14px", fontWeight: 800, color: "#fff", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                Core Features
+              </h4>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "10px", fontSize: "13px", color: "#cbd5e1" }}>
+                <li>Student Lifecycle</li>
+                <li>Fee Receipts & Invoicing</li>
+                <li>Exams & Marksheets</li>
+                <li>SMS & WhatsApp Sync</li>
+              </ul>
+            </div>
+
+            {/* Column 4: Email & Contact Me */}
+            <div>
+              <h4 style={{ fontSize: "14px", fontWeight: 800, color: "#fff", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                Contact Me / Direct Support
+              </h4>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", fontSize: "13px", color: "#cbd5e1" }}>
+                <a href="mailto:vishwakarmadharmendra5668@gmail.com" style={{ display: "flex", alignItems: "center", gap: "10px", color: "var(--color-accent)", textDecoration: "none", fontWeight: 700 }}>
+                  <Mail size={16} /> vishwakarmadharmendra5668@gmail.com
+                </a>
+                <a href="tel:8383999973" style={{ display: "flex", alignItems: "center", gap: "10px", color: "#cbd5e1", textDecoration: "none", fontWeight: 600 }}>
+                  <Phone size={16} color="#94a3b8" /> +91 8383999973
+                </a>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <MapPin size={16} color="#94a3b8" /> New Delhi, India
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div style={{
+            maxWidth: "1150px", margin: "0 auto", paddingTop: "24px",
+            borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex",
+            justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: "#64748b"
+          }}>
+            <div>
+              &copy; {new Date().getFullYear()} EduFlow ECRM Inc. All rights reserved.
+            </div>
+            <div style={{ display: "flex", gap: "20px" }}>
+              <span>Privacy Policy</span>
+              <span>Terms of Service</span>
+              <span>Security</span>
+            </div>
+          </div>
+        </footer>
+
+        </div>
+      </div>
     </div>
   );
 }
+

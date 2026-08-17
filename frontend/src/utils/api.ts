@@ -137,6 +137,13 @@ export const api = {
     pay: (id: string, body: object) => request<any>(`/invoices/${id}/pay`, { method: "POST", body: JSON.stringify(body) }),
   },
 
+  // ── Razorpay Online Payments ──────────────────────────────
+  payments: {
+    getConfig: () => request<any>("/payments/config"),
+    createOrder: (body: { invoiceId: string; amount: number }) => request<any>("/payments/create-order", { method: "POST", body: JSON.stringify(body) }),
+    verifyPayment: (body: object) => request<any>("/payments/verify", { method: "POST", body: JSON.stringify(body) }),
+  },
+
   // ── Batches ──────────────────────────────────────────────
   batches: {
     getAll: () => request<any>("/batches"),

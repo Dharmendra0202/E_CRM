@@ -1,7 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { logAudit } from "../utils/auditLog";
 import { Router, Response } from "express";
-
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 import { io } from "../server";
 
@@ -20,7 +19,7 @@ function emitAttendanceUpdate(batchId: string, payload: object) {
 router.get("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { batch_id, date } = req.query as any;
-    const where: any = {};
+    const where: any = { student: { deletedAt: null } };
     if (date) where.classDate = new Date(date);
     if (batch_id) where.schedule = { batchId: batch_id };
 
@@ -43,8 +42,6 @@ router.get("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthReq
 });
 
 // ── GET /api/v1/attendance/session?batch_id=&date= ───────────────────
-// Returns full student roster with attendance status for a given batch+date
-// Used by both the web dashboard and the mobile app to load the session.
 router.get("/session", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { batch_id, date } = req.query as any;
@@ -233,8 +230,6 @@ router.post("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRe
 });
 
 // ── POST /api/v1/attendance/mark — single student mark (mobile app) ───
-// Mobile devices call this endpoint to mark one student at a time.
-// The server saves it and instantly broadcasts to the web dashboard.
 router.post("/mark", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { schedule_id, student_id, class_date, status, remarks } = req.body;
@@ -286,7 +281,6 @@ router.post("/mark", authenticate, authorize("ADMIN", "TEACHER"), async (req: Au
       },
     });
 
-    // Broadcast single-student update in real time
     emitAttendanceUpdate(record.schedule.batchId, {
       scheduleId: schedule_id,
       classDate: class_date,
@@ -315,7 +309,6 @@ router.post("/mark", authenticate, authorize("ADMIN", "TEACHER"), async (req: Au
 });
 
 // ── POST /api/v1/attendance/sync — offline batch sync (mobile) ────────
-// Mobile apps queue records offline and flush them when back online.
 router.post("/sync", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { records } = req.body;
@@ -356,12 +349,7 @@ router.post("/sync", authenticate, authorize("ADMIN", "TEACHER"), async (req: Au
       }
     }
 
-    // Emit one consolidated update per affected batch
     for (const batchId of batchIdsUpdated) {
-      const batchRecords = records.filter(async (r: any) => {
-        const s = await prisma.schedule.findUnique({ where: { id: r.schedule_id }, select: { batchId: true } });
-        return s?.batchId === batchId;
-      });
       emitAttendanceUpdate(batchId, {
         records: records
           .filter((r: any) => results.includes(r.student_id))
