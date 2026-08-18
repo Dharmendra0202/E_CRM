@@ -198,7 +198,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
   // Add Student form state
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", dob: "", gender: "Male" as "Male" | "Female" | "Other",
-    guardianName: "", guardianPhone: "", address: "", batch: BATCHES[0],
+    guardianName: "", guardianPhone: "", address: s.address || "", batch: BATCHES[0],
     feeAmount: "8500", notes: ""
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -241,10 +241,10 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
             email: s.user?.email || s.parentEmail,
             phone: s.user?.phone || s.parentPhone,
             dob: s.dateOfBirth?.split("T")[0] || "",
-            gender: "Male" as const,
+            gender: (s.gender || "Male") as "Male" | "Female" | "Other",
             guardianName: s.parentName,
             guardianPhone: s.parentPhone,
-            address: "",
+            address: s.address || "",
             batch: s.enrollments?.[0]?.batch?.name || "Unassigned",
             enrollmentDate: s.createdAt?.split("T")[0] || "",
             status: "Active" as const,
@@ -400,7 +400,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
       saveLocalStudents(updated);
       return updated;
     });
-    setFormData({ name: "", email: "", phone: "", dob: "", gender: "Male", guardianName: "", guardianPhone: "", address: "", batch: BATCHES[0], feeAmount: "8500", notes: "" });
+    setFormData({ name: "", email: "", phone: "", dob: "", gender: "Male", guardianName: "", guardianPhone: "", address: s.address || "", batch: BATCHES[0], feeAmount: "8500", notes: "" });
     setFormErrors({});
     addHistoryItem({
       category: "Student",

@@ -399,7 +399,7 @@ export const NewEnrollment: React.FC = () => {
               <SelectField
                 label="Class / Batch / Standard *"
                 value={personal.batch}
-                options={["", "1st Standard", "2nd Standard", "3rd Standard", "4th Standard", "5th Standard", "6th Standard", "7th Standard", "8th Standard", "9th Standard", "10th Standard", "11th Science", "11th Commerce", "12th Science", "12th Commerce"]}
+                options={["", "1st Standard", "2nd Standard", "3rd Standard", "4th Standard", "5th Standard", "6th Standard", "7th Standard", "8th Standard", "9th Standard", "10th Standard", "11th Science (PCM)", "11th Science (PCB)", "11th Science (PCMB)", "11th Commerce (SP)", "11th Commerce (Maths)", "12th Science (PCM)", "12th Science (PCB)", "12th Science (PCMB)", "12th Commerce (SP)", "12th Commerce (Maths)"]}
                 onChange={(v) => setPersonal({ ...personal, batch: v })}
                 error={errors.batch}
               />

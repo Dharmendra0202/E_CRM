@@ -90,10 +90,16 @@ const STATIC_BATCHES: ApiBatch[] = [
   { id: "sb-8", name: "8th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
   { id: "sb-9", name: "9th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
   { id: "sb-10", name: "10th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-11s", name: "11th Science", subject: "Physics, Chemistry, Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-11c", name: "11th Commerce", subject: "Commerce & Economics", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-12s", name: "12th Science", subject: "Physics, Chemistry, Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-12c", name: "12th Commerce", subject: "Commerce & Economics", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-11s", name: "11th Science (PCM)", subject: "Physics, Chemistry, Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-11b", name: "11th Science (PCB)", subject: "Physics, Chemistry, Biology", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-11mb", name: "11th Science (PCMB)", subject: "Physics, Chemistry, Maths, Biology", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-11sp", name: "11th Commerce (SP)", subject: "Commerce, Accounts, SP", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-11cm", name: "11th Commerce (Maths)", subject: "Commerce, Accounts, Maths", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-12s", name: "12th Science (PCM)", subject: "Physics, Chemistry, Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-12b", name: "12th Science (PCB)", subject: "Physics, Chemistry, Biology", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-12mb", name: "12th Science (PCMB)", subject: "Physics, Chemistry, Maths, Biology", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-12sp", name: "12th Commerce (SP)", subject: "Commerce, Accounts, SP", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
+  { id: "sb-12cm", name: "12th Commerce (Maths)", subject: "Commerce, Accounts, Maths", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
 ];
 
 // Room number options
