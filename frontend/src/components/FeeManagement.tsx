@@ -2,11 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Button } from "./ui/Button";
 import { Skeleton } from "./ui/Skeleton";
 import { api } from "../utils/api";
+import { exportInvoices, exportStaff } from "../utils/exportExcel";
 import { inputStyle, labelStyle } from "../utils/styles";
 import {
   IndianRupee, Plus, Search, Filter, CheckCircle2, XCircle,
   Clock, TrendingUp, Users2, CreditCard, ArrowUpRight, AlertCircle,
-  Briefcase, GraduationCap, X, Check
+  Briefcase, GraduationCap, X, Check, Download, Eye, FileText
 } from "lucide-react";
 
 export function FeeManagement() {
@@ -33,6 +34,58 @@ export function FeeManagement() {
   const [newInv, setNewInv] = useState({ studentId: "", totalAmount: "", dueDate: "" });
   // Payment form
   const [payForm, setPayForm] = useState({ amount: "", paymentMethod: "CASH", transactionReference: "" });
+  // Selected Invoice for Detailed Receipt Modal & Verification
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
+
+  // Binary Excel (.xlsx) Export Handler with full student details & transaction breakdown
+  const handleExportExcel = () => {
+    if (filteredInvoices.length === 0) {
+      alert("No payment records available to export.");
+      return;
+    }
+    exportInvoices(filteredInvoices, students);
+  };
+
+  const handleDownloadReceiptText = (inv: any) => {
+    const name = inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : "Student";
+    const paid = inv.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0;
+    const remaining = Math.max(0, Number(inv.totalAmount) - paid);
+
+    let content = `====================================================\n`;
+    content += `         EDUFLOW E-CRM OFFICIAL INVOICE RECEIPT       \n`;
+    content += `====================================================\n\n`;
+    content += `Invoice ID     : #${inv.id}\n`;
+    content += `Date Issued    : ${new Date(inv.createdAt || Date.now()).toLocaleDateString()}\n`;
+    content += `Due Date       : ${new Date(inv.dueDate).toLocaleDateString()}\n`;
+    content += `Status         : ${inv.status}\n\n`;
+    content += `----------------------------------------------------\n`;
+    content += `STUDENT DETAILS:\n`;
+    content += `Name           : ${name}\n`;
+    content += `Email          : ${inv.student?.user?.email || "N/A"}\n`;
+    content += `----------------------------------------------------\n\n`;
+    content += `FINANCIAL BREAKDOWN:\n`;
+    content += `Total Billed   : Rs. ${Number(inv.totalAmount).toLocaleString("en-IN")}\n`;
+    content += `Amount Paid    : Rs. ${paid.toLocaleString("en-IN")}\n`;
+    content += `Remaining Dues : Rs. ${remaining.toLocaleString("en-IN")}\n\n`;
+    content += `----------------------------------------------------\n`;
+    content += `PAYMENT TRANSACTION LOGS:\n`;
+    if (!inv.payments || inv.payments.length === 0) {
+      content += ` No payment transactions recorded yet.\n`;
+    } else {
+      inv.payments.forEach((p: any, idx: number) => {
+        content += ` ${idx + 1}. Date: ${new Date(p.createdAt || Date.now()).toLocaleDateString()} | Amount: Rs. ${p.amount} | Method: ${p.paymentMethod || "CASH"} | Ref: ${p.transactionReference || "N/A"}\n`;
+      });
+    }
+    content += `\n====================================================\n`;
+    content += ` Thank you for using EduFlow E-CRM Management System \n`;
+    content += `====================================================\n`;
+
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `Receipt_${name.replace(/\s+/g, "_")}_${inv.id.substring(0, 8)}.txt`;
+    link.click();
+  };
 
   useEffect(() => {
     loadData();
@@ -64,24 +117,52 @@ export function FeeManagement() {
   };
 
   const handleCreateInvoice = async () => {
-    if (!newInv.studentId || !newInv.totalAmount || !newInv.dueDate) return;
+    if (!newInv.studentId) {
+      alert("Please select a student from the dropdown.");
+      return;
+    }
+    const amt = parseFloat(newInv.totalAmount);
+    if (isNaN(amt) || amt <= 0) {
+      alert("Please enter a valid positive invoice amount (₹).");
+      return;
+    }
+    if (!newInv.dueDate) {
+      alert("Please select a valid Due Date.");
+      return;
+    }
+    const year = parseInt(newInv.dueDate.split("-")[0], 10);
+    if (isNaN(year) || year < 2020 || year > 2099) {
+      alert("Please enter a valid year between 2020 and 2099.");
+      return;
+    }
+
     setCreating(true);
     try {
       await api.invoices.create(newInv);
+      alert("🎉 Invoice issued & recorded in database successfully!");
       setNewInv({ studentId: "", totalAmount: "", dueDate: "" });
       setShowCreate(false);
       loadData();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      alert("Failed to issue invoice: " + (err.message || "Server error"));
     }
     setCreating(false);
   };
 
   const handleRecordPayment = async () => {
-    if (!showPay || !payForm.amount) return;
+    if (!showPay || !payForm.amount) {
+      alert("Please enter the payment amount (₹).");
+      return;
+    }
+    const amt = parseFloat(payForm.amount);
+    if (isNaN(amt) || amt <= 0) {
+      alert("Please enter a valid positive payment amount.");
+      return;
+    }
     setPaying(true);
     try {
       await api.invoices.pay(showPay.id, payForm);
+      alert("🎉 Payment recorded in database successfully!");
       setPayForm({ amount: "", paymentMethod: "CASH", transactionReference: "" });
       setShowPay(null);
       loadData();
@@ -212,9 +293,29 @@ export function FeeManagement() {
           <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Payment Records</h1>
           <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Manage student installments, completed settlements, pending dues, and staff payroll.</p>
         </div>
-        <div style={{ display: "flex", gap: "10px" }}>
-          <Button variant="secondary" onClick={() => setShowStaffDrawer(true)} leftIcon={<Briefcase size={14} />}>Staff & Teacher Payroll Drawer</Button>
-          <Button variant="primary" onClick={() => setShowCreate(true)} leftIcon={<Plus size={14} />}>Issue Invoice</Button>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <button
+            onClick={handleExportExcel}
+            style={{
+              display: "flex", alignItems: "center", gap: "8px",
+              padding: "10px 18px", borderRadius: "12px", border: "none",
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              color: "#fff", fontSize: "13px", fontWeight: 800, cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(16,185,129,0.35)", transition: "all 0.2s"
+            }}
+          >
+            <Download size={16} /> Download Excel Sheet (.xlsx)
+          </button>
+          <Button variant="secondary" onClick={() => setShowStaffDrawer(true)} leftIcon={<Briefcase size={14} />}>Staff & Payroll</Button>
+          <Button variant="primary" onClick={() => {
+            const today = new Date().toISOString().split("T")[0];
+            setNewInv({
+              studentId: students[0]?.id || "",
+              totalAmount: "5000",
+              dueDate: today
+            });
+            setShowCreate(true);
+          }} leftIcon={<Plus size={14} />}>Issue Invoice</Button>
         </div>
       </div>
 
@@ -263,24 +364,38 @@ export function FeeManagement() {
       {/* Main Student Payments View */}
       {activeTab !== "staff_payroll" ? (
         <>
-          {/* Filters */}
-          <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
-            <div style={{ flex: 1, position: "relative", maxWidth: "300px" }}>
-              <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
-              <input style={{ ...inputStyle, paddingLeft: "36px" }} placeholder="Search student name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          {/* Filters & Export Bar */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div style={{ display: "flex", gap: "12px", flex: 1 }}>
+              <div style={{ flex: 1, position: "relative", maxWidth: "300px" }}>
+                <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
+                <input style={{ ...inputStyle, paddingLeft: "36px" }} placeholder="Search student name..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+              </div>
+              <select style={{ ...inputStyle, width: "160px" }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+                <option value="">All Status</option>
+                <option value="UNPAID">Unpaid</option>
+                <option value="PAID">Paid</option>
+                <option value="PARTIAL">Partial</option>
+              </select>
             </div>
-            <select style={{ ...inputStyle, width: "160px" }} value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-              <option value="">All Status</option>
-              <option value="UNPAID">Unpaid</option>
-              <option value="PAID">Paid</option>
-              <option value="PARTIAL">Partial</option>
-            </select>
+            <button
+              onClick={handleExportExcel}
+              style={{
+                display: "flex", alignItems: "center", gap: "8px",
+                padding: "8px 16px", borderRadius: "10px", border: "none",
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                color: "#fff", fontSize: "12px", fontWeight: 800, cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(16,185,129,0.3)"
+              }}
+            >
+              <Download size={14} /> Export Excel (.xlsx)
+            </button>
           </div>
 
           {/* Invoices List */}
           <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid var(--border-glass)", overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 120px 120px 120px 100px", padding: "12px 20px", background: "rgba(29,10,39,0.02)", borderBottom: "1px solid var(--border-glass)", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>
-              <div>Student</div><div>Total Billed</div><div>Done Paid</div><div>Remaining</div><div>Actions</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px 160px", padding: "12px 20px", background: "rgba(29,10,39,0.02)", borderBottom: "1px solid var(--border-glass)", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>
+              <div>Student</div><div>Total Billed</div><div>Done Paid</div><div>Remaining</div><div>Actions & Receipt</div>
             </div>
 
             {isLoading ? (
@@ -301,7 +416,7 @@ export function FeeManagement() {
                 const statusColor = inv.status === "PAID" ? "var(--color-success)" : isOverdue ? "var(--color-danger)" : "hsl(38,92%,50%)";
 
                 return (
-                  <div key={inv.id} style={{ display: "grid", gridTemplateColumns: "1fr 120px 120px 120px 100px", padding: "14px 20px", borderBottom: "1px solid var(--border-glass)", alignItems: "center" }}>
+                  <div key={inv.id} style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px 160px", padding: "14px 20px", borderBottom: "1px solid var(--border-glass)", alignItems: "center" }}>
                     <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                       <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: `${statusColor}12`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 800, color: statusColor }}>
                         {name.split(" ").map((n: string) => n[0]).join("").substring(0, 2)}
@@ -316,16 +431,43 @@ export function FeeManagement() {
                     <span style={{ fontSize: "13px", fontWeight: 700, color: remaining > 0 ? "var(--color-danger)" : "var(--color-success)" }}>
                       ₹{remaining.toLocaleString("en-IN")}
                     </span>
-                    <div>
-                      {inv.status !== "PAID" && (
-                        <button onClick={() => { setShowPay(inv); setPayForm({ amount: String(remaining), paymentMethod: "CASH", transactionReference: "" }); }}
-                          style={{ fontSize: "11px", fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", border: "none", padding: "6px 14px", borderRadius: "8px", cursor: "pointer", boxShadow: "0 2px 8px hsla(328,100%,54%,0.3)" }}>
-                          Pay Now
-                        </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      {inv.status !== "PAID" ? (
+                        <>
+                          <button onClick={() => { setShowPay(inv); setPayForm({ amount: String(remaining), paymentMethod: "CASH", transactionReference: "" }); }}
+                            style={{ fontSize: "11px", fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", border: "none", padding: "6px 12px", borderRadius: "8px", cursor: "pointer", boxShadow: "0 2px 8px hsla(328,100%,54%,0.3)" }}>
+                            Pay Now
+                          </button>
+                          <a
+                            href={`https://wa.me/${inv.student?.parentPhone ? inv.student.parentPhone.replace(/[^0-9]/g, "") : inv.student?.user?.phone ? inv.student.user.phone.replace(/[^0-9]/g, "") : "918383999973"}?text=${encodeURIComponent(
+                              `Fee Reminder from EduFlow: Dear Parent of ${name}, an outstanding fee balance of Rs. ${remaining.toLocaleString("en-IN")} is pending for Invoice #${inv.id.substring(0, 8)} (Due Date: ${new Date(inv.dueDate).toLocaleDateString()}). Please submit payment online or contact EduFlow at +91 8383999973.`
+                            )}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              width: "28px", height: "28px", borderRadius: "8px",
+                              background: "#25D366", color: "#fff", textDecoration: "none", fontSize: "12px"
+                            }}
+                            title="Send WhatsApp Fee Reminder to Parent"
+                          >
+                            📱
+                          </a>
+                        </>
+                      ) : (
+                        <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--color-success)", background: "hsla(142,70%,42%,0.08)", padding: "4px 8px", borderRadius: "10px" }}>SETTLED</span>
                       )}
-                      {inv.status === "PAID" && (
-                        <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--color-success)", background: "hsla(142,70%,42%,0.08)", padding: "4px 10px", borderRadius: "10px" }}>SETTLED</span>
-                      )}
+                      <button
+                        onClick={() => setSelectedReceipt(inv)}
+                        title="View Payment Breakdown & Download Receipt"
+                        style={{
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          width: "28px", height: "28px", borderRadius: "8px", border: "1px solid var(--border-glass)",
+                          background: "hsla(285,30%,20%,0.05)", cursor: "pointer"
+                        }}
+                      >
+                        <Eye size={14} style={{ color: "var(--text-primary)" }} />
+                      </button>
                     </div>
                   </div>
                 );
@@ -341,7 +483,21 @@ export function FeeManagement() {
               <h3 style={{ margin: "0 0 4px", fontSize: "16px", fontWeight: 800 }}>Staff & Teacher Salary Payroll</h3>
               <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>Record monthly salaries, lecture payouts, and staff disbursements.</p>
             </div>
-            <Button variant="primary" onClick={() => setShowStaffDrawer(true)} leftIcon={<Plus size={14} />}>Record Salary Payout</Button>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+              <button
+                onClick={() => exportStaff(staffList)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "8px",
+                  padding: "8px 16px", borderRadius: "10px", border: "none",
+                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                  color: "#fff", fontSize: "12px", fontWeight: 800, cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(16,185,129,0.3)"
+                }}
+              >
+                <Download size={14} /> Download Excel Sheet (.xlsx)
+              </button>
+              <Button variant="primary" onClick={() => setShowStaffDrawer(true)} leftIcon={<Plus size={14} />}>Record Salary Payout</Button>
+            </div>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "16px" }}>
@@ -441,8 +597,26 @@ export function FeeManagement() {
                   {students.map((s) => <option key={s.id} value={s.id}>{s.user ? `${s.user.firstName} ${s.user.lastName}` : s.parentName}</option>)}
                 </select>
               </div>
-              <div><label style={labelStyle}>Amount (₹) *</label><input style={inputStyle} type="number" value={newInv.totalAmount} onChange={(e) => setNewInv({ ...newInv, totalAmount: e.target.value })} placeholder="e.g. 5000" /></div>
-              <div><label style={labelStyle}>Due Date *</label><input style={inputStyle} type="date" value={newInv.dueDate} onChange={(e) => setNewInv({ ...newInv, dueDate: e.target.value })} /></div>
+              <div><label style={labelStyle}>Amount (₹) *</label><input style={inputStyle} type="number" value={newInv.totalAmount} onChange={(e) => setNewInv({ ...newInv, totalAmount: e.target.value })} placeholder="e.g. 5000" min="1" /></div>
+              <div>
+                <label style={labelStyle}>Due Date *</label>
+                <input
+                  style={inputStyle}
+                  type="date"
+                  min="2020-01-01"
+                  max="2099-12-31"
+                  value={newInv.dueDate}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    const parts = val.split("-");
+                    if (parts[0] && parts[0].length > 4) {
+                      parts[0] = parts[0].slice(0, 4);
+                      val = parts.join("-");
+                    }
+                    setNewInv({ ...newInv, dueDate: val });
+                  }}
+                />
+              </div>
             </div>
             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "20px" }}>
               <Button variant="secondary" onClick={() => setShowCreate(false)}>Cancel</Button>
@@ -490,6 +664,83 @@ export function FeeManagement() {
                 <Button variant="secondary" onClick={() => setShowPay(null)}>Cancel</Button>
                 <Button variant="primary" isLoading={paying} onClick={handleRecordPayment} leftIcon={<CheckCircle2 size={14} />}>Record Offline Cash/Bank</Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── DETAILED PAYMENT RECEIPT & VERIFICATION MODAL ───────── */}
+      {selectedReceipt && (
+        <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 99999 }} onClick={() => setSelectedReceipt(null)}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "24px", padding: "28px", width: "100%", maxWidth: "520px", boxShadow: "0 24px 60px rgba(0,0,0,0.2)" }} className="animate-slide-up">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", borderBottom: "1px solid var(--border-glass)", paddingBottom: "14px" }}>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--color-accent)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Official Payment Receipt</span>
+                <h3 style={{ margin: "4px 0 0", fontSize: "20px", fontWeight: 800 }}>Invoice #{selectedReceipt.id.substring(0, 8)}</h3>
+              </div>
+              <button onClick={() => setSelectedReceipt(null)} style={{ background: "hsla(285,30%,20%,0.08)", border: "none", borderRadius: "10px", width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><X size={18} /></button>
+            </div>
+
+            {/* Student & Status Info */}
+            <div style={{ background: "rgba(29,10,39,0.03)", borderRadius: "14px", padding: "16px", marginBottom: "20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600 }}>Student Name</span>
+                <p style={{ margin: "2px 0 0", fontSize: "14px", fontWeight: 800 }}>
+                  {selectedReceipt.student?.user ? `${selectedReceipt.student.user.firstName} ${selectedReceipt.student.user.lastName}` : "Student"}
+                </p>
+                <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{selectedReceipt.student?.user?.email || "No email"}</p>
+              </div>
+              <div>
+                <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600 }}>Payment Status</span>
+                <p style={{ margin: "2px 0 0", fontSize: "13px", fontWeight: 800, color: selectedReceipt.status === "PAID" ? "var(--color-success)" : "var(--color-danger)" }}>
+                  ● {selectedReceipt.status}
+                </p>
+                <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Due: {new Date(selectedReceipt.dueDate).toLocaleDateString()}</p>
+              </div>
+            </div>
+
+            {/* Billing Summary */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "20px", textAlign: "center" }}>
+              <div style={{ background: "hsla(271,91%,60%,0.08)", padding: "12px", borderRadius: "12px" }}>
+                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Total Billed</span>
+                <p style={{ margin: "2px 0 0", fontSize: "16px", fontWeight: 800, color: "hsl(271,91%,60%)" }}>₹{Number(selectedReceipt.totalAmount).toLocaleString("en-IN")}</p>
+              </div>
+              <div style={{ background: "hsla(142,70%,45%,0.08)", padding: "12px", borderRadius: "12px" }}>
+                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Paid Amount</span>
+                <p style={{ margin: "2px 0 0", fontSize: "16px", fontWeight: 800, color: "var(--color-success)" }}>
+                  ₹{(selectedReceipt.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0).toLocaleString("en-IN")}
+                </p>
+              </div>
+              <div style={{ background: "hsla(346,84%,61%,0.08)", padding: "12px", borderRadius: "12px" }}>
+                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Remaining Dues</span>
+                <p style={{ margin: "2px 0 0", fontSize: "16px", fontWeight: 800, color: "var(--color-danger)" }}>
+                  ₹{Math.max(0, Number(selectedReceipt.totalAmount) - (selectedReceipt.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0)).toLocaleString("en-IN")}
+                </p>
+              </div>
+            </div>
+
+            {/* Transaction Logs */}
+            <h4 style={{ margin: "0 0 10px", fontSize: "13px", fontWeight: 800 }}>Payment Transaction History ({selectedReceipt.payments?.length || 0})</h4>
+            <div style={{ maxHeight: "150px", overflowY: "auto", border: "1px solid var(--border-glass)", borderRadius: "12px", padding: "10px", marginBottom: "20px" }}>
+              {!selectedReceipt.payments || selectedReceipt.payments.length === 0 ? (
+                <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)", textAlign: "center", padding: "16px 0" }}>No offline or online payment transactions logged yet.</p>
+              ) : selectedReceipt.payments.map((p: any, idx: number) => (
+                <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: idx < selectedReceipt.payments.length - 1 ? "1px solid var(--border-glass)" : "none", fontSize: "12px" }}>
+                  <div>
+                    <span style={{ fontWeight: 800, color: "var(--color-success)" }}>₹{Number(p.amount).toLocaleString("en-IN")}</span>
+                    <span style={{ color: "var(--text-secondary)", marginLeft: "8px" }}>({p.paymentMethod || "CASH"})</span>
+                    {p.transactionReference && <p style={{ margin: "2px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>Ref: {p.transactionReference}</p>}
+                  </div>
+                  <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600 }}>{new Date(p.createdAt || Date.now()).toLocaleDateString()}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Action Buttons */}
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <Button variant="secondary" onClick={() => setSelectedReceipt(null)}>Close</Button>
+              <Button variant="secondary" onClick={() => window.print()} leftIcon={<FileText size={14} />}>Print Receipt</Button>
+              <Button variant="primary" onClick={() => handleDownloadReceiptText(selectedReceipt)} leftIcon={<Download size={14} />}>Download Receipt (.TXT)</Button>
             </div>
           </div>
         </div>

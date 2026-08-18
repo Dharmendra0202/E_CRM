@@ -31,6 +31,15 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
     const batch = await prisma.batch.create({
       data: { name, subject, startDate: new Date(startDate), endDate: new Date(endDate), capacity: parseInt(capacity), teacherId, feeAmount: parseFloat(feeAmount), feeFrequency },
     });
+    await prisma.schedule.create({
+      data: {
+        batchId: batch.id,
+        dayOfWeek: 1,
+        startTime: "09:00",
+        endTime: "10:00",
+        roomOrLink: "Classroom A",
+      },
+    });
     res.status(201).json({ status: "success", data: batch });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });

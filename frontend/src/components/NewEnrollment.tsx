@@ -4,6 +4,7 @@ import {
   Check, User, Phone, Mail, MapPin, Calendar, IndianRupee, Shield,
 } from "lucide-react";
 import { api } from "../utils/api";
+import { toTitleCase } from "../utils/styles";
 
 // ─────────────────────────── Types ───────────────────────────
 type RoleType = "student" | "staff" | "teacher" | "";
@@ -30,6 +31,8 @@ interface GuardianDetails {
 
 interface FeeDetails {
   totalAmount: string;
+  paidToday: string;
+  paymentMethod: string;
   paymentPlan: PaymentPlan;
   customInstallments: string;
   notes: string;
@@ -46,7 +49,7 @@ export const NewEnrollment: React.FC = () => {
     fatherName: "", fatherPhone: "", motherName: "", motherPhone: "",
   });
   const [fee, setFee] = useState<FeeDetails>({
-    totalAmount: "", paymentPlan: "single", customInstallments: "", notes: "",
+    totalAmount: "", paidToday: "0", paymentMethod: "CASH", paymentPlan: "single", customInstallments: "", notes: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -132,6 +135,8 @@ export const NewEnrollment: React.FC = () => {
           parentEmail: personal.email || `${personal.phone}@placeholder.com`,
           dateOfBirth: personal.dob,
           feeAmount: String(totalFee),
+          paidToday: fee.paidToday || "0",
+          paymentMethod: fee.paymentMethod || "CASH",
           batch: personal.batch,
           motherName: guardian.motherName || "",
           motherPhone: guardian.motherPhone || "",
@@ -161,7 +166,7 @@ export const NewEnrollment: React.FC = () => {
     setRole("");
     setPersonal({ firstName: "", lastName: "", phone: "", gender: "Male", dob: "", email: "", address: "", batch: "" });
     setGuardian({ fatherName: "", fatherPhone: "", motherName: "", motherPhone: "" });
-    setFee({ totalAmount: "", paymentPlan: "single", customInstallments: "", notes: "" });
+    setFee({ totalAmount: "", paidToday: "0", paymentMethod: "CASH", paymentPlan: "single", customInstallments: "", notes: "" });
     setErrors({});
     setSubmitted(false);
     setSubmitError("");
@@ -333,7 +338,7 @@ export const NewEnrollment: React.FC = () => {
                 label="First Name *"
                 icon={<User size={15} />}
                 value={personal.firstName}
-                onChange={(v) => setPersonal({ ...personal, firstName: v.replace(/[^a-zA-Z\s]/g, "") })}
+                onChange={(v) => setPersonal({ ...personal, firstName: toTitleCase(v.replace(/[^a-zA-Z\s]/g, "")) })}
                 error={errors.firstName}
                 placeholder="Enter first name"
               />
@@ -341,7 +346,7 @@ export const NewEnrollment: React.FC = () => {
                 label="Last Name"
                 icon={<User size={15} />}
                 value={personal.lastName}
-                onChange={(v) => setPersonal({ ...personal, lastName: v.replace(/[^a-zA-Z\s]/g, "") })}
+                onChange={(v) => setPersonal({ ...personal, lastName: toTitleCase(v.replace(/[^a-zA-Z\s]/g, "")) })}
                 placeholder="Enter last name"
               />
               <InputField
@@ -385,7 +390,7 @@ export const NewEnrollment: React.FC = () => {
                 label="Address"
                 icon={<MapPin size={15} />}
                 value={personal.address}
-                onChange={(v) => setPersonal({ ...personal, address: v })}
+                onChange={(v) => setPersonal({ ...personal, address: toTitleCase(v) })}
                 placeholder="Full residential address"
                 fullWidth
               />
@@ -417,7 +422,7 @@ export const NewEnrollment: React.FC = () => {
                 label="Father's Name *"
                 icon={<User size={15} />}
                 value={guardian.fatherName}
-                onChange={(v) => setGuardian({ ...guardian, fatherName: v.replace(/[^a-zA-Z\s]/g, "") })}
+                onChange={(v) => setGuardian({ ...guardian, fatherName: toTitleCase(v.replace(/[^a-zA-Z\s]/g, "")) })}
                 error={errors.fatherName}
                 placeholder="Father's full name"
               />
@@ -434,7 +439,7 @@ export const NewEnrollment: React.FC = () => {
                 label="Mother's Name"
                 icon={<User size={15} />}
                 value={guardian.motherName}
-                onChange={(v) => setGuardian({ ...guardian, motherName: v.replace(/[^a-zA-Z\s]/g, "") })}
+                onChange={(v) => setGuardian({ ...guardian, motherName: toTitleCase(v.replace(/[^a-zA-Z\s]/g, "")) })}
                 placeholder="Mother's full name"
               />
               <InputField
@@ -459,7 +464,7 @@ export const NewEnrollment: React.FC = () => {
               Define the payment plan for this enrollment
             </p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "20px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "20px" }}>
               <InputField
                 label="Total Fee Amount (₹) *"
                 icon={<IndianRupee size={15} />}
@@ -472,16 +477,47 @@ export const NewEnrollment: React.FC = () => {
                 placeholder="e.g. 50000"
                 type="text"
               />
+              <InputField
+                label="Amount Paid Today (₹)"
+                icon={<IndianRupee size={15} />}
+                value={fee.paidToday}
+                onChange={(v) => {
+                  const num = v.replace(/[^0-9]/g, "");
+                  setFee({ ...fee, paidToday: num });
+                }}
+                placeholder="e.g. 10000"
+                type="text"
+              />
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>
+                  Payment Method Today
+                </label>
+                <select
+                  value={fee.paymentMethod}
+                  onChange={(e) => setFee({ ...fee, paymentMethod: e.target.value })}
+                  style={{
+                    width: "100%", padding: "10px 14px", borderRadius: "10px",
+                    border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px",
+                    outline: "none", fontFamily: "inherit", background: "#fff",
+                  }}
+                >
+                  <option value="CASH">Cash</option>
+                  <option value="UPI">UPI Payout / QR</option>
+                  <option value="BANK_TRANSFER">Bank Transfer (NEFT/IMPS)</option>
+                  <option value="CARD">Debit / Credit Card</option>
+                  <option value="CHEQUE">Cheque</option>
+                </select>
+              </div>
             </div>
 
             <label style={{ fontSize: "13px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "10px", display: "block" }}>
-              Payment Plan *
+              Payment Plan for Remaining Amount *
             </label>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", marginBottom: "20px" }}>
               {([
-                { key: "single" as PaymentPlan, label: "Single Payment", desc: "Pay full amount at once" },
-                { key: "2-installments" as PaymentPlan, label: "2 Installments", desc: "Split into 2 equal parts" },
-                { key: "4-installments" as PaymentPlan, label: "4 Installments", desc: "Split into 4 equal parts" },
+                { key: "single" as PaymentPlan, label: "Single Payment", desc: "Pay full balance at once" },
+                { key: "2-installments" as PaymentPlan, label: "2 Installments", desc: "Split remaining balance into 2 parts" },
+                { key: "4-installments" as PaymentPlan, label: "4 Installments", desc: "Split remaining balance into 4 parts" },
                 { key: "custom" as PaymentPlan, label: "Custom Plan", desc: "Choose your own schedule" },
               ]).map((plan) => (
                 <button
@@ -522,26 +558,54 @@ export const NewEnrollment: React.FC = () => {
               />
             )}
 
-            {/* Fee Breakdown Preview */}
+            {/* Auto-Calculated Fee & Installment Breakdown Preview */}
             {fee.totalAmount && (
               <div style={{
-                marginTop: "20px", padding: "16px", borderRadius: "12px",
-                background: "hsla(271,91%,60%,0.04)", border: "1px solid hsla(271,91%,60%,0.12)",
+                marginTop: "20px", padding: "18px", borderRadius: "14px",
+                background: "hsla(271,91%,60%,0.05)", border: "1px solid hsla(271,91%,60%,0.15)",
+                display: "flex", flexDirection: "column", gap: "10px"
               }}>
-                <p style={{ fontSize: "12px", fontWeight: 700, color: "hsl(271,91%,50%)", margin: "0 0 8px" }}>
-                  Payment Breakdown
+                <p style={{ fontSize: "12px", fontWeight: 800, color: "hsl(271,91%,50%)", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  📊 Auto-Calculated Fee & Installment Breakdown
                 </p>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: "13px", color: "hsl(285,50%,12%)" }}>
-                    {(() => {
-                      const inst = fee.paymentPlan === "single" ? 1 : fee.paymentPlan === "2-installments" ? 2 : fee.paymentPlan === "4-installments" ? 4 : (Number(fee.customInstallments) || 1);
-                      return `${inst} × ₹${Math.ceil(Number(fee.totalAmount) / inst).toLocaleString("en-IN")}`;
-                    })()}
-                  </span>
-                  <span style={{ fontSize: "14px", fontWeight: 800, color: "hsl(271,91%,50%)" }}>
-                    Total: ₹{Number(fee.totalAmount).toLocaleString("en-IN")}
-                  </span>
-                </div>
+
+                {(() => {
+                  const total = Number(fee.totalAmount) || 0;
+                  const paid = Number(fee.paidToday) || 0;
+                  const remaining = Math.max(0, total - paid);
+                  const instCount = fee.paymentPlan === "single" ? 1 : fee.paymentPlan === "2-installments" ? 2 : fee.paymentPlan === "4-installments" ? 4 : (Number(fee.customInstallments) || 1);
+                  const instAmount = remaining > 0 ? Math.ceil(remaining / instCount) : 0;
+
+                  return (
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", background: "#fff", padding: "14px", borderRadius: "12px", border: "1px solid hsla(285,30%,20%,0.06)" }}>
+                      <div>
+                        <span style={{ fontSize: "11px", color: "hsl(285,20%,50%)", fontWeight: 600 }}>Total Fee Billed</span>
+                        <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: "hsl(271,91%,60%)" }}>₹{total.toLocaleString("en-IN")}</p>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: "11px", color: "hsl(285,20%,50%)", fontWeight: 600 }}>Paid Today ({fee.paymentMethod})</span>
+                        <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: "hsl(142,70%,40%)" }}>₹{paid.toLocaleString("en-IN")}</p>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: "11px", color: "hsl(285,20%,50%)", fontWeight: 600 }}>Remaining Dues</span>
+                        <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: remaining > 0 ? "hsl(342,90%,48%)" : "hsl(142,70%,40%)" }}>₹{remaining.toLocaleString("en-IN")}</p>
+                      </div>
+                      {remaining > 0 ? (
+                        <div style={{ gridColumn: "1 / -1", borderTop: "1px solid hsla(285,30%,20%,0.08)", paddingTop: "10px", marginTop: "4px" }}>
+                          <span style={{ fontSize: "12px", fontWeight: 700, color: "hsl(285,50%,12%)" }}>
+                            🗓️ Auto Installments: {instCount} installment{instCount > 1 ? "s" : ""} of <strong>₹{instAmount.toLocaleString("en-IN")}</strong> each for remaining ₹{remaining.toLocaleString("en-IN")} dues
+                          </span>
+                        </div>
+                      ) : (
+                        <div style={{ gridColumn: "1 / -1", borderTop: "1px solid hsla(285,30%,20%,0.08)", paddingTop: "10px", marginTop: "4px" }}>
+                          <span style={{ fontSize: "12px", fontWeight: 700, color: "hsl(142,70%,40%)" }}>
+                            🎉 Fee Settled in Full! No remaining installment dues.
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             )}
 
@@ -668,11 +732,13 @@ const InputField: React.FC<InputFieldProps> = ({ label, icon, value, onChange, e
         placeholder={placeholder}
         min={min}
         max={max}
+        autoCapitalize={type === "text" ? "words" : undefined}
         style={{
           width: "100%", padding: icon ? "10px 14px 10px 36px" : "10px 14px",
           borderRadius: "10px", border: `1.5px solid ${error ? "hsl(0,70%,55%)" : "hsla(285,30%,20%,0.12)"}`,
           fontSize: "13px", outline: "none", fontFamily: "inherit", boxSizing: "border-box",
           transition: "border-color 0.2s",
+          textTransform: type === "text" ? "capitalize" : "none",
         }}
         onFocus={(e) => (e.currentTarget.style.borderColor = error ? "hsl(0,70%,55%)" : "hsl(271,91%,60%)")}
         onBlur={(e) => (e.currentTarget.style.borderColor = error ? "hsl(0,70%,55%)" : "hsla(285,30%,20%,0.12)")}

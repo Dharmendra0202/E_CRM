@@ -3,8 +3,9 @@ import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 import { Skeleton } from "./ui/Skeleton";
 import { api } from "../utils/api";
+import { exportAttendance } from "../utils/exportExcel";
 import { useAttendanceRealtime } from "../utils/useAttendanceRealtime";
-import { Activity, Check, CheckCircle2, Wifi, WifiOff, Users, Clock, TrendingUp } from "lucide-react";
+import { Activity, Check, CheckCircle2, Wifi, WifiOff, Users, Clock, TrendingUp, Download } from "lucide-react";
 
 interface AttendanceStudent {
   id: string;
@@ -123,12 +124,20 @@ export function AttendanceTracker() {
     }
   };
 
-  const handleBatchChange = (batchName: string) => {
-    setSelectedBatch(batchName);
-    const batch = batches.find((b) => b.name === batchName);
+  const handleBatchChange = (batchId: string) => {
+    const batch = batches.find((b) => b.id === batchId);
     if (batch) {
+      setSelectedBatch(batch.name);
       setSelectedBatchId(batch.id);
     }
+  };
+
+  const handleMarkAllPresent = () => {
+    if (!session) return;
+    setSession({
+      ...session,
+      students: session.students.map((s) => ({ ...s, status: "PRESENT" as const })),
+    });
   };
 
   const handleToggleAttendance = (studentId: string, status: "PRESENT" | "ABSENT" | "LATE") => {
@@ -174,12 +183,23 @@ export function AttendanceTracker() {
         records,
       });
 
-      const absent = session.students.filter((s) => s.status === "ABSENT").length;
-      setNotificationText(
-        `✅ Attendance saved for ${records.length} students.${
-          absent > 0 && absenceAlertChecked ? ` ${absent} absence alert(s) queued.` : ""
-        }`
-      );
+      const absentStudents = session.students.filter((s) => s.status === "ABSENT");
+      if (absentStudents.length > 0 && absenceAlertChecked) {
+        absentStudents.forEach((student, idx) => {
+          setTimeout(() => {
+            const phone = student.phone ? student.phone.replace(/[^0-9]/g, "") : "918383999973";
+            const text = encodeURIComponent(
+              `Notice from EduFlow: Dear Parent, your child ${student.name} has been marked ABSENT today (${selectedDate}) in batch ${selectedBatch}. For any queries, contact EduFlow at +91 8383999973.`
+            );
+            window.open(`https://wa.me/${phone}?text=${text}`, "_blank");
+          }, idx * 800);
+        });
+        setNotificationText(
+          `✅ Attendance saved for ${records.length} students! 📱 Opening ${absentStudents.length} WhatsApp parent absence alert(s)...`
+        );
+      } else {
+        setNotificationText(`✅ Attendance saved for ${records.length} students.`);
+      }
       setTimeout(() => setNotificationText(""), 5000);
 
       // Reload to show updated data
@@ -218,8 +238,20 @@ export function AttendanceTracker() {
           </p>
         </div>
         
-        {/* Live Connection Indicator */}
+        {/* Live Connection & Export Excel */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <button
+            onClick={() => exportAttendance(session?.students || [])}
+            style={{
+              display: "flex", alignItems: "center", gap: "8px",
+              padding: "8px 16px", borderRadius: "10px", border: "none",
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              color: "#fff", fontSize: "12px", fontWeight: 800, cursor: "pointer",
+              boxShadow: "0 2px 8px rgba(16,185,129,0.3)"
+            }}
+          >
+            <Download size={14} /> Download Excel Sheet (.xlsx)
+          </button>
           <div
             style={{
               display: "flex",
@@ -349,7 +381,7 @@ export function AttendanceTracker() {
               Class Batch
             </label>
             <select
-              value={selectedBatch}
+              value={selectedBatchId || ""}
               onChange={(e) => handleBatchChange(e.target.value)}
               style={{
                 width: "100%",
@@ -364,7 +396,7 @@ export function AttendanceTracker() {
               }}
             >
               {batches.map((batch) => (
-                <option key={batch.id} value={batch.name}>
+                <option key={batch.id} value={batch.id}>
                   {batch.name} ({batch.subject})
                 </option>
               ))}
@@ -417,8 +449,28 @@ export function AttendanceTracker() {
               onChange={(e) => setAbsenceAlertChecked(e.target.checked)}
               style={{ width: "15px", height: "15px", accentColor: "var(--color-accent)", cursor: "pointer" }}
             />
-            Auto-Notify Parents
+            Auto-Notify Parents (Absent Only)
           </label>
+          <button
+            onClick={handleMarkAllPresent}
+            style={{
+              padding: "8px 14px",
+              borderRadius: "8px",
+              border: "1px solid var(--color-success)",
+              background: "hsla(142,70%,40%,0.1)",
+              color: "var(--color-success)",
+              fontSize: "12px",
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              marginLeft: "auto",
+              transition: "all 0.2s ease"
+            }}
+          >
+            <CheckCircle2 size={14} /> Mark All Present
+          </button>
         </div>
       </Card>
 
@@ -545,7 +597,7 @@ export function AttendanceTracker() {
                   </div>
 
                   {/* Status Buttons */}
-                  <div style={{ display: "flex", justifyContent: "center", gap: "6px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}>
                     {(["PRESENT", "ABSENT", "LATE"] as const).map((s) => {
                       const isActive = student.status === s;
                       const colorMap = {
@@ -576,6 +628,31 @@ export function AttendanceTracker() {
                         </button>
                       );
                     })}
+                    {student.status === "ABSENT" && (
+                      <a
+                        href={`https://wa.me/${student.phone ? student.phone.replace(/[^0-9]/g, "") : "918383999973"}?text=${encodeURIComponent(
+                          `Notice from EduFlow: Dear Parent, your child ${student.name} has been marked ABSENT today (${selectedDate}) in batch ${selectedBatch}. For any queries, contact EduFlow at +91 8383999973.`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "6px 10px",
+                          borderRadius: "8px",
+                          background: "#25D366",
+                          color: "#fff",
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          textDecoration: "none",
+                          boxShadow: "0 2px 6px rgba(37,211,102,0.3)"
+                        }}
+                        title="Send WhatsApp Absence Alert to Parent"
+                      >
+                        📱 Notify
+                      </a>
+                    )}
                   </div>
 
                   {/* Remarks Input */}

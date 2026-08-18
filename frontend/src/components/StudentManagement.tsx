@@ -850,9 +850,18 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
           {/* Results Count */}
           <div className="stu-results-bar">
             <span>{filteredStudents.length} student{filteredStudents.length !== 1 ? "s" : ""} found</span>
-            <Button variant="ghost" size="sm" style={{ fontSize: "12px", gap: "4px" }}>
-              <Download size={14} /> Export CSV
-            </Button>
+            <button
+              onClick={() => exportStudents(filteredStudents)}
+              style={{
+                display: "flex", alignItems: "center", gap: "8px",
+                padding: "8px 16px", borderRadius: "10px", border: "none",
+                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                color: "#fff", fontSize: "12px", fontWeight: 800, cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(16,185,129,0.3)"
+              }}
+            >
+              <Download size={14} /> Download Excel Sheet (.xlsx)
+            </button>
           </div>
 
           {/* Students Table */}

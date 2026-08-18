@@ -3,7 +3,7 @@ import {
   BookOpen, Users2, GraduationCap, Plus, Search, Calendar,
   Clock, IndianRupee, ChevronRight, X, UserPlus, Trash2,
   Filter, CheckCircle2, Activity, Sparkles, Layers, Award,
-  Phone, Mail, Check, AlertCircle, ArrowUpRight, BarChart2
+  Phone, Mail, Check, AlertCircle, ArrowUpRight, BarChart2, MapPin
 } from "lucide-react";
 import { api } from "../utils/api";
 import { StudentProfile } from "./StudentProfile";
@@ -22,6 +22,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
   
   // Modals state
   const [selectedBatchForStudents, setSelectedBatchForStudents] = useState<any | null>(null);
+  const [batchStudentSearch, setBatchStudentSearch] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [viewStudentProfileId, setViewStudentProfileId] = useState<string | null>(null);
   const [enrollStudentModalOpen, setEnrollStudentModalOpen] = useState(false);
@@ -39,7 +40,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
     name: "",
     subject: "Science",
     capacity: "30",
-    feeAmount: "12000",
+    feeAmount: "10000",
     feeFrequency: "MONTHLY",
     teacherId: "",
     teacherName: "",
@@ -74,11 +75,18 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         setStaff(loadedStaff);
       }
 
+      // Build student lookup map for full name and contact data linking
+      const studentMap = new Map<string, any>();
+      loadedStudents.forEach((s: any) => {
+        if (s.id) studentMap.set(s.id, s);
+        if (s.user?.id) studentMap.set(s.user.id, s);
+      });
+
       if (batRes?.data && batRes.data.length > 0) {
         const normalizedBatches = batRes.data.map((b: any) => ({
           ...b,
           enrollments: (b.enrollments || []).map((e: any) => {
-            const sObj = e.student || e;
+            const sObj = studentMap.get(e.studentId) || studentMap.get(e.id) || e.student || e;
             const name = e.name || (sObj?.user ? `${sObj.user.firstName} ${sObj.user.lastName}` : sObj?.parentName || "Enrolled Student");
             const email = e.email || sObj?.user?.email || sObj?.parentEmail || "student@local.com";
             const phone = e.phone || sObj?.user?.phone || sObj?.parentPhone || "—";
@@ -123,7 +131,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
     return [
       {
         id: "batch-1",
-        name: "12th Science - Alpha",
+        name: "12th Science Standard",
         subject: "Physics & Mathematics",
         capacity: 30,
         feeAmount: 15000,
@@ -153,9 +161,9 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         startDate: "2026-04-01",
         endDate: "2027-02-28",
         enrollments: [
-          { id: "stu-105", name: "Ananya Mehta", email: "ananya.mehta@school.com", phone: "9823456789", feeStatus: "PAID", attendanceRate: 96, enrollmentDate: "2026-07-15" },
-          { id: "stu-106", name: "Kabir Singh", email: "kabir.singh@gmail.com", phone: "9898989898", feeStatus: "DUE", attendanceRate: 78, enrollmentDate: "2026-07-20" },
-          { id: "stu-107", name: "Sneha Reddy", email: "sneha.reddy@yahoo.com", phone: "9711223344", feeStatus: "PAID", attendanceRate: 90, enrollmentDate: "2026-07-25" },
+          { id: "stu-105", name: "Ananya Mehta", email: "ananya.mehta@school.com", phone: "9823456789", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 96, enrollmentDate: "2026-07-15" },
+          { id: "stu-106", name: "Kabir Singh", email: "kabir.singh@gmail.com", phone: "9898989898", status: "ACTIVE", feeStatus: "DUE", attendanceRate: 78, enrollmentDate: "2026-07-20" },
+          { id: "stu-107", name: "Sneha Reddy", email: "sneha.reddy@yahoo.com", phone: "9711223344", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 90, enrollmentDate: "2026-07-25" },
         ],
       },
       {
@@ -171,8 +179,8 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         startDate: "2026-05-01",
         endDate: "2027-05-31",
         enrollments: [
-          { id: "stu-108", name: "Siddharth Malhotra", email: "sid.malhotra@jee.edu", phone: "9834567890", feeStatus: "PAID", attendanceRate: 98, enrollmentDate: "2026-06-01" },
-          { id: "stu-109", name: "Ishaan Khattar", email: "ishaan.k@gmail.com", phone: "9911223344", feeStatus: "PAID", attendanceRate: 94, enrollmentDate: "2026-06-05" },
+          { id: "stu-108", name: "Siddharth Malhotra", email: "sid.malhotra@jee.edu", phone: "9834567890", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 98, enrollmentDate: "2026-06-01" },
+          { id: "stu-109", name: "Ishaan Khattar", email: "ishaan.k@gmail.com", phone: "9911223344", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 94, enrollmentDate: "2026-06-05" },
         ],
       },
       {
@@ -188,7 +196,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         startDate: "2026-06-01",
         endDate: "2027-04-30",
         enrollments: [
-          { id: "stu-110", name: "Kavya Nair", email: "kavya.nair@medical.in", phone: "9845678901", feeStatus: "PAID", attendanceRate: 93, enrollmentDate: "2026-06-10" },
+          { id: "stu-110", name: "Kavya Nair", email: "kavya.nair@medical.in", phone: "9845678901", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 93, enrollmentDate: "2026-06-10" },
         ],
       },
     ];
@@ -258,7 +266,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         name: "",
         subject: "Science",
         capacity: "30",
-        feeAmount: "12000",
+        feeAmount: "10000",
         feeFrequency: "MONTHLY",
         teacherId: "",
         teacherName: "",
@@ -351,11 +359,11 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
             <h1 style={{ fontSize: "26px", fontWeight: 800, margin: 0, color: "var(--text-primary)" }}>Batches & Student Groups</h1>
             <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.08)", padding: "4px 12px", borderRadius: "20px", border: "1px solid hsla(328,100%,54%,0.15)" }}>
-              {totalBatches} Active Batches
+              {totalBatches} Active Cohorts
             </span>
           </div>
           <p style={{ margin: 0, fontSize: "13.5px", color: "var(--text-secondary)" }}>
-            Manage student cohorts, view enrolled student lists, monitor class capacities, and course schedules.
+            Manage student cohorts, track class capacities, inspect student rosters, and view course schedules.
           </p>
         </div>
 
@@ -363,7 +371,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
           <button
             onClick={() => setIsCreateModalOpen(true)}
             style={{
-              padding: "11px 22px", borderRadius: "12px", border: "none", cursor: "pointer",
+              padding: "11px 22px", borderRadius: "14px", border: "none", cursor: "pointer",
               background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
               color: "#fff", fontSize: "13.5px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px",
               boxShadow: "0 6px 20px -4px hsla(328,100%,54%,0.35)", transition: "all 0.25s ease"
@@ -381,11 +389,11 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         {[
           { label: "Active Batches", value: totalBatches, icon: <BookOpen size={20} />, color: "hsl(271,91%,60%)", bg: "hsla(271,91%,60%,0.08)", sub: "Configured cohorts" },
           { label: "Total Enrolled Students", value: totalEnrolledStudents, icon: <Users2 size={20} />, color: "hsl(328,100%,54%)", bg: "hsla(328,100%,54%,0.08)", sub: "Across all batches" },
-          { label: "Avg Capacity Fill Rate", value: `${avgFillRate}%`, icon: <BarChart2 size={20} />, color: "hsl(142,70%,40%)", bg: "hsla(142,70%,40%,0.08)", sub: `${totalEnrolledStudents} of ${totalCapacity} seats` },
+          { label: "Avg Capacity Fill Rate", value: `${avgFillRate}%`, icon: <BarChart2 size={20} />, color: "hsl(142,70%,40%)", bg: "hsla(142,70%,40%,0.08)", sub: `${totalEnrolledStudents} of ${totalCapacity} seats filled` },
           { label: "Course Revenue Potential", value: `₹${totalRevenue.toLocaleString("en-IN")}`, icon: <IndianRupee size={20} />, color: "hsl(200,95%,45%)", bg: "hsla(200,95%,45%,0.08)", sub: "Active batch fees" },
         ].map((stat, i) => (
           <div key={i} style={{
-            background: "#fff", borderRadius: "18px", padding: "20px",
+            background: "#fff", borderRadius: "20px", padding: "20px",
             border: "1px solid var(--border-glass)", boxShadow: "var(--shadow-card)",
             display: "flex", alignItems: "center", gap: "16px"
           }}>
@@ -403,7 +411,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
 
       {/* ══════════════ FILTER & SEARCH CONTROLS ══════════════ */}
       <div style={{
-        background: "#fff", borderRadius: "16px", padding: "16px", marginBottom: "24px",
+        background: "#fff", borderRadius: "20px", padding: "16px 20px", marginBottom: "28px",
         border: "1px solid var(--border-glass)", boxShadow: "0 2px 12px rgba(29,10,39,0.03)",
         display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "14px"
       }}>
@@ -416,15 +424,15 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             style={{
-              width: "100%", padding: "10px 14px 10px 38px", borderRadius: "12px",
+              width: "100%", padding: "11px 14px 11px 40px", borderRadius: "14px",
               border: "1px solid var(--border-glass)", background: "var(--bg-secondary)",
-              fontSize: "13px", outline: "none", transition: "all 0.2s ease"
+              fontSize: "13.5px", outline: "none", transition: "all 0.2s ease"
             }}
           />
         </div>
 
         {/* Subject Filter Pills */}
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
           {[
             { key: "ALL", label: "All Streams" },
             { key: "SCIENCE", label: "Science & Math" },
@@ -435,11 +443,12 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
               key={tab.key}
               onClick={() => setSelectedSubjectFilter(tab.key)}
               style={{
-                padding: "7px 14px", borderRadius: "10px", fontSize: "12px", fontWeight: 700,
+                padding: "8px 16px", borderRadius: "12px", fontSize: "12.5px", fontWeight: 700,
                 cursor: "pointer", border: "1px solid", transition: "all 0.2s ease",
                 background: selectedSubjectFilter === tab.key ? "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))" : "transparent",
                 borderColor: selectedSubjectFilter === tab.key ? "transparent" : "var(--border-glass)",
                 color: selectedSubjectFilter === tab.key ? "#fff" : "var(--text-secondary)",
+                boxShadow: selectedSubjectFilter === tab.key ? "0 4px 14px hsla(328,100%,54%,0.25)" : "none",
               }}
             >
               {tab.label}
@@ -448,14 +457,14 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         </div>
       </div>
 
-      {/* ══════════════ BATCH CARDS GRID ══════════════ */}
+      {/* ══════════════ ELEGANT BATCH CARDS GRID ══════════════ */}
       {isLoading ? (
         <div style={{ textAlign: "center", padding: "60px 20px" }}>
           <div className="btn-spinner" style={{ width: "32px", height: "32px", borderColor: "var(--color-accent) transparent transparent transparent" }} />
-          <p style={{ margin: "14px 0 0", fontSize: "14px", color: "var(--text-secondary)" }}>Loading batches & student cohorts...</p>
+          <p style={{ margin: "14px 0 0", fontSize: "14px", color: "var(--text-secondary)" }}>Loading student cohorts...</p>
         </div>
       ) : filteredBatches.length === 0 ? (
-        <div style={{ background: "#fff", borderRadius: "20px", padding: "60px 20px", textAlign: "center", border: "1px solid var(--border-glass)" }}>
+        <div style={{ background: "#fff", borderRadius: "24px", padding: "60px 20px", textAlign: "center", border: "1px solid var(--border-glass)" }}>
           <BookOpen size={48} style={{ color: "var(--text-secondary)", opacity: 0.3, marginBottom: "12px" }} />
           <h3 style={{ margin: "0 0 6px", fontSize: "18px", fontWeight: 700 }}>No Batches Found</h3>
           <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
@@ -463,7 +472,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
           </p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "20px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: "24px" }}>
           {filteredBatches.map(batch => {
             const enrolledList = batch.enrollments || [];
             const studentCount = enrolledList.length;
@@ -477,49 +486,58 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                 key={batch.id}
                 onClick={() => setSelectedBatchForStudents(batch)}
                 style={{
-                  background: "#fff", borderRadius: "20px", overflow: "hidden",
+                  background: "#ffffff", borderRadius: "24px", overflow: "hidden",
                   border: "1px solid var(--border-glass)", boxShadow: "var(--shadow-card)",
                   cursor: "pointer", transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
                   display: "flex", flexDirection: "column", position: "relative"
                 }}
                 onMouseEnter={e => {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow = "0 16px 36px -8px rgba(29,10,39,0.12)";
+                  e.currentTarget.style.transform = "translateY(-6px)";
+                  e.currentTarget.style.boxShadow = "0 20px 40px -12px rgba(328, 100%, 54%, 0.18)";
+                  e.currentTarget.style.borderColor = "hsla(328, 100%, 54%, 0.3)";
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.transform = "none";
                   e.currentTarget.style.boxShadow = "var(--shadow-card)";
+                  e.currentTarget.style.borderColor = "var(--border-glass)";
                 }}
               >
-                {/* Batch Top Decorative Bar */}
-                <div style={{ height: "6px", background: isFull ? "var(--color-danger)" : isAlmostFull ? "hsl(38,92%,50%)" : "linear-gradient(90deg, hsl(328,100%,54%), hsl(271,91%,60%))" }} />
-
-                <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column" }}>
-                  {/* Header Row */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", marginBottom: "12px" }}>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <span style={{ fontSize: "10px", fontWeight: 800, color: "hsl(271,91%,60%)", textTransform: "uppercase", letterSpacing: "0.6px", background: "hsla(271,91%,60%,0.08)", padding: "3px 8px", borderRadius: "6px" }}>
-                        {batch.subject}
-                      </span>
-                      <h3 style={{ margin: "8px 0 2px", fontSize: "17px", fontWeight: 800, color: "var(--text-primary)", wordBreak: "break-word" }}>
-                        {batch.name}
-                      </h3>
+                {/* Stunning Top Header Bar */}
+                <div style={{
+                  padding: "16px 20px",
+                  background: "linear-gradient(135deg, hsla(328,100%,54%,0.05), hsla(271,91%,60%,0.08))",
+                  borderBottom: "1px solid var(--border-glass)",
+                  display: "flex", alignItems: "center", justifyContent: "space-between"
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{ width: "38px", height: "38px", borderRadius: "12px", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Layers size={18} />
                     </div>
-                    
-                    <button
-                      title="Delete Batch"
-                      onClick={(e) => handleDeleteBatch(batch.id, batch.name, e)}
-                      style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-secondary)", opacity: 0.5, padding: "4px" }}
-                      onMouseEnter={e => e.currentTarget.style.opacity = "1"}
-                      onMouseLeave={e => e.currentTarget.style.opacity = "0.5"}
-                    >
-                      <Trash2 size={15} />
-                    </button>
+                    <span style={{ fontSize: "11px", fontWeight: 800, color: "hsl(271,91%,55%)", textTransform: "uppercase", letterSpacing: "0.6px", background: "#fff", padding: "4px 10px", borderRadius: "20px", border: "1px solid hsla(271,91%,60%,0.2)" }}>
+                      {batch.subject}
+                    </span>
                   </div>
 
-                  {/* Teacher Info */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", background: "var(--bg-secondary)", borderRadius: "12px", marginBottom: "16px" }}>
-                    <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, flexShrink: 0 }}>
+                  <button
+                    title="Delete Batch"
+                    onClick={(e) => handleDeleteBatch(batch.id, batch.name, e)}
+                    style={{ background: "#fff", border: "1px solid var(--border-glass)", borderRadius: "10px", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-secondary)", opacity: 0.7 }}
+                    onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "var(--color-danger)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = "0.7"; e.currentTarget.style.color = "var(--text-secondary)"; }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+
+                <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column" }}>
+                  {/* Batch Title */}
+                  <h3 style={{ margin: "0 0 10px", fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", wordBreak: "break-word" }}>
+                    {batch.name}
+                  </h3>
+
+                  {/* Teacher Chip */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", background: "var(--bg-secondary)", borderRadius: "14px", marginBottom: "16px" }}>
+                    <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, flexShrink: 0 }}>
                       {batch.teacher?.avatar || "T"}
                     </div>
                     <div style={{ minWidth: 0, flex: 1 }}>
@@ -532,22 +550,25 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                     </div>
                   </div>
 
-                  {/* Schedule & Timing */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px", fontSize: "12px", color: "var(--text-secondary)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  {/* Schedule & Timing Pills */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "16px" }}>
+                    <div style={{ padding: "8px 10px", background: "hsla(271,91%,60%,0.04)", borderRadius: "10px", border: "1px solid hsla(271,91%,60%,0.1)", display: "flex", alignItems: "center", gap: "6px" }}>
                       <Clock size={13} style={{ color: "hsl(271,91%,60%)", flexShrink: 0 }} />
-                      <span style={{ fontWeight: 600, wordBreak: "break-word" }}>{batch.timings || "Schedule Mon, Wed, Fri (9am)"}</span>
+                      <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-primary)", wordBreak: "break-word" }}>
+                        {batch.timings || "Mon, Wed, Fri"}
+                      </span>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+
+                    <div style={{ padding: "8px 10px", background: "hsla(142,70%,42%,0.04)", borderRadius: "10px", border: "1px solid hsla(142,70%,42%,0.1)", display: "flex", alignItems: "center", gap: "6px" }}>
                       <IndianRupee size={13} style={{ color: "var(--color-success)", flexShrink: 0 }} />
-                      <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                        ₹{Number(batch.feeAmount || 0).toLocaleString("en-IN")} <span style={{ fontWeight: 500, fontSize: "11px", color: "var(--text-secondary)" }}>/ {batch.feeFrequency?.toLowerCase() || "monthly"}</span>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-success)" }}>
+                        ₹{Number(batch.feeAmount || 0).toLocaleString("en-IN")} <span style={{ fontSize: "9px", color: "var(--text-secondary)", fontWeight: 500 }}>/ mo</span>
                       </span>
                     </div>
                   </div>
 
                   {/* Capacity Progress Bar */}
-                  <div style={{ marginTop: "auto", paddingTop: "12px", borderTop: "1px solid var(--border-glass)" }}>
+                  <div style={{ marginTop: "auto", paddingTop: "14px", borderTop: "1px solid var(--border-glass)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                       <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>
                         Enrolled Students
@@ -557,34 +578,38 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                       </span>
                     </div>
 
-                    <div style={{ width: "100%", height: "8px", background: "var(--bg-secondary)", borderRadius: "4px", overflow: "hidden", marginBottom: "14px" }}>
+                    <div style={{ width: "100%", height: "8px", background: "var(--bg-secondary)", borderRadius: "4px", overflow: "hidden", marginBottom: "16px" }}>
                       <div style={{
                         width: `${fillPct}%`, height: "100%", borderRadius: "4px", transition: "width 0.5s ease",
-                        background: isFull ? "var(--color-danger)" : isAlmostFull ? "hsl(38,92%,50%)" : "linear-gradient(90deg, hsl(142,70%,42%), hsl(160,80%,40%))"
+                        background: isFull ? "var(--color-danger)" : isAlmostFull ? "hsl(38,92%,50%)" : "linear-gradient(90deg, hsl(328,100%,54%), hsl(271,91%,60%))"
                       }} />
                     </div>
 
                     {/* Footer Row: Student Overlapping Avatars & Action Button */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       <div style={{ display: "flex", alignItems: "center" }}>
-                        {enrolledList.slice(0, 4).map((stu: any, idx: number) => (
-                          <div
-                            key={stu.id || idx}
-                            title={stu.name}
-                            style={{
-                              width: "28px", height: "28px", borderRadius: "50%",
-                              background: "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))",
-                              color: "#fff", fontSize: "10px", fontWeight: 800,
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              border: "2px solid #fff", marginLeft: idx === 0 ? 0 : "-8px",
-                              zIndex: 5 - idx
-                            }}
-                          >
-                            {stu.name?.charAt(0) || "S"}
-                          </div>
-                        ))}
+                        {enrolledList.slice(0, 4).map((stu: any, idx: number) => {
+                          const sName = stu.name || (stu.student?.user ? `${stu.student.user.firstName} ${stu.student.user.lastName}` : "Student");
+                          const initial = sName.charAt(0)?.toUpperCase() || "S";
+                          return (
+                            <div
+                              key={stu.id || idx}
+                              title={sName}
+                              style={{
+                                width: "30px", height: "30px", borderRadius: "50%",
+                                background: "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))",
+                                color: "#fff", fontSize: "11px", fontWeight: 800,
+                                display: "flex", alignItems: "center", justifyContent: "center",
+                                border: "2px solid #fff", marginLeft: idx === 0 ? 0 : "-8px",
+                                zIndex: 5 - idx
+                              }}
+                            >
+                              {initial}
+                            </div>
+                          );
+                        })}
                         {studentCount > 4 && (
-                          <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", marginLeft: "6px" }}>
+                          <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", marginLeft: "8px" }}>
                             +{studentCount - 4} more
                           </span>
                         )}
@@ -593,13 +618,13 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                       <button
                         onClick={(e) => { e.stopPropagation(); setSelectedBatchForStudents(batch); }}
                         style={{
-                          padding: "6px 14px", borderRadius: "10px", border: "none", cursor: "pointer",
-                          background: "hsla(328,100%,54%,0.08)", color: "var(--color-accent)",
-                          fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px",
-                          transition: "all 0.2s"
+                          padding: "8px 18px", borderRadius: "12px", border: "none", cursor: "pointer",
+                          background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff",
+                          fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px",
+                          boxShadow: "0 4px 14px hsla(328,100%,54%,0.25)", transition: "all 0.2s"
                         }}
-                        onMouseEnter={e => e.currentTarget.style.background = "hsla(328,100%,54%,0.15)"}
-                        onMouseLeave={e => e.currentTarget.style.background = "hsla(328,100%,54%,0.08)"}
+                        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
+                        onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
                       >
                         View Students <ChevronRight size={14} />
                       </button>
@@ -613,31 +638,31 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         </div>
       )}
 
-      {/* ══════════════ BATCH STUDENTS LIST MODAL / DRAWER ══════════════ */}
+      {/* ══════════════ PERFECTLY CENTERED BATCH STUDENTS MODAL ══════════════ */}
       {selectedBatchForStudents && (
         <div
           style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)",
-            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999, padding: "20px"
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 99999, padding: "20px"
           }}
           onClick={() => setSelectedBatchForStudents(null)}
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              width: "100%", maxWidth: "850px", height: "85vh", background: "#fff",
-              borderRadius: "24px", overflow: "hidden", display: "flex", flexDirection: "column",
-              boxShadow: "0 24px 64px -12px rgba(29,10,39,0.3)"
+              width: "100%", maxWidth: "820px", maxHeight: "82vh", height: "auto", margin: "auto",
+              background: "#ffffff", borderRadius: "24px", overflow: "hidden", display: "flex", flexDirection: "column",
+              boxShadow: "0 24px 64px -12px rgba(29,10,39,0.35)"
             }}
             className="animate-fade-in"
           >
-            {/* Modal Header */}
+            {/* Modal Top Header */}
             <div style={{
-              padding: "20px 24px", background: "linear-gradient(135deg, hsl(285,50%,12%), hsl(285,50%,20%))",
-              color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center"
+              padding: "20px 24px", background: "linear-gradient(135deg, hsl(285,50%,12%), hsl(285,50%,18%))",
+              color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0
             }}>
               <div>
-                <span style={{ fontSize: "11px", fontWeight: 800, color: "hsl(328,100%,65%)", textTransform: "uppercase", letterSpacing: "0.8px" }}>
+                <span style={{ fontSize: "10px", fontWeight: 800, color: "hsl(328,100%,65%)", textTransform: "uppercase", letterSpacing: "0.8px" }}>
                   {selectedBatchForStudents.subject}
                 </span>
                 <h2 style={{ margin: "2px 0 0", fontSize: "20px", fontWeight: 800, color: "#fff", wordBreak: "break-word" }}>
@@ -665,13 +690,21 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
               </div>
             </div>
 
-            {/* Sub-header Bar */}
-            <div style={{ padding: "14px 24px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-glass)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>
-                Enrolled Students List ({selectedBatchForStudents.enrollments?.length || 0})
-              </span>
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)" }}>
-                Max Capacity: {selectedBatchForStudents.capacity} Students
+            {/* Sub-header Controls Bar */}
+            <div style={{ padding: "14px 24px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-glass)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", flexShrink: 0 }}>
+              <div style={{ position: "relative", width: "240px" }}>
+                <Search size={14} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
+                <input
+                  type="text"
+                  placeholder="Search students in batch..."
+                  value={batchStudentSearch}
+                  onChange={e => setBatchStudentSearch(e.target.value)}
+                  style={{ width: "100%", padding: "7px 12px 7px 32px", borderRadius: "10px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "12px", outline: "none" }}
+                />
+              </div>
+
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>
+                Enrolled: {selectedBatchForStudents.enrollments?.length || 0} / {selectedBatchForStudents.capacity} Students
               </span>
             </div>
 
@@ -692,64 +725,71 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  {selectedBatchForStudents.enrollments.map((stu: any, idx: number) => {
-                    const sObj = stu.student || stu;
-                    const displayName = stu.name || (sObj?.user ? `${sObj.user.firstName} ${sObj.user.lastName}` : sObj?.parentName || "Enrolled Student");
-                    const displayEmail = stu.email || sObj?.user?.email || sObj?.parentEmail || "student@local.com";
-                    const displayPhone = stu.phone || sObj?.user?.phone || sObj?.parentPhone || "—";
-                    const initial = displayName.charAt(0)?.toUpperCase() || "S";
+                  {selectedBatchForStudents.enrollments
+                    .filter((stu: any) => {
+                      const sObj = stu.student || stu;
+                      const name = stu.name || (sObj?.user ? `${sObj.user.firstName} ${sObj.user.lastName}` : sObj?.parentName || "");
+                      return name.toLowerCase().includes(batchStudentSearch.toLowerCase()) ||
+                             (stu.email || "").toLowerCase().includes(batchStudentSearch.toLowerCase());
+                    })
+                    .map((stu: any, idx: number) => {
+                      const sObj = stu.student || stu;
+                      const displayName = stu.name || (sObj?.user ? `${sObj.user.firstName} ${sObj.user.lastName}` : sObj?.parentName || "Enrolled Student");
+                      const displayEmail = stu.email || sObj?.user?.email || sObj?.parentEmail || "student@local.com";
+                      const displayPhone = stu.phone || sObj?.user?.phone || sObj?.parentPhone || "—";
+                      const initial = displayName.charAt(0)?.toUpperCase() || "S";
 
-                    return (
-                      <div
-                        key={stu.id || idx}
-                        style={{
-                          padding: "14px 18px", background: "#fff", borderRadius: "14px",
-                          border: "1px solid var(--border-glass)", display: "flex",
-                          alignItems: "center", justifyContent: "space-between", gap: "14px"
-                        }}
-                      >
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flex: 1 }}>
-                          <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", fontSize: "13px", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            {initial}
-                          </div>
-                          <div style={{ minWidth: 0, flex: 1 }}>
-                            <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "var(--text-primary)", wordBreak: "break-word" }}>
-                              {displayName}
-                            </h4>
-                            <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)", wordBreak: "break-all", overflowWrap: "anywhere" }}>
-                              {displayEmail} · {displayPhone}
-                            </p>
-                          </div>
-                        </div>
-
-                      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                        <div style={{ textAlign: "right" }}>
-                          <span style={{
-                            fontSize: "10px", fontWeight: 800, padding: "3px 8px", borderRadius: "6px",
-                            background: stu.feeStatus === "PAID" ? "hsla(142,70%,42%,0.08)" : "hsla(342,90%,48%,0.08)",
-                            color: stu.feeStatus === "PAID" ? "var(--color-success)" : "var(--color-danger)"
-                          }}>
-                            Fee: {stu.feeStatus || "PAID"}
-                          </span>
-                          <p style={{ margin: "3px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>
-                            Att: {stu.attendanceRate || 90}%
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={() => setViewStudentProfileId(stu.id)}
+                      return (
+                        <div
+                          key={stu.id || idx}
                           style={{
-                            padding: "6px 12px", borderRadius: "8px", border: "1px solid var(--border-glass)",
-                            background: "var(--bg-secondary)", cursor: "pointer", fontSize: "11px", fontWeight: 700,
-                            color: "var(--text-primary)", transition: "all 0.2s"
+                            padding: "14px 18px", background: "#fff", borderRadius: "16px",
+                            border: "1px solid var(--border-glass)", boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
+                            display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px"
                           }}
                         >
-                          View Profile
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                          <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flex: 1 }}>
+                            <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", fontSize: "14px", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                              {initial}
+                            </div>
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "var(--text-primary)", wordBreak: "break-word" }}>
+                                {displayName}
+                              </h4>
+                              <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)", wordBreak: "break-all", overflowWrap: "anywhere" }}>
+                                {displayEmail} · {displayPhone}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                            <div style={{ textAlign: "right" }}>
+                              <span style={{
+                                fontSize: "10px", fontWeight: 800, padding: "3px 8px", borderRadius: "6px",
+                                background: stu.feeStatus === "PAID" ? "hsla(142,70%,42%,0.08)" : "hsla(342,90%,48%,0.08)",
+                                color: stu.feeStatus === "PAID" ? "var(--color-success)" : "var(--color-danger)"
+                              }}>
+                                Fee: {stu.feeStatus || "PAID"}
+                              </span>
+                              <p style={{ margin: "3px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>
+                                Att: {stu.attendanceRate || 92}%
+                              </p>
+                            </div>
+
+                            <button
+                              onClick={() => setViewStudentProfileId(stu.id)}
+                              style={{
+                                padding: "7px 14px", borderRadius: "10px", border: "1px solid var(--border-glass)",
+                                background: "var(--bg-secondary)", cursor: "pointer", fontSize: "11.5px", fontWeight: 700,
+                                color: "var(--text-primary)", transition: "all 0.2s"
+                              }}
+                            >
+                              View Profile
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               )}
             </div>
@@ -757,16 +797,16 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         </div>
       )}
 
-      {/* ══════════════ ENROLL STUDENT MODAL ══════════════ */}
+      {/* ══════════════ PERFECTLY CENTERED ENROLL STUDENT MODAL ══════════════ */}
       {enrollStudentModalOpen && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 99999, padding: "20px" }}>
-          <div style={{ width: "100%", maxWidth: "450px", background: "#fff", borderRadius: "20px", padding: "24px", boxShadow: "0 20px 50px rgba(0,0,0,0.2)" }} className="animate-fade-in">
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999999, padding: "20px" }}>
+          <div style={{ width: "100%", maxWidth: "460px", background: "#fff", borderRadius: "24px", padding: "28px", boxShadow: "0 24px 64px rgba(0,0,0,0.25)" }} className="animate-fade-in">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-              <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800 }}>Enroll Student to Batch</h3>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800 }}>Enroll Student to Batch</h3>
               <button onClick={() => setEnrollStudentModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={18} /></button>
             </div>
 
-            <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginBottom: "16px" }}>
+            <p style={{ fontSize: "12.5px", color: "var(--text-secondary)", marginBottom: "18px" }}>
               Select a student to enroll into <strong>{selectedBatchForStudents?.name}</strong>:
             </p>
 
@@ -776,7 +816,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
               <select
                 value={selectedStudentToEnroll}
                 onChange={e => setSelectedStudentToEnroll(e.target.value)}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: "10px", border: "1px solid var(--border-glass)", fontSize: "13px", marginBottom: "20px", outline: "none" }}
+                style={{ width: "100%", padding: "11px 14px", borderRadius: "12px", border: "1px solid var(--border-glass)", fontSize: "13px", marginBottom: "24px", outline: "none", background: "#fff" }}
               >
                 <option value="">-- Select Student --</option>
                 {students.map(s => {
@@ -787,13 +827,13 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
             )}
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-              <button onClick={() => setEnrollStudentModalOpen(false)} style={{ padding: "8px 16px", borderRadius: "10px", border: "1px solid var(--border-glass)", background: "none", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}>
+              <button onClick={() => setEnrollStudentModalOpen(false)} style={{ padding: "9px 18px", borderRadius: "10px", border: "1px solid var(--border-glass)", background: "none", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}>
                 Cancel
               </button>
               <button
                 onClick={handleEnrollStudent}
                 disabled={!selectedStudentToEnroll}
-                style={{ padding: "8px 20px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", cursor: selectedStudentToEnroll ? "pointer" : "not-allowed", opacity: selectedStudentToEnroll ? 1 : 0.6, fontSize: "12px", fontWeight: 700 }}
+                style={{ padding: "9px 22px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", cursor: selectedStudentToEnroll ? "pointer" : "not-allowed", opacity: selectedStudentToEnroll ? 1 : 0.6, fontSize: "12px", fontWeight: 700 }}
               >
                 Confirm Enrollment
               </button>
@@ -802,10 +842,10 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         </div>
       )}
 
-      {/* ══════════════ CREATE NEW BATCH MODAL ══════════════ */}
+      {/* ══════════════ PERFECTLY CENTERED CREATE NEW BATCH MODAL ══════════════ */}
       {isCreateModalOpen && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 99999, padding: "20px" }}>
-          <div style={{ width: "100%", maxWidth: "560px", background: "#fff", borderRadius: "24px", padding: "28px", boxShadow: "0 24px 64px rgba(0,0,0,0.2)", maxHeight: "90vh", overflowY: "auto" }} className="animate-fade-in">
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999999, padding: "20px" }}>
+          <div style={{ width: "100%", maxWidth: "560px", background: "#fff", borderRadius: "24px", padding: "28px", boxShadow: "0 24px 64px rgba(0,0,0,0.25)", maxHeight: "90vh", overflowY: "auto" }} className="animate-fade-in">
             
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <div>

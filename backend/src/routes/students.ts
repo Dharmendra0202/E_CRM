@@ -39,7 +39,7 @@ router.get("/:id", authenticate, async (req: AuthRequest, res: Response): Promis
 // POST /api/v1/students
 router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { parentName, parentPhone, parentEmail, dateOfBirth, firstName, lastName, email, phone, batch, feeAmount, motherName, motherPhone, gender, address } = req.body;
+    const { parentName, parentPhone, parentEmail, dateOfBirth, firstName, lastName, email, phone, batch, feeAmount, paidToday, paymentMethod, motherName, motherPhone, gender, address } = req.body;
     if (!parentName || !parentPhone || !parentEmail || !dateOfBirth || !firstName || !email) {
       res.status(400).json({ status: "error", message: "Required fields missing." }); return;
     }
@@ -149,20 +149,37 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
       }
     }
 
-    // 4. Create invoice if feeAmount is specified
+    // 4. Create invoice & record initial admission payment if specified
     if (feeAmount) {
       const parsedFee = parseFloat(feeAmount);
+      const paidAmt = parseFloat(paidToday || "0");
       if (!isNaN(parsedFee) && parsedFee > 0) {
         const dueDate = new Date();
         dueDate.setDate(dueDate.getDate() + 30);
-        await prisma.invoice.create({
+        const isPaidInFull = !isNaN(paidAmt) && paidAmt >= parsedFee;
+        const isPartial = !isNaN(paidAmt) && paidAmt > 0 && paidAmt < parsedFee;
+        const invStatus = isPaidInFull ? "PAID" : isPartial ? "PARTIAL" : "UNPAID";
+
+        const invoice = await prisma.invoice.create({
           data: {
             studentId: student.id,
             totalAmount: parsedFee,
             dueDate,
-            status: "UNPAID"
+            status: invStatus,
+            ...(isPaidInFull ? { paidAt: new Date() } : {})
           }
         });
+
+        if (!isNaN(paidAmt) && paidAmt > 0) {
+          await prisma.payment.create({
+            data: {
+              invoiceId: invoice.id,
+              amount: paidAmt,
+              paymentMethod: paymentMethod || "CASH",
+              transactionReference: "Admission Down Payment",
+            }
+          });
+        }
       }
     }
 

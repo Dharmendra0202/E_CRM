@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { HistoryItem } from "../utils/history";
 import { getHistoryList, clearHistoryList } from "../utils/history";
-import { X, Search, Clock, PlusCircle, Edit3, Trash2, CalendarDays, User, Sparkles, Filter, Trash } from "lucide-react";
+import { X, Search, Clock, PlusCircle, Edit3, Trash2, CalendarDays, User, Sparkles, Filter, Trash, Download } from "lucide-react";
 
 interface HistoryModalProps {
   isOpen: boolean;
@@ -16,6 +16,32 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
 
   const loadItems = () => {
     setItems(getHistoryList());
+  };
+
+  const handleExportCSV = () => {
+    if (items.length === 0) {
+      alert("No history log records available to export.");
+      return;
+    }
+    const headers = ["ID", "Title", "Action", "Category", "User", "Details", "Timestamp"];
+    const rows = items.map(item => [
+      item.id,
+      `"${item.title.replace(/"/g, '""')}"`,
+      item.action,
+      item.category,
+      `"${item.user || "System"}"`,
+      `"${item.details.replace(/"/g, '""')}"`,
+      item.timestamp
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `ecrm_activity_history_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   useEffect(() => {
@@ -121,17 +147,31 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: "rgba(255,255,255,0.12)", border: "none", color: "#fff",
-              borderRadius: "10px", width: "32px", height: "32px",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer"
-            }}
-          >
-            <X size={18} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <button
+              onClick={handleExportCSV}
+              title="Download Activity Logs CSV"
+              style={{
+                background: "rgba(255,255,255,0.15)", border: "none", color: "#fff",
+                borderRadius: "10px", padding: "6px 14px", fontSize: "12px", fontWeight: 700,
+                display: "flex", alignItems: "center", gap: "6px",
+                cursor: "pointer"
+              }}
+            >
+              <Download size={14} /> Export CSV
+            </button>
+            <button
+              onClick={onClose}
+              style={{
+                background: "rgba(255,255,255,0.12)", border: "none", color: "#fff",
+                borderRadius: "10px", width: "32px", height: "32px",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer"
+              }}
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
 
         {/* Search & Category Filter Bar */}

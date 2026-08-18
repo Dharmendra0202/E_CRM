@@ -41,7 +41,8 @@ import {
   Search, Plus, Check, GraduationCap, TrendingUp,
   Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
   Filter, Settings, LogOut, ShieldCheck, Sparkles,
-  Activity, BookOpen, IndianRupee, History, Sun, Moon, Download
+  Activity, BookOpen, IndianRupee, History, Sun, Moon, Download,
+  ChevronLeft, ChevronRight
 } from "lucide-react";
 
 type ViewType = "dashboard" | "leads" | "batches" | "new-enrollment" | "online-admissions" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding";
@@ -50,6 +51,144 @@ type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPOR
 function App() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [currentView, setCurrentView] = useState<ViewType>("dashboard");
+
+  // View Navigation History Stack & Touchpad Gesture Support
+  const [viewHistory, setViewHistory] = useState<ViewType[]>(["dashboard"]);
+  const [historyIndex, setHistoryIndex] = useState<number>(0);
+  const [swipeToast, setSwipeToast] = useState<{ show: boolean; label: string; icon: string }>({ show: false, label: "", icon: "" });
+  const isNavigatingHistory = React.useRef(false);
+
+  // Automatically record view changes into navigation history whenever currentView updates
+  useEffect(() => {
+    if (isNavigatingHistory.current) {
+      isNavigatingHistory.current = false;
+      return;
+    }
+    setViewHistory(prev => {
+      if (prev[historyIndex] === currentView) return prev;
+      const updated = [...prev.slice(0, historyIndex + 1), currentView];
+      setHistoryIndex(updated.length - 1);
+      try {
+        window.history.pushState({ view: currentView, index: updated.length - 1 }, "", `#${currentView}`);
+      } catch (err) { /* fallback */ }
+      return updated;
+    });
+  }, [currentView]);
+
+  const goBack = () => {
+    if (historyIndex > 0) {
+      const prevIndex = historyIndex - 1;
+      const prevView = viewHistory[prevIndex];
+      isNavigatingHistory.current = true;
+      setHistoryIndex(prevIndex);
+      setCurrentView(prevView);
+      setSwipeToast({ show: true, label: `Back to ${prevView.toUpperCase()}`, icon: "←" });
+      setTimeout(() => setSwipeToast(t => ({ ...t, show: false })), 1400);
+    }
+  };
+
+  const goForward = () => {
+    if (historyIndex < viewHistory.length - 1) {
+      const nextIndex = historyIndex + 1;
+      const nextView = viewHistory[nextIndex];
+      isNavigatingHistory.current = true;
+      setHistoryIndex(nextIndex);
+      setCurrentView(nextView);
+      setSwipeToast({ show: true, label: `Forward to ${nextView.toUpperCase()}`, icon: "→" });
+      setTimeout(() => setSwipeToast(t => ({ ...t, show: false })), 1400);
+    }
+  };
+
+  // Sync with browser back/forward buttons (popstate)
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      if (e.state && e.state.view) {
+        isNavigatingHistory.current = true;
+        setCurrentView(e.state.view);
+        if (typeof e.state.index === "number") setHistoryIndex(e.state.index);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // Trackpad 2-finger horizontal swipe gesture, Mouse side buttons, and Keyboard shortcuts
+  useEffect(() => {
+    let isSwiping = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    const handleWheel = (e: WheelEvent) => {
+      const isHorizontalSwipe = Math.abs(e.deltaX) > 20 && Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      const isShiftScroll = e.shiftKey && Math.abs(e.deltaY) > 20;
+
+      if (isHorizontalSwipe || isShiftScroll) {
+        if (isSwiping) return;
+        isSwiping = true;
+        setTimeout(() => { isSwiping = false; }, 500);
+
+        const delta = isHorizontalSwipe ? e.deltaX : e.deltaY;
+        if (delta < 0) {
+          goBack();
+        } else {
+          goForward();
+        }
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (!touchStartX) return;
+      const diffX = e.changedTouches[0].clientX - touchStartX;
+      const diffY = e.changedTouches[0].clientY - touchStartY;
+
+      if (Math.abs(diffX) > 60 && Math.abs(diffX) > Math.abs(diffY) * 1.4) {
+        if (diffX > 60) goBack();
+        else if (diffX < -60) goForward();
+      }
+      touchStartX = 0;
+      touchStartY = 0;
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      if (e.button === 3) goBack();
+      if (e.button === 4) goForward();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea" || (e.target as HTMLElement)?.isContentEditable) return;
+
+      if (e.altKey && e.key === "ArrowLeft") {
+        e.preventDefault();
+        goBack();
+      } else if (e.altKey && e.key === "ArrowRight") {
+        e.preventDefault();
+        goForward();
+      }
+    };
+
+    window.addEventListener("wheel", handleWheel, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [historyIndex, viewHistory]);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -191,17 +330,7 @@ function App() {
     localStorage.setItem("ecrm_theme", darkMode ? "dark" : "light");
   }, [darkMode]);
 
-  // Command palette keyboard shortcut
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setCommandPaletteOpen((prev) => !prev);
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
+
 
   if (!userProfile) {
     if (showLogin) return <Login onLoginSuccess={(u) => setUserProfile(u)} />;
@@ -279,6 +408,40 @@ function App() {
             <GraduationCap size={26} style={{ color: "var(--color-accent)" }} />
             <h2 style={{ fontSize: "19px", fontWeight: 800, margin: 0 }} className="text-gradient-indigo">E-CRM Portal</h2>
             <span className="navbar-logo-badge">PRO</span>
+
+            {/* Back & Forward History Controls */}
+            <div style={{ display: "flex", gap: "4px", marginLeft: "6px" }}>
+              <button
+                onClick={goBack}
+                disabled={historyIndex <= 0}
+                title="Go Back (Two-finger swipe right on touchpad)"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  width: "28px", height: "28px", borderRadius: "8px", border: "1px solid var(--border-glass)",
+                  background: historyIndex > 0 ? "rgba(255,255,255,0.8)" : "transparent",
+                  cursor: historyIndex > 0 ? "pointer" : "not-allowed",
+                  opacity: historyIndex > 0 ? 1 : 0.4,
+                  transition: "all 0.2s"
+                }}
+              >
+                <ChevronLeft size={16} style={{ color: "var(--text-primary)" }} />
+              </button>
+              <button
+                onClick={goForward}
+                disabled={historyIndex >= viewHistory.length - 1}
+                title="Go Forward (Two-finger swipe left on touchpad)"
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  width: "28px", height: "28px", borderRadius: "8px", border: "1px solid var(--border-glass)",
+                  background: historyIndex < viewHistory.length - 1 ? "rgba(255,255,255,0.8)" : "transparent",
+                  cursor: historyIndex < viewHistory.length - 1 ? "pointer" : "not-allowed",
+                  opacity: historyIndex < viewHistory.length - 1 ? 1 : 0.4,
+                  transition: "all 0.2s"
+                }}
+              >
+                <ChevronRight size={16} style={{ color: "var(--text-primary)" }} />
+              </button>
+            </div>
           </div>
 
           <div className="navbar-search-box" style={{ display: "flex", width: "300px", position: "relative" }}>
@@ -303,12 +466,28 @@ function App() {
               onBlur={() => setTimeout(() => setGlobalSearch(""), 200)}
               autoComplete="off"
             />
-            {/* Live suggestions dropdown */}
+            {/* Live global search dropdown */}
             {globalSearch.trim().length > 0 && (() => {
               const q = globalSearch.toLowerCase().trim();
-              const studentHits = leadsList.filter(s => s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q) || s.phone?.includes(q));
-              const staffHits = staffList.filter(s => s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q)).map(s => ({ ...s, status: s.role, source: s.role, phone: s.phone || "" }));
-              const hits = [...studentHits, ...staffHits];
+              const studentHits = leadsList
+                .filter(s => s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q) || s.phone?.includes(q))
+                .map(s => ({ ...s, type: "STUDENT" }));
+              const staffHits = staffList
+                .filter(s => s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q))
+                .map(s => ({ ...s, type: "STAFF", status: s.role, source: s.role, phone: s.phone || "" }));
+              const batchHits = batchesList
+                .filter(b => b.name?.toLowerCase().includes(q) || b.subject?.toLowerCase().includes(q))
+                .map(b => ({ id: b.id, name: b.name, source: b.subject || "Batch", status: "BATCH", type: "BATCH" }));
+              const navViews = [
+                { id: "dashboard", name: "Dashboard Overview", source: "Navigation", status: "VIEW", type: "NAV", target: "dashboard" },
+                { id: "attendance", name: "Attendance Tracker", source: "Navigation", status: "VIEW", type: "NAV", target: "attendance" },
+                { id: "billing", name: "Payment & Fee Records", source: "Navigation", status: "VIEW", type: "NAV", target: "billing" },
+                { id: "schedule", name: "Timetable & Schedule", source: "Navigation", status: "VIEW", type: "NAV", target: "schedule" },
+                { id: "homework", name: "Homework & Assignments", source: "Navigation", status: "VIEW", type: "NAV", target: "homework" },
+                { id: "exams", name: "Report Cards & Exams", source: "Navigation", status: "VIEW", type: "NAV", target: "exams" },
+              ].filter(v => v.name.toLowerCase().includes(q));
+
+              const hits = [...navViews, ...studentHits, ...staffHits, ...batchHits];
               if (hits.length === 0) return (
                 <div style={{
                   position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
@@ -329,7 +508,7 @@ function App() {
                   border: "1px solid hsla(285,30%,20%,0.08)", overflow: "hidden"
                 }}>
                   <div style={{ padding: "8px 14px 5px", fontSize: "9px", fontWeight: 800, color: "hsl(285,20%,55%)", textTransform: "uppercase", letterSpacing: "0.6px", borderBottom: "1px solid hsla(285,30%,20%,0.06)" }}>
-                    {hits.length} result{hits.length !== 1 ? "s" : ""} found
+                    Global Search ({hits.length} matches)
                   </div>
                   {hits.slice(0, 10).map(s => {
                     const initials = s.name?.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase() || "??";
@@ -337,7 +516,13 @@ function App() {
                       <div
                         key={s.id}
                         onMouseDown={() => {
-                          setGlobalSearchCard(s);
+                          if (s.type === "NAV") {
+                            setCurrentView((s as any).target);
+                          } else if (s.type === "BATCH") {
+                            setCurrentView("batches");
+                          } else {
+                            setGlobalSearchCard(s);
+                          }
                           setGlobalSearch("");
                         }}
                         style={{
@@ -351,7 +536,7 @@ function App() {
                       >
                         <div style={{
                           width: "34px", height: "34px", borderRadius: "10px", flexShrink: 0,
-                          background: "linear-gradient(135deg,hsl(271,91%,60%),hsl(328,100%,54%))",
+                          background: s.type === "NAV" ? "linear-gradient(135deg, #0284c7, #2563eb)" : "linear-gradient(135deg,hsl(271,91%,60%),hsl(328,100%,54%))",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: "11px", fontWeight: 900, color: "#fff"
                         }}>{initials}</div>
@@ -359,7 +544,7 @@ function App() {
                           <div style={{ fontSize: "13px", fontWeight: 700, color: "hsl(285,50%,12%)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                             {s.name}
                           </div>
-                          <div style={{ fontSize: "11px", color: "hsl(285,20%,55%)", marginTop: "1px" }}>{s.source || "Not Enrolled"} · {s.phone || s.email || ""}</div>
+                          <div style={{ fontSize: "11px", color: "hsl(285,20%,55%)", marginTop: "1px" }}>{s.source || "Not Enrolled"} · {s.phone || (s as any).email || ""}</div>
                         </div>
                         <span style={{
                           fontSize: "9px", fontWeight: 800, padding: "3px 8px", borderRadius: "8px",
@@ -376,16 +561,6 @@ function App() {
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <AppsMenuDrawer onNavigate={(view) => { setCurrentView(view as ViewType); if (view === "leads") setStudentTab("all"); }} currentView={currentView} />
-            
-            {/* Command Palette Trigger */}
-            <button
-              onClick={() => setCommandPaletteOpen(true)}
-              title="Command Palette (Ctrl+K)"
-              style={{ display: "flex", alignItems: "center", gap: "6px", padding: "6px 12px", borderRadius: "8px", border: "1px solid var(--border-glass)", background: "transparent", cursor: "pointer", fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}
-            >
-              <Search size={13} />
-              <span>Ctrl+K</span>
-            </button>
 
             {/* Dark Mode Toggle */}
             <button
@@ -735,6 +910,21 @@ function App() {
 
       {/* ── GLOBAL HISTORY MODAL ───────────────────────────────────────── */}
       <HistoryModal isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} />
+
+      {/* ── TRACKPAD / MOUSE SWIPE GESTURE TOAST ────────────────────────── */}
+      {swipeToast.show && (
+        <div style={{
+          position: "fixed", bottom: "32px", left: "50%", transform: "translateX(-50%)",
+          background: "rgba(15, 23, 42, 0.92)", backdropFilter: "blur(12px)",
+          color: "#fff", padding: "10px 22px", borderRadius: "20px",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.3)", zIndex: 999999,
+          display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", fontWeight: 800,
+          letterSpacing: "0.5px", pointerEvents: "none"
+        }}>
+          <span style={{ fontSize: "16px", color: "var(--color-accent)" }}>{swipeToast.icon}</span>
+          <span>{swipeToast.label}</span>
+        </div>
+      )}
     </div>
   );
 }

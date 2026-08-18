@@ -130,6 +130,23 @@ p, span, div, h1, h2, h3, h4, h5, h6, td, th, label, input, textarea, select {
   overflow-wrap: break-word;
 }
 
+/* Auto Title Case formatting for text inputs across all forms in the CRM */
+input[type="text"]:not(.no-capitalize),
+input:not([type]),
+.title-case-input {
+  text-transform: capitalize;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="number"],
+input[type="date"],
+input[type="tel"],
+.no-capitalize {
+  text-transform: none;
+}
+
 /* Prevent text overflow out of flex containers, detail boxes, and cards */
 .stu-info-value,
 .stu-student-email,
@@ -4123,3 +4140,6 @@ button[style] {
 div[style*="border: 1px solid"] {
   border-color: hsla(285,30%,20%,0.08) !important;
 }
+
+
+

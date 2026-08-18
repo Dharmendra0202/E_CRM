@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 import { Skeleton } from "./ui/Skeleton";
-import { api } from "../utils/api"
+import { api } from "../utils/api";
+import { exportAdmissions } from "../utils/exportExcel";
 import { inputStyle, labelStyle } from "../utils/styles";
 import {
   Users2, Plus, Search, Filter, TrendingUp, ArrowUpRight,
   Phone, Mail, Calendar, MessageSquare, Clock, CheckCircle2,
-  XCircle, ChevronRight, X, Send, UserPlus, Target,
+  XCircle, ChevronRight, X, Send, UserPlus, Target, Download
 } from "lucide-react";
 
 const PIPELINE_STAGES = [
@@ -108,7 +109,21 @@ export function AdmissionsCRM() {
           <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Admissions CRM</h1>
           <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Manage enquiries from first contact to enrollment.</p>
         </div>
-        <Button variant="primary" onClick={() => setShowAddLead(true)} leftIcon={<UserPlus size={14} />}>New Enquiry</Button>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <button
+            onClick={() => exportAdmissions(leads)}
+            style={{
+              display: "flex", alignItems: "center", gap: "8px",
+              padding: "10px 18px", borderRadius: "12px", border: "none",
+              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+              color: "#fff", fontSize: "13px", fontWeight: 800, cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(16,185,129,0.35)", transition: "all 0.2s"
+            }}
+          >
+            <Download size={16} /> Download Excel Sheet (.xlsx)
+          </button>
+          <Button variant="primary" onClick={() => setShowAddLead(true)} leftIcon={<UserPlus size={14} />}>New Enquiry</Button>
+        </div>
       </div>
 
       {/* Stats Cards */}

@@ -1,6 +1,10 @@
-import React from "react";
+/** Auto Title Case Formatter for Names, Addresses and Titles */
+export function toTitleCase(str: string): string {
+  if (!str) return "";
+  return str.replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+}
 
-/** Shared form input style — subtle inset, no heavy border */
+/** Shared form input style — subtle inset, no heavy border, auto title-case presentation */
 export const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "10px 14px",
@@ -11,6 +15,11 @@ export const inputStyle: React.CSSProperties = {
   fontWeight: 500,
   color: "var(--text-primary)",
   outline: "none",
+};
+
+export const capitalizeInputStyle: React.CSSProperties = {
+  ...inputStyle,
+  textTransform: "capitalize",
 };
 
 /** Shared form label style */

@@ -32,7 +32,7 @@ router.get("/", authenticate, async (req: AuthRequest, res: Response): Promise<v
 });
 
 // POST /api/v1/invoices — create invoice
-router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
+router.post("/", authenticate, authorize("ADMIN", "SUPER_ADMIN", "BILLING", "STAFF", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { studentId, totalAmount, dueDate } = req.body;
     if (!studentId || !totalAmount || !dueDate) {

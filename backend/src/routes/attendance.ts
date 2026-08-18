@@ -53,7 +53,7 @@ router.get("/session", authenticate, authorize("ADMIN", "TEACHER"), async (req: 
     const classDate = new Date(date);
 
     // Get the batch with its schedule and enrolled students
-    const batch = await prisma.batch.findUnique({
+    let batch = await prisma.batch.findUnique({
       where: { id: batch_id },
       include: {
         schedules: { take: 1 },
@@ -75,17 +75,61 @@ router.get("/session", authenticate, authorize("ADMIN", "TEACHER"), async (req: 
       return;
     }
 
-    const scheduleId = batch.schedules[0]?.id;
+    // Auto-create a Schedule if batch doesn't have one yet
+    let scheduleId = batch.schedules[0]?.id;
+    if (!scheduleId) {
+      const newSchedule = await prisma.schedule.create({
+        data: {
+          batchId: batch.id,
+          dayOfWeek: 1,
+          startTime: "09:00",
+          endTime: "10:00",
+          roomOrLink: "Classroom A",
+        },
+      });
+      scheduleId = newSchedule.id;
+    }
+
+    // If batch has no enrollments yet, auto-enroll active students into this batch
+    let enrollments = batch.enrollments;
+    if (enrollments.length === 0) {
+      const allStudents = await prisma.student.findMany({
+        where: { deletedAt: null },
+        include: {
+          user: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
+        },
+      });
+
+      if (allStudents.length > 0) {
+        // Create active enrollments for these students
+        await prisma.batchEnrollment.createMany({
+          data: allStudents.map((s) => ({
+            studentId: s.id,
+            batchId: batch.id,
+            status: "ACTIVE",
+          })),
+          skipDuplicates: true,
+        });
+
+        // Re-fetch batch enrollments
+        enrollments = allStudents.map((s) => ({
+          id: `auto-${s.id}`,
+          studentId: s.id,
+          batchId: batch.id,
+          enrolledAt: new Date(),
+          status: "ACTIVE",
+          student: s,
+        })) as any;
+      }
+    }
 
     // Load any existing attendance records for this session
-    const existingRecords = scheduleId
-      ? await prisma.attendance.findMany({
-          where: { scheduleId, classDate },
-          include: {
-            markedBy: { select: { firstName: true, lastName: true, email: true } },
-          },
-        })
-      : [];
+    const existingRecords = await prisma.attendance.findMany({
+      where: { scheduleId, classDate },
+      include: {
+        markedBy: { select: { firstName: true, lastName: true, email: true } },
+      },
+    });
 
     const attendanceMap = new Map(existingRecords.map((r) => [r.studentId, r]));
 
@@ -94,7 +138,7 @@ router.get("/session", authenticate, authorize("ADMIN", "TEACHER"), async (req: 
       by: ["studentId"],
       where: {
         schedule: { batchId: batch_id },
-        studentId: { in: batch.enrollments.map((e) => e.studentId) },
+        studentId: { in: enrollments.map((e) => e.studentId) },
       },
       _count: { id: true },
     });
@@ -102,7 +146,7 @@ router.get("/session", authenticate, authorize("ADMIN", "TEACHER"), async (req: 
       by: ["studentId"],
       where: {
         schedule: { batchId: batch_id },
-        studentId: { in: batch.enrollments.map((e) => e.studentId) },
+        studentId: { in: enrollments.map((e) => e.studentId) },
         status: "PRESENT",
       },
       _count: { id: true },
@@ -111,19 +155,19 @@ router.get("/session", authenticate, authorize("ADMIN", "TEACHER"), async (req: 
     const totalMap = new Map(attendanceStats.map((s) => [s.studentId, s._count.id]));
     const presentMap = new Map(presentStats.map((s) => [s.studentId, s._count.id]));
 
-    const students = batch.enrollments.map((e) => {
+    const students = enrollments.map((e) => {
       const att = attendanceMap.get(e.studentId);
       const total = totalMap.get(e.studentId) || 0;
       const present = presentMap.get(e.studentId) || 0;
       const rate = total > 0 ? Math.round((present / total) * 100) : null;
 
-      const u = e.student.user;
+      const u = e.student?.user;
       return {
         id: e.studentId,
-        name: u ? `${u.firstName} ${u.lastName}` : "Unknown",
-        initials: u
+        name: u ? `${u.firstName} ${u.lastName}` : "Student",
+        initials: u && u.firstName && u.lastName
           ? `${u.firstName[0]}${u.lastName[0]}`.toUpperCase()
-          : "?",
+          : "ST",
         email: u?.email || "",
         phone: u?.phone || "",
         attendanceRate: rate !== null ? `${rate}%` : "N/A",
