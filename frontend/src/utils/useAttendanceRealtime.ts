@@ -32,32 +32,41 @@ export function useAttendanceRealtime({ batchId, enabled = true, onUpdate }: Use
   useEffect(() => {
     if (!enabled || !batchId) return;
 
-    // Create socket connection
+    // Create socket connection with better stability
     const socket = io(SOCKET_URL, {
       transports: ["websocket", "polling"],
-      reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+      reconnectionAttempts: 10,
+      timeout: 10000,
+      autoConnect: true,
     });
 
     socketRef.current = socket;
 
+    let connectionStable = false;
+    const stabilityTimer = setTimeout(() => {
+      connectionStable = true;
+    }, 1000); // Only mark as connected after 1 second of stability
+
     socket.on("connect", () => {
       console.log("✅ WebSocket connected:", socket.id);
-      setIsConnected(true);
+      setTimeout(() => {
+        if (connectionStable) setIsConnected(true);
+      }, 500);
       
       // Join the batch room to receive updates
       socket.emit("join_batch", batchId);
       console.log(`📡 Joined batch room: batch_${batchId}`);
     });
 
-    socket.on("disconnect", () => {
-      console.log("❌ WebSocket disconnected");
-      setIsConnected(false);
+    socket.on("disconnect", (reason) => {
+      console.log("❌ WebSocket disconnected:", reason);
+      if (connectionStable) setIsConnected(false);
     });
 
     socket.on("connect_error", (error) => {
       console.error("🔴 WebSocket connection error:", error);
-      setIsConnected(false);
+      if (connectionStable) setIsConnected(false);
     });
 
     // Listen for attendance updates
@@ -73,6 +82,7 @@ export function useAttendanceRealtime({ batchId, enabled = true, onUpdate }: Use
 
     // Cleanup on unmount or when batchId changes
     return () => {
+      clearTimeout(stabilityTimer);
       if (socket) {
         socket.emit("leave_batch", batchId);
         socket.disconnect();

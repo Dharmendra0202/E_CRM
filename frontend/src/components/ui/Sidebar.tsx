@@ -22,7 +22,7 @@ const ROLE_VIEWS: Record<string, string[]> = {
   SUPER_ADMIN: ["*"],
   TEACHER: ["dashboard", "attendance", "schedule", "homework", "exams", "examination", "marksheet", "leads", "batches", "communication"],
   STAFF: ["dashboard", "leads", "attendance", "billing", "communication"],
-  STUDENT: ["dashboard", "schedule", "attendance", "exams", "marksheet", "homework", "billing"],
+  STUDENT: ["dashboard", "schedule", "attendance", "exams", "marksheet", "homework"],
   PARENT: ["dashboard", "attendance", "exams", "marksheet", "billing", "communication"],
   ACCOUNTANT: ["dashboard", "billing", "reports"],
   PENDING: ["dashboard"],

@@ -708,7 +708,7 @@ function App() {
           )}
 
           {/* ══════════════ ATTENDANCE VIEW ══════════════ */}
-          {currentView === "attendance" && <AttendanceTracker />}
+          {currentView === "attendance" && <AttendanceTracker userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
 
           {/* ══════════════ EXAMS VIEW ══════════════ */}
           {currentView === "exams" && (

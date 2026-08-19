@@ -129,7 +129,7 @@ export function Dashboard({
     SUPER_ADMIN: moduleCards.map(c => c.view),
     TEACHER: ["leads", "attendance", "schedule", "exams", "homework", "communication"],
     STAFF: ["leads", "attendance", "billing", "communication"],
-    STUDENT: ["schedule", "attendance", "exams", "homework", "billing"],
+    STUDENT: ["schedule", "attendance", "exams", "homework"],
     PARENT: ["attendance", "exams", "billing", "communication"],
   };
   const visibleModuleCards = moduleCards.filter(c => (allowedModuleViews[userRole] || allowedModuleViews.STUDENT).includes(c.view));
@@ -163,7 +163,8 @@ export function Dashboard({
         </div>
       </div>
 
-      {/* ── KPI Stat Cards (Clickable) ── */}
+      {/* ── KPI Stat Cards (Admin/Staff only) ── */}
+      {isAdmin && (
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "16px", marginBottom: "24px" }}>
         {kpiCards.map((m, i) => (
           <div
@@ -242,6 +243,7 @@ export function Dashboard({
           </div>
         ))}
       </div>
+      )}
 
       {/* ── Bento Grid: Module Navigation Cards (All Clickable) ── */}
       <div style={{ marginBottom: "24px" }}>
@@ -490,7 +492,7 @@ export function Dashboard({
       )}
 
       {/* ── Phase 1: Pending Fees Widget (Clickable → opens billing) ── */}
-      {!isLoading && invoicesList.filter(inv => inv.status === "UNPAID").length > 0 && (
+      {isAdmin && !isLoading && invoicesList.filter(inv => inv.status === "UNPAID").length > 0 && (
         <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", marginTop: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
             <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
@@ -515,7 +517,7 @@ export function Dashboard({
       )}
 
       {/* ── Phase 1: Batch-wise Attendance Summary ── */}
-      {!isLoading && batchesList.length > 0 && (
+      {isAdmin && !isLoading && batchesList.length > 0 && (
         <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", marginTop: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)" }}>
           <h3 style={{ margin: "0 0 14px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
             <CheckCircle2 size={16} style={{ color: "hsl(142,70%,42%)" }} /> Batch-wise Overview

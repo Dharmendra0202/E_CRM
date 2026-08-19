@@ -36,7 +36,11 @@ interface AttendanceSession {
   };
 }
 
-export function AttendanceTracker() {
+interface AttendanceTrackerProps {
+  userRole?: string;
+}
+
+export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState("");
@@ -241,34 +245,39 @@ export function AttendanceTracker() {
           >
             <Download size={14} /> Download Excel Sheet (.xlsx)
           </button>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "8px 14px",
-              borderRadius: "20px",
-              background: isConnected ? "hsla(142,70%,40%,0.08)" : "hsla(342,90%,48%,0.08)",
-              border: `1px solid ${isConnected ? "hsla(142,70%,40%,0.2)" : "hsla(342,90%,48%,0.2)"}`,
-              fontSize: "12px",
-              fontWeight: 700,
-              color: isConnected ? "var(--color-success)" : "var(--color-danger)",
-            }}
-          >
-            {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
-            {isConnected ? "Live" : "Offline"}
-            {isConnected && (
-              <span
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "50%",
-                  background: "var(--color-success)",
-                  animation: "ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite",
-                }}
-              />
-            )}
-          </div>
+          
+          {/* Connection status (Admin only) */}
+          {(userRole === "ADMIN" || userRole === "SUPER_ADMIN") && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 14px",
+                borderRadius: "20px",
+                background: isConnected ? "hsla(142,70%,40%,0.08)" : "hsla(342,90%,48%,0.08)",
+                border: `1px solid ${isConnected ? "hsla(142,70%,40%,0.2)" : "hsla(342,90%,48%,0.2)"}`,
+                fontSize: "12px",
+                fontWeight: 700,
+                color: isConnected ? "var(--color-success)" : "var(--color-danger)",
+              }}
+            >
+              {isConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
+              {isConnected ? "Live" : "Offline"}
+              {isConnected && (
+                <span
+                  style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    background: "var(--color-success)",
+                    animation: "ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite",
+                  }}
+                />
+              )}
+            </div>
+          )}
+          
           <span
             style={{
               fontSize: "13px",
