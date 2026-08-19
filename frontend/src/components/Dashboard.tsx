@@ -16,6 +16,7 @@ interface DashboardProps {
   batchesList: any[];
   staffList: any[];
   userName: string;
+  userRole?: string;
   onNavigate: (view: string, opts?: any) => void;
 }
 
@@ -27,6 +28,7 @@ export function Dashboard({
   batchesList,
   staffList,
   userName,
+  userRole = "ADMIN",
   onNavigate,
 }: DashboardProps) {
   // ── Derived Real Stats ──
@@ -44,7 +46,6 @@ export function Dashboard({
   const totalBatches = batchesList.length;
   const totalTeachers = staffList.filter(s => s.role === "TEACHER").length;
   const totalStaffOnly = staffList.filter(s => s.role !== "TEACHER").length;
-  const totalParents = leadsList.length; // Each student has parent info
 
   const totalFeesCollected = invoicesList.reduce((sum, inv) => {
     const paid = inv.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0;
@@ -111,13 +112,27 @@ export function Dashboard({
     { icon: <IndianRupee size={22} />, label: "Billing", desc: `₹${totalFeesCollected.toLocaleString("en-IN")} collected`, color: "hsl(38,92%,50%)", view: "billing" },
     { icon: <CalendarDays size={22} />, label: "Timetable", desc: "Manage schedules", color: "hsl(200,70%,45%)", view: "schedule" },
     { icon: <BookOpen size={22} />, label: "Exams", desc: "Results & reports", color: "hsl(342,90%,48%)", view: "exams" },
-    { icon: <GraduationCap size={22} />, label: "Academics", desc: "Subjects & courses", color: "hsl(260,80%,55%)", view: "academics" },
     { icon: <Activity size={22} />, label: "Homework", desc: "Assignments & grading", color: "hsl(200,70%,45%)", view: "homework" },
     { icon: <Layers size={22} />, label: "Staff", desc: `${totalStaffOnly} members`, color: "hsl(260,91%,55%)", view: "staff" },
     { icon: <GraduationCap size={22} />, label: "Teachers", desc: `${totalTeachers} registered`, color: "hsl(142,70%,42%)", view: "teachers" },
-    { icon: <Users2 size={22} />, label: "Parents", desc: `${totalParents} contacts`, color: "hsl(172,70%,35%)", view: "parents" },
     { icon: <Activity size={22} />, label: "Reports", desc: "Analytics & insights", color: "hsl(38,70%,45%)", view: "reports" },
   ];
+
+  const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
+  const isTeacher = userRole === "TEACHER";
+  const isStudent = userRole === "STUDENT";
+  const isStaff = userRole === "STAFF";
+
+  // Filter module cards based on role
+  const allowedModuleViews: Record<string, string[]> = {
+    ADMIN: moduleCards.map(c => c.view),
+    SUPER_ADMIN: moduleCards.map(c => c.view),
+    TEACHER: ["leads", "attendance", "schedule", "exams", "homework", "communication"],
+    STAFF: ["leads", "attendance", "billing", "communication"],
+    STUDENT: ["schedule", "attendance", "exams", "homework", "billing"],
+    PARENT: ["attendance", "exams", "billing", "communication"],
+  };
+  const visibleModuleCards = moduleCards.filter(c => (allowedModuleViews[userRole] || allowedModuleViews.STUDENT).includes(c.view));
 
   return (
     <div className="animate-fade-in">
@@ -143,7 +158,7 @@ export function Dashboard({
             Welcome back, {userName.split(" ")[0]} 👋
           </h1>
           <p style={{ margin: 0, fontSize: "14px", color: "hsla(0,0%,100%,0.72)" }}>
-            Here's what's happening at your academy today.
+            {isAdmin ? "Here's what's happening at your academy today." : isTeacher ? "Manage your classes and students." : isStudent ? "Check your attendance, results, and timetable." : "Here's your overview for today."}
           </p>
         </div>
       </div>
@@ -234,7 +249,7 @@ export function Dashboard({
           <Zap size={16} style={{ color: "var(--color-accent)" }} /> Quick Navigation
         </h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
-          {moduleCards.map((card) => (
+          {visibleModuleCards.map((card) => (
             <div
               key={card.label}
               onClick={() => onNavigate(card.view)}
@@ -286,7 +301,8 @@ export function Dashboard({
         </div>
       </div>
 
-      {/* ── Two Column: Recent Students + Enrollment Overview ── */}
+      {/* ── Two Column: Recent Students + Enrollment Overview (Admin only) ── */}
+      {isAdmin && (
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
         {/* Recent Students */}
         <div style={{ background: "#fff", borderRadius: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)", overflow: "hidden" }}>
@@ -414,8 +430,10 @@ export function Dashboard({
           )}
         </div>
       </div>
+      )}
 
-      {/* ── Quick Actions Row ── */}
+      {/* ── Quick Actions Row (Admin/Teacher only) ── */}
+      {(isAdmin || isTeacher) && (
       <div style={{ background: "#fff", borderRadius: "16px", padding: "18px 20px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)" }}>
         <h3 style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
           <span style={{ width: "22px", height: "22px", borderRadius: "7px", background: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
@@ -469,6 +487,7 @@ export function Dashboard({
           ))}
         </div>
       </div>
+      )}
 
       {/* ── Phase 1: Pending Fees Widget (Clickable → opens billing) ── */}
       {!isLoading && invoicesList.filter(inv => inv.status === "UNPAID").length > 0 && (

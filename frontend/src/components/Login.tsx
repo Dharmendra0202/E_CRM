@@ -8,7 +8,7 @@ import {
 
 interface LoginProps { onLoginSuccess: (sessionUser: any) => void; }
 type Tab    = "login" | "signup" | "forgot";
-type Screen = "form" | "verify" | "reset_sent";
+type Screen = "form" | "verify" | "reset_sent" | "selectRole";
 
 const inputBase: React.CSSProperties = {
   width: "100%", height: "46px", borderRadius: "10px",
@@ -24,6 +24,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [screen, setScreen]       = useState<Screen>("form");
   const [email, setEmail]         = useState("");
   const [password, setPassword]   = useState("");
+  const [roleSelectionUser, setRoleSelectionUser] = useState<any>(null);
   const [name, setName]           = useState("");
   const [role, setRole]           = useState("ADMIN");
   const [loading, setLoading]     = useState(false);
@@ -106,6 +107,14 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setErrorMsg("");
     try {
       const res = await api.auth.google(response.credential);
+      
+      // New user needs to select their role
+      if (res.needsRoleSelection) {
+        setRoleSelectionUser(res.user);
+        setScreen("selectRole");
+        return;
+      }
+      
       setToken(res.token);
       onLoginSuccess({ ...res.user, user_metadata: { name: `${res.user.firstName} ${res.user.lastName}`, role: res.user.role } });
     } catch (err: any) {
@@ -210,6 +219,52 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 10px" }}>Reset link sent</h2>
               <p style={{ fontSize: "14px", color: "hsl(285,20%,45%)", margin: "0 0 24px", lineHeight: 1.6 }}>Check your inbox for a password reset link. It expires in 1 hour.</p>
               <button onClick={() => { setScreen("form"); switchTab("login"); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "hsl(328,100%,54%)", fontWeight: 600 }}>← Back to Sign In</button>
+            </div>
+          )}
+
+          {/* ── ROLE SELECTION SCREEN (Google Auth new users) ── */}
+          {screen === "selectRole" && roleSelectionUser && (
+            <div className="animate-fade-in" style={{ textAlign: "center", padding: "16px 0" }}>
+              <div style={{ width: "70px", height: "70px", borderRadius: "50%", background: "hsla(271,91%,60%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
+                <span style={{ fontSize: "28px" }}>👤</span>
+              </div>
+              <h2 style={{ fontSize: "20px", fontWeight: 800, margin: "0 0 6px", color: "hsl(285,50%,12%)" }}>Welcome, {roleSelectionUser.firstName}!</h2>
+              <p style={{ fontSize: "13px", color: "hsl(285,20%,45%)", margin: "0 0 24px" }}>Select your role to continue</p>
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                {([
+                  { role: "STUDENT", label: "I am a Student", icon: "🎓", desc: "View classes, attendance, results" },
+                  { role: "TEACHER", label: "I am a Teacher", icon: "📚", desc: "Manage classes, mark attendance" },
+                  { role: "STAFF", label: "I am Staff", icon: "💼", desc: "Administrative & support work" },
+                ] as const).map((item) => (
+                  <button
+                    key={item.role}
+                    onClick={async () => {
+                      setLoading(true);
+                      try {
+                        const res = await api.auth.setRole(roleSelectionUser.id, item.role);
+                        setToken(res.token);
+                        onLoginSuccess({ ...res.user, user_metadata: { name: `${res.user.firstName} ${res.user.lastName}`, role: res.user.role } });
+                      } catch (err: any) { setErrorMsg(err.message || "Failed to set role."); setScreen("form"); }
+                      setLoading(false);
+                    }}
+                    disabled={loading}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px",
+                      borderRadius: "14px", border: "1.5px solid hsla(285,30%,20%,0.1)", background: "#fff",
+                      cursor: "pointer", textAlign: "left", transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "hsl(271,91%,60%)"; e.currentTarget.style.background = "hsla(271,91%,60%,0.03)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.1)"; e.currentTarget.style.background = "#fff"; }}
+                  >
+                    <span style={{ fontSize: "24px" }}>{item.icon}</span>
+                    <div>
+                      <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "hsl(285,50%,12%)" }}>{item.label}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "hsl(285,20%,55%)" }}>{item.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

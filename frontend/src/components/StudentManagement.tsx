@@ -198,7 +198,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
   // Add Student form state
   const [formData, setFormData] = useState({
     name: "", email: "", phone: "", dob: "", gender: "Male" as "Male" | "Female" | "Other",
-    guardianName: "", guardianPhone: "", address: s.address || "", batch: BATCHES[0],
+    guardianName: "", guardianPhone: "", address: "", batch: BATCHES[0],
     feeAmount: "8500", notes: ""
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});

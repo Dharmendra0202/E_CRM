@@ -17,17 +17,17 @@ import { Dashboard } from "./components/Dashboard";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { UserRoleManagement } from "./components/UserRoleManagement";
 import { AdmissionsCRM } from "./components/AdmissionsCRM";
-import { ParentManagement } from "./components/ParentManagement";
-import { AcademicManagement } from "./components/AcademicManagement";
+// removed: ParentManagement
+// removed: AcademicManagement
 import { HomeworkAssignments } from "./components/HomeworkAssignments";
 import { FeeManagement } from "./components/FeeManagement";
-import { TransportManagement } from "./components/TransportManagement";
+// removed: TransportManagement
 import { LibraryManagement } from "./components/LibraryManagement";
 import { CommunicationCenter } from "./components/CommunicationCenter";
 import { ReportsAnalytics } from "./components/ReportsAnalytics";
 import { SettingsPage } from "./components/SettingsPage";
 import { NewEnrollment } from "./components/NewEnrollment";
-import { OnlineAdmissions } from "./components/OnlineAdmissions";
+// removed: OnlineAdmissions
 import { BulkPromotion } from "./components/BulkPromotion";
 import { ExaminationSystem } from "./components/ExaminationSystem";
 import { MarksheetSystem } from "./components/MarksheetSystem";
@@ -362,6 +362,7 @@ function App() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
+        userRole={userProfile?.user_metadata?.role || "ADMIN"}
       />
 
       {/* ── Command Palette ── */}
@@ -648,6 +649,7 @@ function App() {
               batchesList={batchesList}
               staffList={staffList}
               userName={userName}
+              userRole={userProfile?.user_metadata?.role || "ADMIN"}
               onNavigate={(view, opts) => {
                 setCurrentView(view as ViewType);
                 if (view === "leads" && opts?.tab) setStudentTab(opts.tab);
@@ -660,7 +662,7 @@ function App() {
           {currentView === "admissions" && <AdmissionsCRM />}
 
           {/* ══════════════ ONLINE ADMISSIONS VIEW ══════════════ */}
-          {currentView === "online-admissions" && <OnlineAdmissions />}
+          {/* removed: online-admissions */}
 
           {/* ══════════════ BULK PROMOTION VIEW ══════════════ */}
           {currentView === "bulk-promotion" && <BulkPromotion />}
@@ -682,7 +684,7 @@ function App() {
           )}
 
           {/* ══════════════ PARENTS VIEW ══════════════ */}
-          {currentView === "parents" && <ParentManagement />}
+          {/* removed: parents */}
 
           {/* ══════════════ STUDENTS VIEW ══════════════ */}
           {currentView === "leads" && (
@@ -720,7 +722,7 @@ function App() {
           {currentView === "billing" && <FeeManagement />}
 
           {/* ══════════════ ACADEMICS VIEW ══════════════ */}
-          {currentView === "academics" && <AcademicManagement />}
+          {/* removed: academics */}
 
           {/* ══════════════ HOMEWORK VIEW ══════════════ */}
           {currentView === "homework" && <HomeworkAssignments />}
@@ -827,7 +829,7 @@ function App() {
           {currentView === "roles" && <UserRoleManagement />}
 
           {/* ══════════════ TRANSPORT VIEW ══════════════ */}
-          {currentView === "transport" && <TransportManagement />}
+          {/* removed: transport */}
 
           {/* ══════════════ LIBRARY VIEW ══════════════ */}
           {currentView === "library" && <LibraryManagement />}

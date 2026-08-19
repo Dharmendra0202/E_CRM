@@ -376,20 +376,31 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
           data: { googleId, authProvider: user.authProvider === "local" ? "local+google" : user.authProvider, emailVerified: true },
         });
       } else {
-        // Create a new user via Google
+        // NEW Google user — don't assign role yet, let frontend ask
         user = await prisma.user.create({
           data: {
             email: email.toLowerCase(),
             passwordHash: "", // No password for Google-only users
             firstName: given_name || "User",
             lastName: family_name || "",
-            role: "STUDENT", // Default to STUDENT for security — admin can upgrade later
+            role: "PENDING", // Will be set after role selection
             googleId,
             authProvider: "google",
             emailVerified: email_verified ?? true,
           },
         });
       }
+    }
+
+    // If role is PENDING, ask frontend to show role selection
+    if (user.role === "PENDING") {
+      res.json({
+        status: "success",
+        needsRoleSelection: true,
+        tempUserId: user.id,
+        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
+      });
+      return;
     }
 
     // Issue JWT tokens
@@ -407,6 +418,42 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
   } catch (err: any) {
     res.status(401).json({ status: "error", message: err.message || "Google authentication failed." });
   }
+});
+
+
+
+// ── POST /auth/set-role — Set role for new Google users ──────────
+router.post("/set-role", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId, role } = req.body;
+    if (!userId || !role) { res.status(400).json({ status: "error", message: "userId and role required." }); return; }
+    
+    const validRoles = ["STUDENT", "TEACHER", "STAFF"];
+    if (!validRoles.includes(role)) {
+      res.status(400).json({ status: "error", message: "Role must be STUDENT, TEACHER, or STAFF." }); return;
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || user.role !== "PENDING") {
+      res.status(400).json({ status: "error", message: "Invalid user or role already assigned." }); return;
+    }
+
+    const updated = await prisma.user.update({ where: { id: userId }, data: { role } });
+
+    // Issue JWT tokens
+    const refreshToken = signRefreshToken(updated.id);
+    await prisma.user.update({ where: { id: updated.id }, data: { refreshToken } });
+    const accessToken = signAccessToken({ id: updated.id, role: updated.role, email: updated.email });
+
+    logAudit({ userId: updated.id, userEmail: updated.email, module: "auth", action: "CREATE", metadata: { role, provider: "google" } });
+
+    res.json({
+      status: "success",
+      token: accessToken,
+      refreshToken,
+      user: { id: updated.id, email: updated.email, role: updated.role, firstName: updated.firstName, lastName: updated.lastName },
+    });
+  } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });
 
 

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import {
   LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
-  Check, BookOpen, GraduationCap, Target, UserCheck, Bus,
-  Library, Megaphone, BarChart3, Settings, Shield, FileText,
-  ChevronLeft, ChevronRight, ChevronDown, Layers, Smartphone,
+  Check, BookOpen, GraduationCap, Target,
+  Megaphone, BarChart3, Settings, Shield, FileText,
+  ChevronLeft, ChevronRight, ChevronDown, Layers,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -13,14 +13,26 @@ interface SidebarProps {
   onToggleCollapse: () => void;
   mobileOpen?: boolean;
   onMobileClose?: () => void;
+  userRole?: string;
 }
+
+// Role-based access map: which views each role can see
+const ROLE_VIEWS: Record<string, string[]> = {
+  ADMIN: ["*"], // all views
+  SUPER_ADMIN: ["*"],
+  TEACHER: ["dashboard", "attendance", "schedule", "homework", "exams", "examination", "marksheet", "leads", "batches", "communication"],
+  STAFF: ["dashboard", "leads", "attendance", "billing", "communication"],
+  STUDENT: ["dashboard", "schedule", "attendance", "exams", "marksheet", "homework", "billing"],
+  PARENT: ["dashboard", "attendance", "exams", "marksheet", "billing", "communication"],
+  ACCOUNTANT: ["dashboard", "billing", "reports"],
+  PENDING: ["dashboard"],
+};
 
 const NAV_ITEMS = [
   { group: "Main", items: [
     { view: "dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
-    { view: "admissions", icon: <Target size={18} />, label: "Admissions" },
+    { view: "admissions", icon: <Target size={18} />, label: "Enquiries" },
     { view: "new-enrollment", icon: <Layers size={18} />, label: "New Enrollment" },
-    { view: "online-admissions", icon: <Smartphone size={18} />, label: "Online Admissions" },
   ]},
   { group: "People", items: [
     { view: "leads", icon: <Users2 size={18} />, label: "Students" },
@@ -28,7 +40,6 @@ const NAV_ITEMS = [
     { view: "teachers", icon: <GraduationCap size={18} />, label: "Teachers" },
   ]},
   { group: "Academics", items: [
-    { view: "academics", icon: <GraduationCap size={18} />, label: "Academics" },
     { view: "batches", icon: <Layers size={18} />, label: "Batches" },
     { view: "schedule", icon: <CalendarDays size={18} />, label: "Timetable" },
     { view: "attendance", icon: <Check size={18} />, label: "Attendance" },
@@ -40,19 +51,17 @@ const NAV_ITEMS = [
     { view: "bulk-promotion", icon: <Users2 size={18} />, label: "Bulk Promotion" },
   ]},
   { group: "Operations", items: [
-    { view: "billing", icon: <CreditCard size={18} />, label: "Payment Records" },
-    { view: "transport", icon: <Bus size={18} />, label: "Transport" },
-    { view: "library", icon: <Library size={18} />, label: "Library" },
+    { view: "billing", icon: <CreditCard size={18} />, label: "Fees & Payments" },
     { view: "communication", icon: <Megaphone size={18} />, label: "Notices" },
   ]},
-  { group: "Insights", items: [
+  { group: "Settings", items: [
     { view: "reports", icon: <BarChart3 size={18} />, label: "Reports" },
     { view: "roles", icon: <Shield size={18} />, label: "Roles" },
     { view: "settings", icon: <Settings size={18} />, label: "Settings" },
   ]},
 ];
 
-export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, mobileOpen, onMobileClose }: SidebarProps) {
+export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, mobileOpen, onMobileClose, userRole = "ADMIN" }: SidebarProps) {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(["Main", "People", "Academics"]));
 
   const toggleGroup = (group: string) => {
@@ -61,8 +70,17 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
     setOpenGroups(next);
   };
 
+  // Filter NAV_ITEMS based on role
+  const allowedViews = ROLE_VIEWS[userRole] || ROLE_VIEWS.STUDENT;
+  const isAllowed = (view: string) => allowedViews.includes("*") || allowedViews.includes(view);
+  
+  const filteredNavItems = NAV_ITEMS.map(group => ({
+    ...group,
+    items: group.items.filter(item => isAllowed(item.view)),
+  })).filter(group => group.items.length > 0);
+
   // Auto-expand the group that contains the active view
-  const activeGroup = NAV_ITEMS.find(g => g.items.some(i => i.view === currentView))?.group;
+  const activeGroup = filteredNavItems.find(g => g.items.some(i => i.view === currentView))?.group;
   if (activeGroup && !openGroups.has(activeGroup)) {
     openGroups.add(activeGroup);
   }
@@ -100,7 +118,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
 
       {/* Nav Groups - Scrollable */}
       <div style={{ flex: 1, overflowY: "auto", overflowX: "hidden", padding: "8px 8px", minHeight: 0 }}>
-        {NAV_ITEMS.map((group) => {
+        {filteredNavItems.map((group) => {
           const isOpen = openGroups.has(group.group);
           const hasActive = group.items.some(i => i.view === currentView);
           return (
