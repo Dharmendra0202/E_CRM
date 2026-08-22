@@ -12,7 +12,6 @@ import { TimetableScheduler } from "./components/TimetableScheduler";
 import { HistoryModal } from "./components/HistoryModal";
 import { AttendanceTracker } from "./components/AttendanceTracker";
 import { ExamsManagement } from "./components/ExamsManagement";
-import { AppsMenuDrawer } from "./components/ui/AppsMenuDrawer";
 import { Dashboard } from "./components/Dashboard";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { UserRoleManagement } from "./components/UserRoleManagement";
@@ -561,17 +560,6 @@ function App() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <AppsMenuDrawer onNavigate={(view) => { setCurrentView(view as ViewType); if (view === "leads") setStudentTab("all"); }} currentView={currentView} />
-
-            {/* Dark Mode Toggle */}
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-              style={{ width: "36px", height: "36px", borderRadius: "10px", border: "1px solid var(--border-glass)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", transition: "all 0.2s" }}
-            >
-              {darkMode ? <Sun size={17} /> : <Moon size={17} />}
-            </button>
-
             <Button
               variant="ghost"
               title="Activity History"
@@ -600,6 +588,10 @@ function App() {
                   </div>
                   <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); setCurrentView("settings" as ViewType); }}><Settings size={14} /><span>Settings</span></button>
                   <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); setCurrentView("roles" as ViewType); }}><ShieldCheck size={14} /><span>Security</span></button>
+                  <button className="dropdown-item" onClick={() => setDarkMode(!darkMode)}>
+                    {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+                    <span>{darkMode ? "Light Mode" : "Night Mode"}</span>
+                  </button>
                   <hr style={{ border: 0, borderTop: "1px solid var(--border-glass)", margin: "4px 0" }} />
                   <button className="dropdown-item dropdown-item-danger" onClick={() => { setIsProfileOpen(false); setToken(null); setUserProfile(null); }}>
                     <LogOut size={14} /><span>Log Out</span>

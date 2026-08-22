@@ -4,8 +4,10 @@ import { Skeleton } from "./ui/Skeleton";
 import {
   Users2, IndianRupee, UserCheck, Target, TrendingUp,
   ArrowUpRight, CalendarDays, BookOpen, GraduationCap,
-  BarChart3, Clock, AlertCircle, XCircle, Zap,
-  Plus, CheckCircle2, Activity, Layers,
+  BarChart3, Clock, AlertCircle, Zap,
+  Plus, CheckCircle2, Activity, Layers, Bell, FileText,
+  Upload, Sparkles, ShieldCheck, User, MessageSquare, Award,
+  ChevronRight, Download, AlertTriangle, ArrowRight
 } from "lucide-react";
 
 interface DashboardProps {
@@ -31,7 +33,7 @@ export function Dashboard({
   userRole = "ADMIN",
   onNavigate,
 }: DashboardProps) {
-  // ── Derived Real Stats ──
+  // Derived Real Database Statistics
   const totalStudents = leadsList.length;
   const enrolledStudents = leadsList.filter((s) => s.status === "ENROLLED").length;
   const newStudents = leadsList.filter((s) => s.status === "NEW").length;
@@ -54,16 +56,30 @@ export function Dashboard({
   const totalBilled = invoicesList.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
   const collectionRate = totalBilled > 0 ? Math.round((totalFeesCollected / totalBilled) * 100) : 0;
 
-  const avgAttendance =
-    attendanceList.length > 0
-      ? (attendanceList.filter((a) => a.status === "PRESENT" || a.status === "LATE").length / attendanceList.length) * 100
-      : 0;
+  const totalAttendanceRecords = attendanceList.length;
+  const presentCount = attendanceList.filter((a) => a.status === "PRESENT").length;
+  const lateCount = attendanceList.filter((a) => a.status === "LATE").length;
+  const absentCount = attendanceList.filter((a) => a.status === "ABSENT").length;
+  const avgAttendance = totalAttendanceRecords > 0
+    ? ((presentCount + lateCount) / totalAttendanceRecords) * 100
+    : 0;
 
-  const overdueInvoices = invoicesList.filter(
-    (inv) => inv.status === "UNPAID" && new Date(inv.dueDate) < new Date()
-  ).length;
+  const unpaidInvoices = invoicesList.filter(inv => inv.status === "UNPAID");
 
-  // ── KPI Cards Config ──
+  // Find Student's assigned Batch if available
+  const matchingStudentRecord = leadsList.find(s =>
+    (s.email && s.email.toLowerCase() === userName.toLowerCase()) ||
+    (s.name && s.name.toLowerCase().includes(userName.toLowerCase()))
+  );
+  const studentAssignedBatch = matchingStudentRecord?.source || "Not Enrolled";
+
+  const currentRole = (userRole || "ADMIN").toUpperCase();
+  const isAdmin = currentRole === "ADMIN" || currentRole === "SUPER_ADMIN";
+  const isTeacher = currentRole === "TEACHER";
+  const isStudent = currentRole === "STUDENT";
+  const isStaff = currentRole === "STAFF";
+
+  // KPI Cards Config (All Clickable & Linked)
   const kpiCards = [
     {
       icon: <Users2 size={20} />,
@@ -88,7 +104,7 @@ export function Dashboard({
       gradient: "linear-gradient(135deg, hsl(271,91%,60%), hsl(240,80%,65%))",
       label: "AVG ATTENDANCE",
       value: `${avgAttendance.toFixed(1)}%`,
-      badge: `${attendanceList.length} records`,
+      badge: `${totalAttendanceRecords} records`,
       badgeColor: "var(--color-success)",
       onClick: () => onNavigate("attendance"),
     },
@@ -103,7 +119,7 @@ export function Dashboard({
     },
   ];
 
-  // ── Bento Grid Module Cards ──
+  // Bento Navigation Cards Config (All Clickable)
   const moduleCards = [
     { icon: <Users2 size={22} />, label: "Students", desc: `${totalStudents} registered`, color: "hsl(328,100%,54%)", view: "leads" },
     { icon: <Target size={22} />, label: "Admissions", desc: "CRM pipeline", color: "hsl(271,91%,60%)", view: "admissions" },
@@ -115,435 +131,644 @@ export function Dashboard({
     { icon: <Activity size={22} />, label: "Homework", desc: "Assignments & grading", color: "hsl(200,70%,45%)", view: "homework" },
     { icon: <Layers size={22} />, label: "Staff", desc: `${totalStaffOnly} members`, color: "hsl(260,91%,55%)", view: "staff" },
     { icon: <GraduationCap size={22} />, label: "Teachers", desc: `${totalTeachers} registered`, color: "hsl(142,70%,42%)", view: "teachers" },
-    { icon: <Activity size={22} />, label: "Reports", desc: "Analytics & insights", color: "hsl(38,70%,45%)", view: "reports" },
+    { icon: <BarChart3 size={22} />, label: "Reports", desc: "Analytics & insights", color: "hsl(38,70%,45%)", view: "reports" },
   ];
 
-  const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
-  const isTeacher = userRole === "TEACHER";
-  const isStudent = userRole === "STUDENT";
-  const isStaff = userRole === "STAFF";
-
-  // Filter module cards based on role
   const allowedModuleViews: Record<string, string[]> = {
     ADMIN: moduleCards.map(c => c.view),
     SUPER_ADMIN: moduleCards.map(c => c.view),
     TEACHER: ["leads", "attendance", "schedule", "exams", "homework", "communication"],
     STAFF: ["leads", "attendance", "billing", "communication"],
     STUDENT: ["schedule", "attendance", "exams", "homework"],
-    PARENT: ["attendance", "exams", "billing", "communication"],
   };
-  const visibleModuleCards = moduleCards.filter(c => (allowedModuleViews[userRole] || allowedModuleViews.STUDENT).includes(c.view));
+  const visibleModuleCards = moduleCards.filter(c => (allowedModuleViews[currentRole] || allowedModuleViews.STUDENT).includes(c.view));
 
   return (
-    <div className="animate-fade-in">
-      {/* ── Hero Welcome Banner (Clean, no action buttons) ── */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, hsl(328,100%,54%) 0%, hsl(271,91%,60%) 55%, hsl(240,80%,65%) 100%)",
-          borderRadius: "20px",
-          padding: "28px 32px",
-          marginBottom: "24px",
-          position: "relative",
-          overflow: "hidden",
-          boxShadow: "0 16px 48px -8px hsla(328,100%,54%,0.35)",
-        }}
-      >
-        <div style={{ position: "absolute", top: "-40px", right: "200px", width: "180px", height: "180px", borderRadius: "50%", background: "hsla(0,0%,100%,0.07)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "-50px", right: "60px", width: "140px", height: "140px", borderRadius: "50%", background: "hsla(0,0%,100%,0.05)", pointerEvents: "none" }} />
-        <div style={{ position: "relative", zIndex: 1 }}>
-          <p style={{ fontSize: "11px", color: "hsla(0,0%,100%,0.7)", fontWeight: 700, margin: "0 0 6px", letterSpacing: "1px", textTransform: "uppercase" }}>
-            {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-          </p>
-          <h1 style={{ margin: "0 0 6px", fontSize: "24px", fontWeight: 800, color: "#fff" }}>
-            Welcome back, {userName.split(" ")[0]} 👋
-          </h1>
-          <p style={{ margin: 0, fontSize: "14px", color: "hsla(0,0%,100%,0.72)" }}>
-            {isAdmin ? "Here's what's happening at your academy today." : isTeacher ? "Manage your classes and students." : isStudent ? "Check your attendance, results, and timetable." : "Here's your overview for today."}
-          </p>
-        </div>
-      </div>
+    <div className="animate-fade-in" style={{ paddingBottom: "30px" }}>
 
-      {/* ── KPI Stat Cards (Admin/Staff only) ── */}
-      {isAdmin && (
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: "16px", marginBottom: "24px" }}>
-        {kpiCards.map((m, i) => (
+      {/* ========================================================================= */}
+      {/* 🎓 STUDENT DASHBOARD VIEW (100% PRODUCTION READY & FULLY CLICKABLE)       */}
+      {/* ========================================================================= */}
+      {isStudent && (
+        <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+          {/* 1. Hero Welcome Banner (Clickable → opens schedule) */}
           <div
-            key={i}
-            onClick={m.onClick}
+            onClick={() => onNavigate("schedule")}
             style={{
-              background: "#fff",
-              borderRadius: "16px",
-              padding: "22px",
-              border: "none",
-              boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              background: "linear-gradient(135deg, hsl(200,95%,45%) 0%, hsl(271,91%,60%) 60%, hsl(328,100%,54%) 100%)",
+              borderRadius: "22px",
+              padding: "28px 32px",
+              color: "#fff",
+              position: "relative",
+              overflow: "hidden",
+              boxShadow: "0 16px 40px -10px hsla(271,91%,60%,0.35)",
               cursor: "pointer",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
             }}
             onMouseEnter={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "translateY(-3px)";
-              el.style.boxShadow = "0 4px 16px rgba(29,10,39,0.06), 0 12px 32px -8px rgba(29,10,39,0.12)";
+              e.currentTarget.style.transform = "translateY(-2px)";
             }}
             onMouseLeave={(e) => {
-              const el = e.currentTarget;
-              el.style.transform = "none";
-              el.style.boxShadow = "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)";
+              e.currentTarget.style.transform = "none";
             }}
           >
-            {isLoading ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <Skeleton variant="circle" width={44} height={44} />
-                <Skeleton variant="text" width="55%" />
-                <Skeleton variant="text" width="40%" height={30} />
+            <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+              <div>
+                <span style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase", background: "hsla(0,0%,100%,0.2)", padding: "4px 12px", borderRadius: "20px", display: "inline-block", marginBottom: "10px" }}>
+                  🎓 Student Portal
+                </span>
+                <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800 }}>
+                  Welcome back, {userName.split(" ")[0]}! 👋
+                </h1>
+                <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>
+                  My Assigned Batch: <strong style={{ color: "#fff" }}>{studentAssignedBatch}</strong>
+                </p>
               </div>
-            ) : (
-              <>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
+
+              <div style={{ display: "flex", gap: "10px" }}>
+                <div onClick={(e) => { e.stopPropagation(); onNavigate("attendance"); }} style={{ background: "hsla(0,0%,100%,0.15)", backdropFilter: "blur(10px)", padding: "10px 16px", borderRadius: "14px", border: "1px solid hsla(0,0%,100%,0.2)", cursor: "pointer" }}>
+                  <div style={{ fontSize: "10px", opacity: 0.8, textTransform: "uppercase", fontWeight: 700 }}>Attendance</div>
+                  <div style={{ fontSize: "18px", fontWeight: 800, marginTop: "2px" }}>{avgAttendance.toFixed(1)}%</div>
+                </div>
+                <div onClick={(e) => { e.stopPropagation(); onNavigate("billing"); }} style={{ background: "hsla(0,0%,100%,0.15)", backdropFilter: "blur(10px)", padding: "10px 16px", borderRadius: "14px", border: "1px solid hsla(0,0%,100%,0.2)", cursor: "pointer" }}>
+                  <div style={{ fontSize: "10px", opacity: 0.8, textTransform: "uppercase", fontWeight: 700 }}>Fee Record</div>
+                  <div style={{ fontSize: "18px", fontWeight: 800, marginTop: "2px" }}>{unpaidInvoices.length === 0 ? "Paid" : `${unpaidInvoices.length} Unpaid`}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Interactive KPI Row (Clickable Cards) */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+            {/* Attendance Rate Card */}
+            <div
+              onClick={() => onNavigate("attendance")}
+              style={{
+                background: "#fff",
+                borderRadius: "16px",
+                padding: "20px",
+                border: "1px solid hsla(285,40%,60%,0.1)",
+                boxShadow: "0 4px 16px rgba(29,10,39,0.04)",
+                cursor: "pointer",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>MY ATTENDANCE</span>
+                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "hsla(142,70%,42%,0.12)", color: "hsl(142,70%,38%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <UserCheck size={18} />
+                </div>
+              </div>
+              <div style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-primary)" }}>{avgAttendance.toFixed(1)}%</div>
+              <div style={{ marginTop: "8px", background: "hsla(285,30%,20%,0.06)", height: "6px", borderRadius: "10px", overflow: "hidden" }}>
+                <div style={{ width: `${Math.min(avgAttendance, 100)}%`, height: "100%", background: "linear-gradient(90deg, hsl(142,70%,42%), hsl(160,70%,35%))", borderRadius: "10px" }} />
+              </div>
+              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>{presentCount} Present · {absentCount} Absent</span>
+                <ArrowUpRight size={12} style={{ opacity: 0.5 }} />
+              </p>
+            </div>
+
+            {/* My Batch Card */}
+            <div
+              onClick={() => onNavigate("schedule")}
+              style={{
+                background: "#fff",
+                borderRadius: "16px",
+                padding: "20px",
+                border: "1px solid hsla(285,40%,60%,0.1)",
+                boxShadow: "0 4px 16px rgba(29,10,39,0.04)",
+                cursor: "pointer",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>MY BATCH</span>
+                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "hsla(200,95%,50%,0.12)", color: "hsl(200,95%,45%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <GraduationCap size={18} />
+                </div>
+              </div>
+              <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {studentAssignedBatch}
+              </div>
+              <p style={{ margin: "10px 0 0", fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>View Timetable & Schedule</span>
+                <ArrowUpRight size={12} style={{ opacity: 0.5 }} />
+              </p>
+            </div>
+
+            {/* Exams Card */}
+            <div
+              onClick={() => onNavigate("exams")}
+              style={{
+                background: "#fff",
+                borderRadius: "16px",
+                padding: "20px",
+                border: "1px solid hsla(285,40%,60%,0.1)",
+                boxShadow: "0 4px 16px rgba(29,10,39,0.04)",
+                cursor: "pointer",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>EXAMS & MARKS</span>
+                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "hsla(271,91%,60%,0.12)", color: "hsl(271,91%,60%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <BookOpen size={18} />
+                </div>
+              </div>
+              <div style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)" }}>Exam Marksheets</div>
+              <p style={{ margin: "10px 0 0", fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>Check test scores & gradebook</span>
+                <ArrowUpRight size={12} style={{ opacity: 0.5 }} />
+              </p>
+            </div>
+
+            {/* Homework Card */}
+            <div
+              onClick={() => onNavigate("homework")}
+              style={{
+                background: "#fff",
+                borderRadius: "16px",
+                padding: "20px",
+                border: "1px solid hsla(285,40%,60%,0.1)",
+                boxShadow: "0 4px 16px rgba(29,10,39,0.04)",
+                cursor: "pointer",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>HOMEWORK HUB</span>
+                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "hsla(328,100%,54%,0.12)", color: "hsl(328,100%,54%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Activity size={18} />
+                </div>
+              </div>
+              <div style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)" }}>Assignments</div>
+              <p style={{ margin: "10px 0 0", fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span>Submit & track homework</span>
+                <ArrowUpRight size={12} style={{ opacity: 0.5 }} />
+              </p>
+            </div>
+          </div>
+
+          {/* 3. Quick Navigation Modules for Student */}
+          <div>
+            <h3 style={{ margin: "0 0 14px", fontSize: "15px", fontWeight: 800, display: "flex", alignItems: "center", gap: "7px" }}>
+              <Zap size={16} style={{ color: "var(--color-accent)" }} /> Quick Navigation
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+              {visibleModuleCards.map((card) => (
+                <div
+                  key={card.label}
+                  onClick={() => onNavigate(card.view)}
+                  style={{
+                    background: "#fff",
+                    borderRadius: "14px",
+                    padding: "16px 18px",
+                    border: "none",
+                    boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)",
+                    cursor: "pointer",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "14px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = `0 4px 16px rgba(29,10,39,0.06), 0 8px 24px -6px ${card.color}25`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)";
+                  }}
+                >
                   <div
                     style={{
-                      width: "44px",
-                      height: "44px",
-                      borderRadius: "12px",
-                      background: m.gradient,
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "11px",
+                      background: `${card.color}12`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "#fff",
-                      boxShadow: "0 6px 16px rgba(0,0,0,0.18)",
+                      color: card.color,
+                      flexShrink: 0,
                     }}
                   >
-                    {m.icon}
+                    {card.icon}
                   </div>
-                  <span
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: 700,
-                      color: m.badgeColor,
-                      background: "hsla(142,70%,42%,0.1)",
-                      padding: "4px 10px",
-                      borderRadius: "20px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "4px",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    <TrendingUp size={10} />
-                    {m.badge}
-                  </span>
-                </div>
-                <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.6px" }}>
-                  {m.label}
-                </p>
-                <h2 style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-headings)" }}>
-                  {m.value}
-                </h2>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-      )}
-
-      {/* ── Bento Grid: Module Navigation Cards (All Clickable) ── */}
-      <div style={{ marginBottom: "24px" }}>
-        <h3 style={{ margin: "0 0 14px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
-          <Zap size={16} style={{ color: "var(--color-accent)" }} /> Quick Navigation
-        </h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
-          {visibleModuleCards.map((card) => (
-            <div
-              key={card.label}
-              onClick={() => onNavigate(card.view)}
-              style={{
-                background: "#fff",
-                borderRadius: "14px",
-                padding: "16px 18px",
-                border: "none",
-                boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)",
-                cursor: "pointer",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "14px",
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget;
-                el.style.transform = "translateY(-2px)";
-                el.style.boxShadow = `0 4px 16px rgba(29,10,39,0.06), 0 8px 24px -6px ${card.color}25`;
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget;
-                el.style.transform = "none";
-                el.style.boxShadow = "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)";
-              }}
-            >
-              <div
-                style={{
-                  width: "42px",
-                  height: "42px",
-                  borderRadius: "11px",
-                  background: `${card.color}12`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: card.color,
-                  flexShrink: 0,
-                }}
-              >
-                {card.icon}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{card.label}</p>
-                <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{card.desc}</p>
-              </div>
-              <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.4, flexShrink: 0 }} />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Two Column: Recent Students + Enrollment Overview (Admin only) ── */}
-      {isAdmin && (
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
-        {/* Recent Students */}
-        <div style={{ background: "#fff", borderRadius: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)", overflow: "hidden" }}>
-          <div style={{ padding: "16px 20px", borderBottom: "1px solid hsla(285,30%,20%,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Recent Students</h3>
-              <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Latest registrations</p>
-            </div>
-            <button
-              onClick={() => onNavigate("leads")}
-              style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "12px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.07)", border: "1px solid hsla(328,100%,54%,0.18)", borderRadius: "8px", padding: "5px 11px", cursor: "pointer" }}
-            >
-              View All <ArrowUpRight size={12} />
-            </button>
-          </div>
-          {isLoading ? (
-            <div style={{ padding: "14px 20px", display: "flex", flexDirection: "column", gap: "10px" }}>
-              {[1, 2, 3, 4].map((i) => <Skeleton key={i} variant="rect" height={48} />)}
-            </div>
-          ) : leadsList.length === 0 ? (
-            <div style={{ padding: "40px 20px", textAlign: "center" }}>
-              <Users2 size={32} style={{ color: "var(--text-secondary)", opacity: 0.3, marginBottom: "10px" }} />
-              <p style={{ margin: 0, fontSize: "13px", fontWeight: 600, color: "var(--text-secondary)" }}>No students yet</p>
-            </div>
-          ) : (
-            leadsList.slice(0, 5).map((student, idx) => (
-              <div
-                key={student.id}
-                onClick={() => onNavigate("leads")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  padding: "12px 20px",
-                  borderBottom: idx < 4 ? "1px solid hsla(285,30%,20%,0.05)" : "none",
-                  gap: "12px",
-                  cursor: "pointer",
-                  transition: "background 0.15s",
-                }}
-                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.background = "hsla(328,100%,54%,0.02)")}
-                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.background = "transparent")}
-              >
-                <div
-                  style={{
-                    width: "36px",
-                    height: "36px",
-                    borderRadius: "50%",
-                    background: student.status === "ENROLLED" ? "hsla(142,70%,45%,0.15)" : "hsla(200,95%,50%,0.15)",
-                    border: `1.5px solid ${student.status === "ENROLLED" ? "hsla(142,70%,45%,0.3)" : "hsla(200,95%,50%,0.3)"}`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "11px",
-                    fontWeight: 800,
-                    color: student.status === "ENROLLED" ? "var(--color-success)" : "var(--color-info)",
-                    flexShrink: 0,
-                  }}
-                >
-                  {student.name?.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                    {student.name}
-                  </p>
-                  <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>
-                    {student.source || "—"} · {student.phone || student.email}
-                  </p>
-                </div>
-                <span
-                  style={{
-                    fontSize: "10px",
-                    fontWeight: 700,
-                    color: student.status === "ENROLLED" ? "var(--color-success)" : "var(--color-info)",
-                    background: student.status === "ENROLLED" ? "hsla(142,70%,45%,0.1)" : "hsla(200,95%,50%,0.1)",
-                    padding: "3px 9px",
-                    borderRadius: "20px",
-                    flexShrink: 0,
-                  }}
-                >
-                  {student.status === "ENROLLED" ? "Enrolled" : "New"}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Enrollment Overview */}
-        <div style={{ background: "#fff", borderRadius: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)", padding: "20px" }}>
-          <h3 style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
-            <BarChart3 size={16} style={{ color: "var(--color-accent)" }} /> Enrollment Overview
-          </h3>
-
-          {isLoading ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {[1, 2, 3].map((i) => <Skeleton key={i} variant="rect" height={50} />)}
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-              {[
-                { label: "Total Students", count: totalStudents, color: "var(--color-success)", pct: 100 },
-                { label: "Total Teachers", count: totalTeachers, color: "hsl(142,70%,42%)", pct: 100 },
-                { label: "Total Batches", count: totalBatches, color: "hsl(271,91%,60%)", pct: 100 },
-                { label: "Total Staff", count: totalStaffOnly, color: "hsl(38,92%,50%)", pct: 100 },
-              ].map((item) => (
-                <div key={item.label} style={{ padding: "14px", background: `${item.color}08`, borderRadius: "12px", border: `1px solid ${item.color}18` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                    <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{item.label}</p>
-                    <span style={{ fontSize: "18px", fontWeight: 800, color: item.color }}>{item.count}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{card.label}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{card.desc}</p>
                   </div>
-                  <div style={{ height: "4px", background: `${item.color}15`, borderRadius: "2px", overflow: "hidden" }}>
-                    <div style={{ width: `${item.pct}%`, height: "100%", background: item.color, borderRadius: "2px", transition: "width 0.8s ease" }} />
-                  </div>
+                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.4, flexShrink: 0 }} />
                 </div>
               ))}
             </div>
-          )}
+          </div>
+        </div>
+      )}
 
-          {/* Overdue Warning */}
-          {overdueInvoices > 0 && (
-            <div style={{ marginTop: "14px", padding: "12px", background: "hsla(342,90%,48%,0.06)", borderRadius: "10px", border: "1px solid hsla(342,90%,48%,0.12)", display: "flex", alignItems: "center", gap: "10px" }}>
-              <AlertCircle size={16} style={{ color: "var(--color-danger)", flexShrink: 0 }} />
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-primary)" }}>
-                {overdueInvoices} overdue invoice{overdueInvoices > 1 ? "s" : ""} need attention
-              </span>
+      {/* ========================================================================= */}
+      {/* 📚 TEACHER DASHBOARD VIEW (FULLY CLICKABLE)                               */}
+      {/* ========================================================================= */}
+      {isTeacher && (
+        <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+          <div
+            onClick={() => onNavigate("schedule")}
+            style={{
+              background: "linear-gradient(135deg, hsl(142,70%,38%) 0%, hsl(200,95%,45%) 50%, hsl(271,91%,60%) 100%)",
+              borderRadius: "22px",
+              padding: "28px 32px",
+              color: "#fff",
+              boxShadow: "0 16px 40px -10px hsla(142,70%,40%,0.35)",
+              cursor: "pointer",
+              transition: "transform 0.2s ease",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
+          >
+            <span style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase", background: "hsla(0,0%,100%,0.2)", padding: "4px 12px", borderRadius: "20px", display: "inline-block", marginBottom: "10px" }}>
+              📚 Teacher Workbench
+            </span>
+            <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800 }}>
+              Welcome back, {userName.split(" ")[0]}! 👨‍🏫
+            </h1>
+            <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>
+              Active Batches: <strong>{totalBatches}</strong> · Total Students Taught: <strong>{totalStudents}</strong>
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+            <div onClick={() => onNavigate("schedule")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>MY TIMETABLE</div>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", marginTop: "4px" }}>View Schedule →</div>
+              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{totalBatches} active batch schedules</p>
+            </div>
+
+            <div onClick={() => onNavigate("attendance")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>STUDENT ATTENDANCE</div>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "hsl(142,70%,35%)", marginTop: "4px" }}>Mark Attendance →</div>
+              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Track & record daily attendance</p>
+            </div>
+
+            <div onClick={() => onNavigate("homework")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>HOMEWORK & EXAMS</div>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "hsl(328,100%,54%)", marginTop: "4px" }}>Manage Assignments →</div>
+              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Review homework & exam marks</p>
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ margin: "0 0 14px", fontSize: "15px", fontWeight: 800, display: "flex", alignItems: "center", gap: "7px" }}>
+              <Zap size={16} style={{ color: "var(--color-accent)" }} /> Quick Navigation
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+              {visibleModuleCards.map((card) => (
+                <div
+                  key={card.label}
+                  onClick={() => onNavigate(card.view)}
+                  style={{
+                    background: "#fff",
+                    borderRadius: "14px",
+                    padding: "16px 18px",
+                    border: "none",
+                    boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)",
+                    cursor: "pointer",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "14px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = `0 4px 16px rgba(29,10,39,0.06), 0 8px 24px -6px ${card.color}25`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)";
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "11px",
+                      background: `${card.color}12`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: card.color,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {card.icon}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{card.label}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{card.desc}</p>
+                  </div>
+                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.4, flexShrink: 0 }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 💼 STAFF DASHBOARD VIEW (FULLY CLICKABLE)                                 */}
+      {/* ========================================================================= */}
+      {isStaff && (
+        <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+          <div
+            onClick={() => onNavigate("billing")}
+            style={{
+              background: "linear-gradient(135deg, hsl(38,92%,48%) 0%, hsl(328,100%,54%) 60%, hsl(271,91%,60%) 100%)",
+              borderRadius: "22px",
+              padding: "28px 32px",
+              color: "#fff",
+              boxShadow: "0 16px 40px -10px hsla(38,92%,48%,0.35)",
+              cursor: "pointer",
+              transition: "transform 0.2s ease",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
+          >
+            <span style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase", background: "hsla(0,0%,100%,0.2)", padding: "4px 12px", borderRadius: "20px", display: "inline-block", marginBottom: "10px" }}>
+              💼 Staff Operations Desk
+            </span>
+            <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800 }}>
+              Welcome back, {userName.split(" ")[0]}! 💼
+            </h1>
+            <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>
+              Total Fees Collected: <strong>₹{totalFeesCollected.toLocaleString("en-IN")}</strong> · Unpaid Invoices: <strong>{unpaidInvoices.length}</strong>
+            </p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+            <div onClick={() => onNavigate("billing")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>COLLECT FEES</div>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "hsl(38,92%,45%)", marginTop: "4px" }}>Fee Billing →</div>
+              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{unpaidInvoices.length} pending fee invoices</p>
+            </div>
+            <div onClick={() => onNavigate("leads")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
+              <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>STUDENT DIRECTORY</div>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "hsl(200,95%,45%)", marginTop: "4px" }}>{totalStudents} Students</div>
+              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Manage registrations & records</p>
+            </div>
+          </div>
+
+          <div>
+            <h3 style={{ margin: "0 0 14px", fontSize: "15px", fontWeight: 800, display: "flex", alignItems: "center", gap: "7px" }}>
+              <Zap size={16} style={{ color: "var(--color-accent)" }} /> Quick Navigation
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+              {visibleModuleCards.map((card) => (
+                <div
+                  key={card.label}
+                  onClick={() => onNavigate(card.view)}
+                  style={{
+                    background: "#fff",
+                    borderRadius: "14px",
+                    padding: "16px 18px",
+                    border: "none",
+                    boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)",
+                    cursor: "pointer",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "14px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = `0 4px 16px rgba(29,10,39,0.06), 0 8px 24px -6px ${card.color}25`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)";
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "11px",
+                      background: `${card.color}12`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: card.color,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {card.icon}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{card.label}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{card.desc}</p>
+                  </div>
+                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.4, flexShrink: 0 }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 👑 ADMIN CRM DASHBOARD VIEW (100% PRODUCTION READY & FULLY CLICKABLE)     */}
+      {/* ========================================================================= */}
+      {isAdmin && (
+        <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+          {/* Admin Hero Welcome Banner */}
+          <div
+            style={{
+              background: "linear-gradient(135deg, hsl(328,100%,54%) 0%, hsl(271,91%,60%) 55%, hsl(240,80%,65%) 100%)",
+              borderRadius: "22px",
+              padding: "28px 32px",
+              color: "#fff",
+              position: "relative",
+              overflow: "hidden",
+              boxShadow: "0 16px 48px -8px hsla(328,100%,54%,0.35)",
+            }}
+          >
+            <div style={{ position: "relative", zIndex: 1 }}>
+              <p style={{ fontSize: "11px", color: "hsla(0,0%,100%,0.75)", fontWeight: 700, margin: "0 0 6px", letterSpacing: "1px", textTransform: "uppercase" }}>
+                {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+              </p>
+              <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800 }}>
+                Welcome back, {userName.split(" ")[0]} 👋
+              </h1>
+              <p style={{ margin: 0, fontSize: "14px", color: "hsla(0,0%,100%,0.8)" }}>
+                Here is the complete operational overview for your academy today.
+              </p>
+            </div>
+          </div>
+
+          {/* KPI Cards Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
+            {kpiCards.map((m, i) => (
+              <div
+                key={i}
+                onClick={m.onClick}
+                style={{
+                  background: "#fff",
+                  borderRadius: "16px",
+                  padding: "22px",
+                  border: "none",
+                  boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)",
+                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-3px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "none";
+                }}
+              >
+                {isLoading ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <Skeleton variant="circle" width={44} height={44} />
+                    <Skeleton variant="text" width="55%" />
+                    <Skeleton variant="text" width="40%" height={30} />
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
+                      <div
+                        style={{
+                          width: "44px",
+                          height: "44px",
+                          borderRadius: "12px",
+                          background: m.gradient,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#fff",
+                          boxShadow: "0 6px 16px rgba(0,0,0,0.18)",
+                        }}
+                      >
+                        {m.icon}
+                      </div>
+                      <span
+                        style={{
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          color: m.badgeColor,
+                          background: "hsla(142,70%,42%,0.1)",
+                          padding: "4px 10px",
+                          borderRadius: "20px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        <TrendingUp size={10} />
+                        {m.badge}
+                      </span>
+                    </div>
+                    <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.6px" }}>
+                      {m.label}
+                    </p>
+                    <h2 style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-headings)" }}>
+                      {m.value}
+                    </h2>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Quick Navigation Bento Grid */}
+          <div>
+            <h3 style={{ margin: "0 0 14px", fontSize: "15px", fontWeight: 800, display: "flex", alignItems: "center", gap: "7px" }}>
+              <Zap size={16} style={{ color: "var(--color-accent)" }} /> Academy Quick Navigation
+            </h3>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+              {visibleModuleCards.map((card) => (
+                <div
+                  key={card.label}
+                  onClick={() => onNavigate(card.view)}
+                  style={{
+                    background: "#fff",
+                    borderRadius: "14px",
+                    padding: "16px 18px",
+                    border: "none",
+                    boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)",
+                    cursor: "pointer",
+                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "14px",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = `0 4px 16px rgba(29,10,39,0.06), 0 8px 24px -6px ${card.color}25`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "none";
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)";
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "42px",
+                      height: "42px",
+                      borderRadius: "11px",
+                      background: `${card.color}12`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: card.color,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {card.icon}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{card.label}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{card.desc}</p>
+                  </div>
+                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.4, flexShrink: 0 }} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Real Pending Fees Highlight */}
+          {unpaidInvoices.length > 0 && (
+            <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+                <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
+                  <AlertCircle size={16} style={{ color: "var(--color-danger)" }} /> Pending Student Fees
+                </h3>
+                <button onClick={() => onNavigate("billing")} style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.07)", border: "1px solid hsla(328,100%,54%,0.18)", borderRadius: "8px", padding: "5px 11px", cursor: "pointer" }}>
+                  View All <ArrowUpRight size={11} />
+                </button>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {unpaidInvoices.slice(0, 5).map((inv, idx) => (
+                  <div key={inv.id || idx} onClick={() => onNavigate("billing")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "hsla(342,90%,48%,0.04)", borderRadius: "10px", border: "1px solid hsla(342,90%,48%,0.1)", cursor: "pointer" }}>
+                    <div>
+                      <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : "Student"}</p>
+                      <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>Due: {new Date(inv.dueDate).toLocaleDateString("en-IN")}</p>
+                    </div>
+                    <span style={{ fontSize: "14px", fontWeight: 800, color: "var(--color-danger)" }}>₹{Number(inv.totalAmount).toLocaleString("en-IN")}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-        </div>
-      </div>
-      )}
-
-      {/* ── Quick Actions Row (Admin/Teacher only) ── */}
-      {(isAdmin || isTeacher) && (
-      <div style={{ background: "#fff", borderRadius: "16px", padding: "18px 20px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)" }}>
-        <h3 style={{ margin: "0 0 12px", fontSize: "13px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
-          <span style={{ width: "22px", height: "22px", borderRadius: "7px", background: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-            <Zap size={12} color="#fff" />
-          </span>
-          Quick Actions
-        </h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "8px" }}>
-          {[
-            { label: "Add New Student", icon: <Plus size={14} />, action: () => onNavigate("leads", { tab: "add" }), color: "hsl(328,100%,54%)" },
-            { label: "Mark Attendance", icon: <CheckCircle2 size={14} />, action: () => onNavigate("attendance"), color: "hsl(142,70%,42%)" },
-            { label: "Issue Invoice", icon: <IndianRupee size={14} />, action: () => onNavigate("billing"), color: "hsl(38,92%,50%)" },
-            { label: "Schedule Class", icon: <CalendarDays size={14} />, action: () => onNavigate("schedule"), color: "hsl(271,91%,60%)" },
-            { label: "View Exams", icon: <BookOpen size={14} />, action: () => onNavigate("exams"), color: "hsl(342,90%,48%)" },
-            { label: "Manage Staff", icon: <Users2 size={14} />, action: () => onNavigate("staff"), color: "hsl(200,95%,50%)" },
-          ].map((a) => (
-            <button
-              key={a.label}
-              onClick={a.action}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "10px 14px",
-                background: `${a.color}08`,
-                border: `1px solid ${a.color}1a`,
-                borderRadius: "10px",
-                cursor: "pointer",
-                fontSize: "12px",
-                fontWeight: 600,
-                color: "var(--text-primary)",
-                transition: "all 0.2s",
-                textAlign: "left",
-                width: "100%",
-              }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget;
-                el.style.background = `${a.color}14`;
-                el.style.transform = "translateX(3px)";
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget;
-                el.style.background = `${a.color}08`;
-                el.style.transform = "none";
-              }}
-            >
-              <span style={{ color: a.color, display: "flex" }}>{a.icon}</span>
-              {a.label}
-              <ArrowUpRight size={11} style={{ marginLeft: "auto", opacity: 0.35 }} />
-            </button>
-          ))}
-        </div>
-      </div>
-      )}
-
-      {/* ── Phase 1: Pending Fees Widget (Clickable → opens billing) ── */}
-      {isAdmin && !isLoading && invoicesList.filter(inv => inv.status === "UNPAID").length > 0 && (
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", marginTop: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
-            <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
-              <AlertCircle size={16} style={{ color: "var(--color-danger)" }} /> Pending Student Fees
-            </h3>
-            <button onClick={() => onNavigate("billing")} style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.07)", border: "1px solid hsla(328,100%,54%,0.18)", borderRadius: "8px", padding: "5px 11px", cursor: "pointer" }}>
-              View All <ArrowUpRight size={11} />
-            </button>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {invoicesList.filter(inv => inv.status === "UNPAID").slice(0, 5).map((inv, idx) => (
-              <div key={inv.id || idx} onClick={() => onNavigate("billing")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "hsla(342,90%,48%,0.04)", borderRadius: "10px", border: "1px solid hsla(342,90%,48%,0.1)", cursor: "pointer" }}>
-                <div>
-                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : "Student"}</p>
-                  <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>Due: {new Date(inv.dueDate).toLocaleDateString("en-IN")}</p>
-                </div>
-                <span style={{ fontSize: "14px", fontWeight: 800, color: "var(--color-danger)" }}>₹{Number(inv.totalAmount).toLocaleString("en-IN")}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Phase 1: Batch-wise Attendance Summary ── */}
-      {isAdmin && !isLoading && batchesList.length > 0 && (
-        <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", marginTop: "16px", border: "none", boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 8px 24px -8px rgba(29,10,39,0.08)" }}>
-          <h3 style={{ margin: "0 0 14px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
-            <CheckCircle2 size={16} style={{ color: "hsl(142,70%,42%)" }} /> Batch-wise Overview
-          </h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px" }}>
-            {batchesList.slice(0, 8).map((batch: any) => (
-              <div key={batch.id} onClick={() => onNavigate("attendance")} style={{ padding: "12px 14px", borderRadius: "10px", background: "hsla(271,91%,60%,0.04)", border: "1px solid hsla(271,91%,60%,0.1)", cursor: "pointer" }}>
-                <p style={{ margin: "0 0 4px", fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{batch.name}</p>
-                <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{batch.enrollments?.length || 0} students · {batch.subject || "General"}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Phase 1: Dynamic Greeting with Server Time ── */}
-      {!isLoading && (
-        <div style={{ background: "linear-gradient(135deg, hsla(271,91%,60%,0.06), hsla(328,100%,54%,0.04))", borderRadius: "14px", padding: "16px 20px", marginTop: "16px", border: "1px solid hsla(271,91%,60%,0.1)" }}>
-          <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
-            {(() => {
-              const hour = new Date().getHours();
-              if (hour < 12) return "🌅 Good Morning";
-              if (hour < 17) return "☀️ Good Afternoon";
-              return "🌙 Good Evening";
-            })()} — You have <strong style={{ color: "var(--color-danger)" }}>{invoicesList.filter(inv => inv.status === "UNPAID").length}</strong> pending fee{invoicesList.filter(inv => inv.status === "UNPAID").length !== 1 ? "s" : ""} and <strong style={{ color: "var(--color-success)" }}>{totalStudents}</strong> enrolled students across <strong>{totalBatches}</strong> batches.
-          </p>
         </div>
       )}
     </div>

@@ -109,7 +109,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
       }}
     >
       {/* Logo */}
-      <div style={{ padding: collapsed ? "16px 12px" : "16px 18px", display: "flex", alignItems: "center", gap: "10px", borderBottom: "1px solid var(--border-glass)", minHeight: "56px", flexShrink: 0 }}>
+      <div style={{ height: "60px", minHeight: "60px", maxHeight: "60px", boxSizing: "border-box", padding: collapsed ? "0 16px" : "0 18px", display: "flex", alignItems: "center", gap: "10px", borderBottom: "1px solid var(--border-glass)", flexShrink: 0, overflow: "hidden" }}>
         <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <GraduationCap size={16} color="#fff" />
         </div>

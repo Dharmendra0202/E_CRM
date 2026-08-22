@@ -400,7 +400,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
       saveLocalStudents(updated);
       return updated;
     });
-    setFormData({ name: "", email: "", phone: "", dob: "", gender: "Male", guardianName: "", guardianPhone: "", address: s.address || "", batch: BATCHES[0], feeAmount: "8500", notes: "" });
+    setFormData({ name: "", email: "", phone: "", dob: "", gender: "Male", guardianName: "", guardianPhone: "", address: "", batch: BATCHES[0], feeAmount: "8500", notes: "" });
     setFormErrors({});
     addHistoryItem({
       category: "Student",
