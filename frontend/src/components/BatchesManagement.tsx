@@ -104,103 +104,16 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         }));
         setBatches(normalizedBatches);
       } else {
-        // Fallback rich sample batches integrated with student data
-        const sampleBatches = getSampleBatches(loadedStudents);
-        setBatches(sampleBatches);
+        setBatches([]);
       }
     } catch (err) {
       console.error(err);
-      setBatches(getSampleBatches([]));
+      setBatches([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getSampleBatches = (existingStudents: any[]) => {
-    const formattedStudents = existingStudents.map(s => ({
-      id: s.id,
-      name: s.user ? `${s.user.firstName} ${s.user.lastName}` : s.parentName || "Student",
-      email: s.user?.email || s.parentEmail || "student@local.com",
-      phone: s.user?.phone || s.parentPhone || "9876543210",
-      status: "ACTIVE",
-      enrollmentDate: s.createdAt || new Date().toISOString(),
-      feeStatus: "PAID",
-      attendanceRate: 92,
-    }));
-
-    return [
-      {
-        id: "batch-1",
-        name: "12th Science Standard",
-        subject: "Physics & Mathematics",
-        capacity: 30,
-        feeAmount: 15000,
-        feeFrequency: "MONTHLY",
-        teacher: { name: "Prof. Rajesh Sharma", avatar: "RS", title: "Senior Physics Faculty" },
-        timings: "Mon, Wed, Fri (08:00 AM - 10:00 AM)",
-        roomNo: "Lab-301",
-        startDate: "2026-04-01",
-        endDate: "2027-03-31",
-        enrollments: formattedStudents.slice(0, 4).concat([
-          { id: "stu-101", name: "Dharmendra Vishwakarma", email: "dharmendra.1786955865090@student.local", phone: "0838399997", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 95, enrollmentDate: "2026-08-01" },
-          { id: "stu-102", name: "Aarav Sharma", email: "aarav.sharma@example.com", phone: "9876543210", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 88, enrollmentDate: "2026-08-02" },
-          { id: "stu-103", name: "Priya Patel", email: "priya.patel@example.com", phone: "9812345678", status: "ACTIVE", feeStatus: "DUE", attendanceRate: 91, enrollmentDate: "2026-08-05" },
-          { id: "stu-104", name: "Rohan Verma", email: "rohan.verma@example.com", phone: "9765432109", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 84, enrollmentDate: "2026-08-10" },
-        ]),
-      },
-      {
-        id: "batch-2",
-        name: "10th CBSE Board Booster",
-        subject: "Science & Mathematics",
-        capacity: 35,
-        feeAmount: 10000,
-        feeFrequency: "MONTHLY",
-        teacher: { name: "Dr. Ananya Gupta", avatar: "AG", title: "Head of Mathematics" },
-        timings: "Tue, Thu, Sat (04:00 PM - 06:00 PM)",
-        roomNo: "Room-204",
-        startDate: "2026-04-01",
-        endDate: "2027-02-28",
-        enrollments: [
-          { id: "stu-105", name: "Ananya Mehta", email: "ananya.mehta@school.com", phone: "9823456789", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 96, enrollmentDate: "2026-07-15" },
-          { id: "stu-106", name: "Kabir Singh", email: "kabir.singh@gmail.com", phone: "9898989898", status: "ACTIVE", feeStatus: "DUE", attendanceRate: 78, enrollmentDate: "2026-07-20" },
-          { id: "stu-107", name: "Sneha Reddy", email: "sneha.reddy@yahoo.com", phone: "9711223344", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 90, enrollmentDate: "2026-07-25" },
-        ],
-      },
-      {
-        id: "batch-3",
-        name: "JEE Advanced Target 2027",
-        subject: "Physics, Chemistry & Math",
-        capacity: 25,
-        feeAmount: 25000,
-        feeFrequency: "TERM",
-        teacher: { name: "Er. Vikramaditya Singh", avatar: "VS", title: "IIT-JEE Specialist" },
-        timings: "Mon-Sat (06:00 AM - 08:30 AM)",
-        roomNo: "Auditorium-B",
-        startDate: "2026-05-01",
-        endDate: "2027-05-31",
-        enrollments: [
-          { id: "stu-108", name: "Siddharth Malhotra", email: "sid.malhotra@jee.edu", phone: "9834567890", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 98, enrollmentDate: "2026-06-01" },
-          { id: "stu-109", name: "Ishaan Khattar", email: "ishaan.k@gmail.com", phone: "9911223344", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 94, enrollmentDate: "2026-06-05" },
-        ],
-      },
-      {
-        id: "batch-4",
-        name: "NEET Medical Foundation",
-        subject: "Biology & Chemistry",
-        capacity: 40,
-        feeAmount: 20000,
-        feeFrequency: "MONTHLY",
-        teacher: { name: "Dr. Meenakshi Sundaram", avatar: "MS", title: "Senior Biology HOD" },
-        timings: "Mon, Tue, Thu, Fri (02:00 PM - 04:00 PM)",
-        roomNo: "Bio-Lab 1",
-        startDate: "2026-06-01",
-        endDate: "2027-04-30",
-        enrollments: [
-          { id: "stu-110", name: "Kavya Nair", email: "kavya.nair@medical.in", phone: "9845678901", status: "ACTIVE", feeStatus: "PAID", attendanceRate: 93, enrollmentDate: "2026-06-10" },
-        ],
-      },
-    ];
-  };
 
   // Filtered Batches
   const filteredBatches = batches.filter(batch => {

@@ -16,17 +16,15 @@ import { Dashboard } from "./components/Dashboard";
 import { OnboardingWizard } from "./components/OnboardingWizard";
 import { UserRoleManagement } from "./components/UserRoleManagement";
 import { AdmissionsCRM } from "./components/AdmissionsCRM";
-// removed: ParentManagement
-// removed: AcademicManagement
 import { HomeworkAssignments } from "./components/HomeworkAssignments";
 import { FeeManagement } from "./components/FeeManagement";
-// removed: TransportManagement
+
 import { LibraryManagement } from "./components/LibraryManagement";
 import { CommunicationCenter } from "./components/CommunicationCenter";
 import { ReportsAnalytics } from "./components/ReportsAnalytics";
 import { SettingsPage } from "./components/SettingsPage";
 import { NewEnrollment } from "./components/NewEnrollment";
-// removed: OnlineAdmissions
+
 import { BulkPromotion } from "./components/BulkPromotion";
 import { ExaminationSystem } from "./components/ExaminationSystem";
 import { MarksheetSystem } from "./components/MarksheetSystem";
@@ -653,8 +651,6 @@ function App() {
           {/* ══════════════ ADMISSIONS CRM VIEW ══════════════ */}
           {currentView === "admissions" && <AdmissionsCRM />}
 
-          {/* ══════════════ ONLINE ADMISSIONS VIEW ══════════════ */}
-          {/* removed: online-admissions */}
 
           {/* ══════════════ BULK PROMOTION VIEW ══════════════ */}
           {currentView === "bulk-promotion" && <BulkPromotion />}
@@ -675,8 +671,6 @@ function App() {
             </div>
           )}
 
-          {/* ══════════════ PARENTS VIEW ══════════════ */}
-          {/* removed: parents */}
 
           {/* ══════════════ STUDENTS VIEW ══════════════ */}
           {currentView === "leads" && (
@@ -713,8 +707,6 @@ function App() {
           {/* ══════════════ BILLING VIEW ══════════════ */}
           {currentView === "billing" && <FeeManagement />}
 
-          {/* ══════════════ ACADEMICS VIEW ══════════════ */}
-          {/* removed: academics */}
 
           {/* ══════════════ HOMEWORK VIEW ══════════════ */}
           {currentView === "homework" && <HomeworkAssignments />}
@@ -820,8 +812,6 @@ function App() {
           {/* ══════════════ ROLES & PERMISSIONS VIEW ══════════════ */}
           {currentView === "roles" && <UserRoleManagement />}
 
-          {/* ══════════════ TRANSPORT VIEW ══════════════ */}
-          {/* removed: transport */}
 
           {/* ══════════════ LIBRARY VIEW ══════════════ */}
           {currentView === "library" && <LibraryManagement />}

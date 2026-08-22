@@ -172,13 +172,62 @@ export const NewEnrollment: React.FC = () => {
     setSubmitError("");
   };
 
-  // ─────────── Steps config ───────────
+  // ─────────── Steps config & Real-Time Progress ───────────
   const steps = [
     { num: 1, label: "Role" },
     { num: 2, label: "Personal Info" },
     ...(role === "student" ? [{ num: 3, label: "Guardian" }] : []),
     { num: 4, label: "Fee Structure" },
   ];
+
+  // Dynamic real-time field completion calculations
+  const isRoleSelected = Boolean(role);
+
+  const step2Fields = [
+    Boolean(personal.firstName.trim()),
+    Boolean(personal.lastName.trim()),
+    personal.phone.replace(/\D/g, "").length === 10,
+    Boolean(personal.gender),
+    Boolean(personal.dob),
+    Boolean(personal.email.trim()),
+    Boolean(personal.address.trim()),
+    Boolean(personal.batch),
+  ];
+  const step2Ratio = step2Fields.filter(Boolean).length / step2Fields.length;
+
+  const step3Fields = [
+    Boolean(guardian.fatherName.trim()),
+    guardian.fatherPhone.replace(/\D/g, "").length === 10,
+    Boolean(guardian.motherName.trim()),
+    guardian.motherPhone.replace(/\D/g, "").length === 10,
+  ];
+  const step3Ratio = step3Fields.filter(Boolean).length / step3Fields.length;
+
+  const step4Fields = [
+    Boolean(fee.totalAmount.trim()),
+    Boolean(fee.paidToday.trim()),
+    Boolean(fee.paymentMethod),
+    Boolean(fee.paymentPlan),
+  ];
+  const step4Ratio = step4Fields.filter(Boolean).length / step4Fields.length;
+
+  const getConnectorProgress = (fromStepNum: number) => {
+    if (currentStep > fromStepNum) return 100;
+    if (currentStep === fromStepNum) {
+      if (fromStepNum === 1) return isRoleSelected ? 100 : 0;
+      if (fromStepNum === 2) return Math.round(step2Ratio * 100);
+      if (fromStepNum === 3) return Math.round(step3Ratio * 100);
+    }
+    return 0;
+  };
+
+  const overallProgress = (() => {
+    if (currentStep === 1) return isRoleSelected ? 25 : 5;
+    if (currentStep === 2) return Math.min(50, Math.round(25 + step2Ratio * 25));
+    if (currentStep === 3) return Math.min(75, Math.round(50 + step3Ratio * 25));
+    if (currentStep === 4) return Math.min(100, Math.round(75 + step4Ratio * 25));
+    return 0;
+  })();
 
   // ─────────── Success State ───────────
   if (submitted) {
@@ -220,35 +269,52 @@ export const NewEnrollment: React.FC = () => {
   }
 
   return (
-    <div style={{ padding: "24px", maxWidth: "800px", margin: "0 auto" }}>
-      {/* Header */}
-      <div style={{ marginBottom: "28px" }}>
-        <h1 style={{ fontSize: "24px", fontWeight: 800, margin: "0 0 6px", color: "hsl(285,50%,12%)" }}>
-          New Enrollment
-        </h1>
-        <p style={{ fontSize: "14px", color: "hsl(285,20%,50%)", margin: 0 }}>
-          Add a new student, staff member, or teacher to the system
-        </p>
-      </div>
+    <div style={{
+      padding: currentStep === 1 ? "24px 16px" : "12px 16px 24px",
+      maxWidth: "640px",
+      margin: "0 auto",
+      width: "100%",
+      boxSizing: "border-box",
+      display: "flex",
+      flexDirection: "column",
+    }}>
+      {/* Header — Only shown on initial Role selection step */}
+      {currentStep === 1 && (
+        <div style={{ marginBottom: "20px" }}>
+          <h1 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px", color: "hsl(285,50%,12%)" }}>
+            New Enrollment
+          </h1>
+          <p style={{ fontSize: "13px", color: "hsl(285,20%,50%)", margin: 0 }}>
+            Add a new student, staff member, or teacher to the system
+          </p>
+        </div>
+      )}
 
-      {/* Step Indicator */}
-      <div style={{ display: "flex", alignItems: "center", gap: "4px", marginBottom: "32px" }}>
+      {/* Step Indicator with Real-Time Filling Connectors */}
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "4px",
+        marginBottom: "20px",
+        padding: "0 4px",
+      }}>
         {steps.map((step, idx) => (
           <React.Fragment key={step.num}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <div style={{
-                width: "32px", height: "32px", borderRadius: "50%", display: "flex",
-                alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 700,
+                width: "28px", height: "28px", borderRadius: "50%", display: "flex",
+                alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700,
                 background: currentStep >= step.num
                   ? "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))"
                   : "hsla(285,30%,20%,0.06)",
                 color: currentStep >= step.num ? "#fff" : "hsl(285,20%,50%)",
                 transition: "all 0.3s ease",
               }}>
-                {currentStep > step.num ? <Check size={14} /> : step.num}
+                {currentStep > step.num ? <Check size={13} /> : step.num}
               </div>
               <span style={{
-                fontSize: "12px", fontWeight: 600,
+                fontSize: "11px", fontWeight: 600,
                 color: currentStep >= step.num ? "hsl(285,50%,12%)" : "hsl(285,20%,55%)",
               }}>
                 {step.label}
@@ -256,12 +322,22 @@ export const NewEnrollment: React.FC = () => {
             </div>
             {idx < steps.length - 1 && (
               <div style={{
-                flex: 1, height: "2px", borderRadius: "1px", margin: "0 8px",
-                background: currentStep > step.num
-                  ? "linear-gradient(90deg, hsl(271,91%,60%), hsl(328,100%,54%))"
-                  : "hsla(285,30%,20%,0.1)",
-                transition: "background 0.3s ease",
-              }} />
+                flex: 1,
+                height: "3px",
+                borderRadius: "3px",
+                margin: "0 8px",
+                background: "hsla(285,30%,20%,0.08)",
+                overflow: "hidden",
+                position: "relative",
+              }}>
+                <div style={{
+                  height: "100%",
+                  width: `${getConnectorProgress(step.num)}%`,
+                  background: "linear-gradient(90deg, hsl(271,91%,60%), hsl(328,100%,54%))",
+                  borderRadius: "3px",
+                  transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                }} />
+              </div>
             )}
           </React.Fragment>
         ))}
@@ -269,8 +345,11 @@ export const NewEnrollment: React.FC = () => {
 
       {/* Form Card */}
       <div style={{
-        background: "#fff", borderRadius: "20px", padding: "32px",
-        boxShadow: "0 8px 40px rgba(0,0,0,0.06)", border: "1px solid hsla(285,30%,20%,0.06)",
+        background: "#fff",
+        borderRadius: "18px",
+        padding: currentStep === 1 ? "24px" : "20px 24px",
+        boxShadow: "0 4px 24px rgba(0,0,0,0.05)",
+        border: "1px solid hsla(285,30%,20%,0.06)",
       }}>
         {/* ═══════════ STEP 1: Role Selection ═══════════ */}
         {currentStep === 1 && (
@@ -326,17 +405,17 @@ export const NewEnrollment: React.FC = () => {
         {/* ═══════════ STEP 2: Personal Details ═══════════ */}
         {currentStep === 2 && (
           <div>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 6px", color: "hsl(285,50%,12%)" }}>
+            <h3 style={{ fontSize: "15px", fontWeight: 700, margin: "0 0 2px", color: "hsl(285,50%,12%)" }}>
               Personal Information
             </h3>
-            <p style={{ fontSize: "13px", color: "hsl(285,20%,50%)", margin: "0 0 24px" }}>
+            <p style={{ fontSize: "12px", color: "hsl(285,20%,50%)", margin: "0 0 16px" }}>
               Enter the {role}'s basic details
             </p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               <InputField
                 label="First Name *"
-                icon={<User size={15} />}
+                icon={<User size={14} />}
                 value={personal.firstName}
                 onChange={(v) => setPersonal({ ...personal, firstName: toTitleCase(v.replace(/[^a-zA-Z\s]/g, "")) })}
                 error={errors.firstName}
@@ -344,14 +423,14 @@ export const NewEnrollment: React.FC = () => {
               />
               <InputField
                 label="Last Name"
-                icon={<User size={15} />}
+                icon={<User size={14} />}
                 value={personal.lastName}
                 onChange={(v) => setPersonal({ ...personal, lastName: toTitleCase(v.replace(/[^a-zA-Z\s]/g, "")) })}
                 placeholder="Enter last name"
               />
               <InputField
                 label="Phone Number *"
-                icon={<Phone size={15} />}
+                icon={<Phone size={14} />}
                 value={personal.phone}
                 onChange={(v) => setPersonal({ ...personal, phone: v.replace(/\D/g, "").slice(0, 10) })}
                 error={errors.phone}
@@ -367,7 +446,7 @@ export const NewEnrollment: React.FC = () => {
               />
               <InputField
                 label="Date of Birth *"
-                icon={<Calendar size={15} />}
+                icon={<Calendar size={14} />}
                 value={personal.dob}
                 onChange={(v) => setPersonal({ ...personal, dob: v })}
                 error={errors.dob}
@@ -377,7 +456,7 @@ export const NewEnrollment: React.FC = () => {
               />
               <InputField
                 label="Email (Gmail)"
-                icon={<Mail size={15} />}
+                icon={<Mail size={14} />}
                 value={personal.email}
                 onChange={(v) => setPersonal({ ...personal, email: v })}
                 error={errors.email}
@@ -385,17 +464,17 @@ export const NewEnrollment: React.FC = () => {
                 type="email"
               />
             </div>
-            <div style={{ marginTop: "16px" }}>
+            <div style={{ marginTop: "12px" }}>
               <InputField
                 label="Address"
-                icon={<MapPin size={15} />}
+                icon={<MapPin size={14} />}
                 value={personal.address}
                 onChange={(v) => setPersonal({ ...personal, address: toTitleCase(v) })}
                 placeholder="Full residential address"
                 fullWidth
               />
             </div>
-            <div style={{ marginTop: "16px" }}>
+            <div style={{ marginTop: "12px" }}>
               <SelectField
                 label="Class / Batch / Standard *"
                 value={personal.batch}
@@ -410,17 +489,17 @@ export const NewEnrollment: React.FC = () => {
         {/* ═══════════ STEP 3: Guardian Details (Students only) ═══════════ */}
         {currentStep === 3 && role === "student" && (
           <div>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 6px", color: "hsl(285,50%,12%)" }}>
+            <h3 style={{ fontSize: "15px", fontWeight: 700, margin: "0 0 2px", color: "hsl(285,50%,12%)" }}>
               Guardian Information
             </h3>
-            <p style={{ fontSize: "13px", color: "hsl(285,20%,50%)", margin: "0 0 24px" }}>
+            <p style={{ fontSize: "12px", color: "hsl(285,20%,50%)", margin: "0 0 16px" }}>
               Enter the student's parent / guardian details
             </p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               <InputField
                 label="Father's Name *"
-                icon={<User size={15} />}
+                icon={<User size={14} />}
                 value={guardian.fatherName}
                 onChange={(v) => setGuardian({ ...guardian, fatherName: toTitleCase(v.replace(/[^a-zA-Z\s]/g, "")) })}
                 error={errors.fatherName}
@@ -635,20 +714,20 @@ export const NewEnrollment: React.FC = () => {
         <>
         <div style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
-          marginTop: "32px", paddingTop: "20px", borderTop: "1px solid hsla(285,30%,20%,0.06)",
+          marginTop: "20px", paddingTop: "14px", borderTop: "1px solid hsla(285,30%,20%,0.06)",
         }}>
           <button
             onClick={prevStep}
             style={{
-              display: "flex", alignItems: "center", gap: "6px", padding: "10px 20px",
-              borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)",
-              background: "#fff", cursor: "pointer", fontSize: "13px", fontWeight: 600,
+              display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px",
+              borderRadius: "8px", border: "1.5px solid hsla(285,30%,20%,0.12)",
+              background: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: 600,
               color: "hsl(285,20%,40%)", transition: "all 0.2s",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.borderColor = "hsl(271,91%,60%)")}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.12)")}
           >
-            <ChevronLeft size={16} /> Back
+            <ChevronLeft size={15} /> Back
           </button>
 
           {currentStep < 4 ? (
@@ -656,37 +735,37 @@ export const NewEnrollment: React.FC = () => {
               onClick={nextStep}
               disabled={isSubmitting}
               style={{
-                display: "flex", alignItems: "center", gap: "6px", padding: "10px 24px",
-                borderRadius: "10px", border: "none", cursor: isSubmitting ? "not-allowed" : "pointer",
-                fontSize: "13px", fontWeight: 700,
+                display: "flex", alignItems: "center", gap: "6px", padding: "8px 20px",
+                borderRadius: "8px", border: "none", cursor: isSubmitting ? "not-allowed" : "pointer",
+                fontSize: "12.5px", fontWeight: 700,
                 background: isSubmitting ? "hsl(0,0%,75%)" : "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))",
                 color: "#fff", opacity: isSubmitting ? 0.7 : 1, transition: "transform 0.2s",
               }}
               onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.transform = "scale(1.03)"; }}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
             >
-              {isSubmitting ? "Submitting..." : (currentStep === 2 && role !== "student" ? <><UserPlus size={16} /> Submit Enrollment</> : <>Next <ChevronRight size={16} /></>)}
+              {isSubmitting ? "Submitting..." : (currentStep === 2 && role !== "student" ? <><UserPlus size={15} /> Submit Enrollment</> : <>Next <ChevronRight size={15} /></>)}
             </button>
           ) : (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
               style={{
-                display: "flex", alignItems: "center", gap: "6px", padding: "10px 28px",
-                borderRadius: "10px", border: "none", cursor: isSubmitting ? "not-allowed" : "pointer",
-                fontSize: "13px", fontWeight: 700,
+                display: "flex", alignItems: "center", gap: "6px", padding: "8px 22px",
+                borderRadius: "8px", border: "none", cursor: isSubmitting ? "not-allowed" : "pointer",
+                fontSize: "12.5px", fontWeight: 700,
                 background: isSubmitting ? "hsl(0,0%,75%)" : "linear-gradient(135deg, hsl(142,70%,40%), hsl(160,80%,35%))",
                 color: "#fff", opacity: isSubmitting ? 0.7 : 1, transition: "transform 0.2s",
               }}
               onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.transform = "scale(1.03)"; }}
               onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
             >
-              <UserPlus size={16} /> {isSubmitting ? "Submitting..." : "Submit Enrollment"}
+              <UserPlus size={15} /> {isSubmitting ? "Submitting..." : "Submit Enrollment"}
             </button>
           )}
         </div>
         {submitError && (
-          <p style={{ color: "hsl(0,70%,50%)", fontSize: "13px", marginTop: "12px", textAlign: "center" }}>
+          <p style={{ color: "hsl(0,70%,50%)", fontSize: "12px", marginTop: "10px", textAlign: "center" }}>
             {submitError}
           </p>
         )}
@@ -713,13 +792,13 @@ interface InputFieldProps {
 
 const InputField: React.FC<InputFieldProps> = ({ label, icon, value, onChange, error, placeholder, type = "text", fullWidth, min, max }) => (
   <div style={{ gridColumn: fullWidth ? "1 / -1" : undefined }}>
-    <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>
+    <label style={{ fontSize: "11.5px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "4px", display: "block" }}>
       {label}
     </label>
     <div style={{ position: "relative" }}>
       {icon && (
         <span style={{
-          position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)",
+          position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)",
           color: "hsl(285,20%,55%)", display: "flex",
         }}>
           {icon}
@@ -734,9 +813,9 @@ const InputField: React.FC<InputFieldProps> = ({ label, icon, value, onChange, e
         max={max}
         autoCapitalize={type === "text" ? "words" : undefined}
         style={{
-          width: "100%", padding: icon ? "10px 14px 10px 36px" : "10px 14px",
-          borderRadius: "10px", border: `1.5px solid ${error ? "hsl(0,70%,55%)" : "hsla(285,30%,20%,0.12)"}`,
-          fontSize: "13px", outline: "none", fontFamily: "inherit", boxSizing: "border-box",
+          width: "100%", padding: icon ? "8px 12px 8px 32px" : "8px 12px",
+          borderRadius: "8px", border: `1.5px solid ${error ? "hsl(0,70%,55%)" : "hsla(285,30%,20%,0.12)"}`,
+          fontSize: "12.5px", outline: "none", fontFamily: "inherit", boxSizing: "border-box",
           transition: "border-color 0.2s",
           textTransform: type === "text" ? "capitalize" : "none",
         }}
@@ -744,7 +823,7 @@ const InputField: React.FC<InputFieldProps> = ({ label, icon, value, onChange, e
         onBlur={(e) => (e.currentTarget.style.borderColor = error ? "hsl(0,70%,55%)" : "hsla(285,30%,20%,0.12)")}
       />
     </div>
-    {error && <p style={{ fontSize: "11px", color: "hsl(0,70%,50%)", margin: "4px 0 0" }}>{error}</p>}
+    {error && <p style={{ fontSize: "11px", color: "hsl(0,70%,50%)", margin: "3px 0 0" }}>{error}</p>}
   </div>
 );
 
@@ -759,16 +838,16 @@ interface SelectFieldProps {
 
 const SelectField: React.FC<SelectFieldProps> = ({ label, value, options, onChange, error }) => (
   <div>
-    <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>
+    <label style={{ fontSize: "11.5px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "4px", display: "block" }}>
       {label}
     </label>
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
       style={{
-        width: "100%", padding: "10px 14px", borderRadius: "10px",
+        width: "100%", padding: "8px 12px", borderRadius: "8px",
         border: `1.5px solid ${error ? "hsl(0,70%,55%)" : "hsla(285,30%,20%,0.12)"}`,
-        fontSize: "13px", outline: "none", background: "#fff", fontFamily: "inherit",
+        fontSize: "12.5px", outline: "none", background: "#fff", fontFamily: "inherit",
         cursor: "pointer", boxSizing: "border-box", transition: "border-color 0.2s",
       }}
       onFocus={(e) => (e.currentTarget.style.borderColor = "hsl(271,91%,60%)")}
@@ -778,6 +857,6 @@ const SelectField: React.FC<SelectFieldProps> = ({ label, value, options, onChan
         <option key={opt} value={opt}>{opt}</option>
       ))}
     </select>
-    {error && <p style={{ fontSize: "11px", color: "hsl(0,70%,50%)", margin: "4px 0 0" }}>{error}</p>}
+    {error && <p style={{ fontSize: "11px", color: "hsl(0,70%,50%)", margin: "3px 0 0" }}>{error}</p>}
   </div>
 );
