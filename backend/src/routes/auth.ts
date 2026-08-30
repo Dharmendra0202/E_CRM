@@ -301,11 +301,104 @@ router.get("/profile", async (req: Request, res: Response): Promise<void> => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
-      select: { id: true, email: true, firstName: true, lastName: true, role: true, phone: true, emailVerified: true, createdAt: true },
+      select: {
+        id: true, email: true, firstName: true, lastName: true, role: true,
+        phone: true, emailVerified: true, authProvider: true, createdAt: true,
+        student: {
+          select: {
+            id: true, parentName: true, parentPhone: true, parentEmail: true,
+            motherName: true, motherPhone: true, gender: true, address: true,
+            dateOfBirth: true,
+            enrollments: { include: { batch: { select: { id: true, name: true, subject: true } } }, where: { status: "ACTIVE" } },
+          },
+        },
+        teacher: {
+          select: { id: true, bio: true, qualification: true, hourlyRate: true },
+        },
+      },
     });
     if (!user) { res.status(404).json({ status: "error", message: "User not found." }); return; }
     res.json({ status: "success", data: user });
   } catch { res.status(401).json({ status: "error", message: "Invalid token." }); }
+});
+
+// ── PUT /auth/profile — Update own profile ───────────────────
+router.put("/profile", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
+    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET!) as any;
+
+    const { firstName, lastName, phone, parentName, parentPhone, parentEmail, motherName, motherPhone, gender, address, bio, qualification } = req.body;
+
+    // Update core User fields
+    const updatedUser = await prisma.user.update({
+      where: { id: decoded.id },
+      data: {
+        ...(firstName !== undefined && { firstName }),
+        ...(lastName !== undefined && { lastName }),
+        ...(phone !== undefined && { phone }),
+      },
+      select: { id: true, email: true, firstName: true, lastName: true, role: true, phone: true },
+    });
+
+    // Update Student-specific fields if user has a student profile
+    if (updatedUser.role === "STUDENT") {
+      const student = await prisma.student.findUnique({ where: { userId: decoded.id } });
+      if (student) {
+        await prisma.student.update({
+          where: { id: student.id },
+          data: {
+            ...(parentName !== undefined && { parentName }),
+            ...(parentPhone !== undefined && { parentPhone }),
+            ...(parentEmail !== undefined && { parentEmail }),
+            ...(motherName !== undefined && { motherName }),
+            ...(motherPhone !== undefined && { motherPhone }),
+            ...(gender !== undefined && { gender }),
+            ...(address !== undefined && { address }),
+          },
+        });
+      }
+    }
+
+    // Update Teacher-specific fields if user has a teacher profile
+    if (updatedUser.role === "TEACHER") {
+      const teacher = await prisma.teacher.findUnique({ where: { userId: decoded.id } });
+      if (teacher) {
+        await prisma.teacher.update({
+          where: { id: teacher.id },
+          data: {
+            ...(bio !== undefined && { bio }),
+            ...(qualification !== undefined && { qualification }),
+          },
+        });
+      }
+    }
+
+    // Re-fetch the full profile to return
+    const fullProfile = await prisma.user.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true, email: true, firstName: true, lastName: true, role: true,
+        phone: true, emailVerified: true, authProvider: true, createdAt: true,
+        student: {
+          select: {
+            id: true, parentName: true, parentPhone: true, parentEmail: true,
+            motherName: true, motherPhone: true, gender: true, address: true,
+            dateOfBirth: true,
+            enrollments: { include: { batch: { select: { id: true, name: true, subject: true } } }, where: { status: "ACTIVE" } },
+          },
+        },
+        teacher: {
+          select: { id: true, bio: true, qualification: true, hourlyRate: true },
+        },
+      },
+    });
+
+    logAudit({ userId: decoded.id, userEmail: updatedUser.email, module: "auth", action: "UPDATE", metadata: { updated: "profile" } }, req);
+
+    res.json({ status: "success", message: "Profile updated successfully.", data: fullProfile });
+  } catch (err: any) { res.status(500).json({ status: "error", message: err.message || "Failed to update profile." }); }
 });
 
 // ── PUT /auth/change-password ────────────────────────────────

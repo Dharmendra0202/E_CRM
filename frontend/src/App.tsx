@@ -31,6 +31,7 @@ import { MarksheetSystem } from "./components/MarksheetSystem";
 import { WeakStudentModule } from "./components/WeakStudentModule";
 import { BatchesManagement } from "./components/BatchesManagement";
 import { LandingPage } from "./components/LandingPage";
+import { ProfilePage } from "./components/ProfilePage";
 import { Sidebar } from "./components/ui/Sidebar";
 import { CommandPalette } from "./components/ui/CommandPalette";
 import { NotificationCenter } from "./components/ui/NotificationCenter";
@@ -39,10 +40,10 @@ import {
   Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
   Filter, Settings, LogOut, ShieldCheck, Sparkles,
   Activity, BookOpen, IndianRupee, History, Sun, Moon, Download,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, User
 } from "lucide-react";
 
-type ViewType = "dashboard" | "leads" | "batches" | "new-enrollment" | "online-admissions" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding";
+type ViewType = "dashboard" | "leads" | "batches" | "new-enrollment" | "online-admissions" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding" | "my-profile";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
@@ -584,6 +585,7 @@ function App() {
                     <div className="dropdown-user-name">{userName}</div>
                     <div className="dropdown-user-role">{userRole}</div>
                   </div>
+                  <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); setCurrentView("my-profile" as ViewType); }}><User size={14} /><span>My Profile</span></button>
                   <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); setCurrentView("settings" as ViewType); }}><Settings size={14} /><span>Settings</span></button>
                   <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); setCurrentView("roles" as ViewType); }}><ShieldCheck size={14} /><span>Security</span></button>
                   <button className="dropdown-item" onClick={() => setDarkMode(!darkMode)}>
@@ -765,6 +767,7 @@ function App() {
           )}
 
           {/* ══════════════ SETTINGS VIEW ══════════════ */}
+          {currentView === "my-profile" && <ProfilePage />}
           {currentView === "settings" && <SettingsPage />}
 
           {/* ══════════════ TEACHERS VIEW ══════════════ */}

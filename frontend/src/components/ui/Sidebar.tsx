@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
   Check, BookOpen, GraduationCap, Target,
@@ -61,6 +61,79 @@ const NAV_ITEMS = [
   ]},
 ];
 
+/* ── Animated drawer wrapper for each nav group ── */
+function DrawerGroup({ isOpen, children }: { isOpen: boolean; children: React.ReactNode }) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | "auto">(isOpen ? "auto" : 0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const firstRender = useRef(true);
+
+  // Measure and animate
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+
+    // Skip animation on first render — just set the right state
+    if (firstRender.current) {
+      firstRender.current = false;
+      setHeight(isOpen ? "auto" : 0);
+      return;
+    }
+
+    const scrollH = el.scrollHeight;
+
+    if (isOpen) {
+      // Opening: 0 → scrollHeight
+      setHeight(0);
+      setIsAnimating(true);
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      el.offsetHeight; // force reflow
+      requestAnimationFrame(() => {
+        setHeight(scrollH);
+      });
+    } else {
+      // Closing: auto → scrollHeight → 0
+      // First, pin to the concrete pixel height
+      setHeight(scrollH);
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+      el.offsetHeight; // force reflow so browser paints at scrollHeight
+      // Use double-rAF to guarantee the browser has fully committed the scrollHeight
+      // before we start animating down to 0
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(true);
+          setHeight(0);
+        });
+      });
+    }
+  }, [isOpen]);
+
+  const handleTransitionEnd = useCallback((e: React.TransitionEvent<HTMLDivElement>) => {
+    // Only respond to the height transition on this exact element (ignore bubbled events)
+    if (e.target !== e.currentTarget || e.propertyName !== "height") return;
+    setIsAnimating(false);
+    if (isOpen) {
+      setHeight("auto"); // allow content to grow naturally once open
+    }
+  }, [isOpen]);
+
+  return (
+    <div
+      ref={contentRef}
+      onTransitionEnd={handleTransitionEnd}
+      style={{
+        height: typeof height === "number" ? `${height}px` : height,
+        overflow: isAnimating || !isOpen ? "hidden" : "visible",
+        transition: isAnimating ? "height 0.5s ease-in-out" : "none",
+        willChange: isAnimating ? "height" : "auto",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+
 export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, mobileOpen, onMobileClose, userRole = "ADMIN" }: SidebarProps) {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(["Main", "People", "Academics"]));
 
@@ -79,11 +152,18 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
     items: group.items.filter(item => isAllowed(item.view)),
   })).filter(group => group.items.length > 0);
 
-  // Auto-expand the group that contains the active view
-  const activeGroup = filteredNavItems.find(g => g.items.some(i => i.view === currentView))?.group;
-  if (activeGroup && !openGroups.has(activeGroup)) {
-    openGroups.add(activeGroup);
-  }
+  // Auto-expand the group that contains the active view (only when navigation changes)
+  const prevView = useRef(currentView);
+  useEffect(() => {
+    if (prevView.current !== currentView) {
+      prevView.current = currentView;
+      const activeGroup = filteredNavItems.find(g => g.items.some(i => i.view === currentView))?.group;
+      if (activeGroup && !openGroups.has(activeGroup)) {
+        setOpenGroups(prev => new Set([...prev, activeGroup]));
+      }
+    }
+  }, [currentView]);
+
 
   return (
     <>
@@ -135,42 +215,90 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                 }}
               >
                 <span>{group.group}</span>
-                <ChevronDown size={12} style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }} />
+                <ChevronDown
+                  size={12}
+                  style={{
+                    transform: isOpen ? "rotate(180deg)" : "rotate(0)",
+                    transition: "transform 0.5s ease-in-out",
+                  }}
+                />
               </button>
             )}
-            {(collapsed || isOpen) && group.items.map((item) => {
-              const isActive = currentView === item.view;
-              return (
-                <button
-                  key={item.view}
-                  onClick={() => { onNavigate(item.view); if (onMobileClose) onMobileClose(); }}
-                  title={collapsed ? item.label : undefined}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    width: "100%",
-                    padding: collapsed ? "10px 12px" : "8px 12px",
-                    margin: "2px 0",
-                    borderRadius: "10px",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    fontWeight: isActive ? 700 : 600,
-                    color: isActive ? "var(--color-accent)" : "var(--text-secondary)",
-                    background: isActive ? "hsla(328,100%,54%,0.08)" : "transparent",
-                    transition: "all 0.2s",
-                    textAlign: "left",
-                    justifyContent: collapsed ? "center" : "flex-start",
-                  }}
-                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
-                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
-                >
-                  <span style={{ display: "flex", flexShrink: 0 }}>{item.icon}</span>
-                  {!collapsed && <span style={{ whiteSpace: "nowrap" }}>{item.label}</span>}
-                </button>
-              );
-            })}
+
+            {/* Animated drawer container */}
+            {collapsed ? (
+              /* When collapsed, show all items without animation */
+              group.items.map((item) => {
+                const isActive = currentView === item.view;
+                return (
+                  <button
+                    key={item.view}
+                    onClick={() => { onNavigate(item.view); if (onMobileClose) onMobileClose(); }}
+                    title={collapsed ? item.label : undefined}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      width: "100%",
+                      padding: "10px 12px",
+                      margin: "2px 0",
+                      borderRadius: "10px",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: isActive ? 700 : 600,
+                      color: isActive ? "var(--color-accent)" : "var(--text-secondary)",
+                      background: isActive ? "hsla(328,100%,54%,0.08)" : "transparent",
+                      transition: "all 0.2s",
+                      textAlign: "left",
+                      justifyContent: "center",
+                    }}
+                    onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
+                    onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+                  >
+                    <span style={{ display: "flex", flexShrink: 0 }}>{item.icon}</span>
+                  </button>
+                );
+              })
+            ) : (
+              <DrawerGroup isOpen={isOpen}>
+                {group.items.map((item, idx) => {
+                  const isActive = currentView === item.view;
+                  return (
+                    <button
+                      key={item.view}
+                      onClick={() => { onNavigate(item.view); if (onMobileClose) onMobileClose(); }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                        width: "100%",
+                        padding: "8px 12px",
+                        margin: "2px 0",
+                        borderRadius: "10px",
+                        border: "none",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        fontWeight: isActive ? 700 : 600,
+                        color: isActive ? "var(--color-accent)" : "var(--text-secondary)",
+                        background: isActive ? "hsla(328,100%,54%,0.08)" : "transparent",
+                        transition: "all 0.2s ease, opacity 0.45s ease-in-out, transform 0.45s ease-in-out",
+                        transitionDelay: isOpen ? `${idx * 0.04}s` : "0s",
+                        textAlign: "left",
+                        justifyContent: "flex-start",
+                        opacity: isOpen ? 1 : 0,
+                        transform: isOpen ? "translateY(0)" : "translateY(-8px)",
+                      }}
+                      onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
+                      onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+                    >
+                      <span style={{ display: "flex", flexShrink: 0 }}>{item.icon}</span>
+                      <span style={{ whiteSpace: "nowrap" }}>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </DrawerGroup>
+            )}
           </div>
           );
         })}

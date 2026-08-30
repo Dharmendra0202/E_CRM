@@ -59,6 +59,8 @@ export const api = {
     refresh: (refreshToken: string) =>
       request<any>("/auth/refresh", { method: "POST", body: JSON.stringify({ refreshToken }) }),
     getProfile: () => request<any>("/auth/profile"),
+    updateProfile: (body: object) =>
+      request<any>("/auth/profile", { method: "PUT", body: JSON.stringify(body) }),
     changePassword: (currentPassword: string, newPassword: string) =>
       request<any>("/auth/change-password", { method: "PUT", body: JSON.stringify({ currentPassword, newPassword }) }),
     logoutAll: () => request<any>("/auth/logout-all", { method: "DELETE" }),
