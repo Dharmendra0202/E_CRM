@@ -98,7 +98,7 @@ export function BulkPromotion() {
           </select>
         </div>
         <div style={{ display: "flex", alignItems: "center", paddingBottom: "8px" }}>
-          <ArrowUpRight size={24} style={{ color: "hsl(271,91%,60%)" }} />
+          <ArrowUpRight size={24} style={{ color: "hsl(200, 85%, 48%)" }} />
         </div>
         <div>
           <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>To Class / Batch (Promote To)</label>
@@ -119,7 +119,7 @@ export function BulkPromotion() {
               {filteredStudents.length} student{filteredStudents.length !== 1 ? "s" : ""} in {fromBatch}
             </span>
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-              <button onClick={selectAll} style={{ fontSize: "11px", fontWeight: 700, color: "hsl(271,91%,60%)", background: "hsla(271,91%,60%,0.08)", border: "1px solid hsla(271,91%,60%,0.2)", padding: "5px 12px", borderRadius: "8px", cursor: "pointer" }}>
+              <button onClick={selectAll} style={{ fontSize: "11px", fontWeight: 700, color: "hsl(200, 85%, 48%)", background: "hsla(200, 85%, 48%,0.08)", border: "1px solid hsla(200, 85%, 48%,0.2)", padding: "5px 12px", borderRadius: "8px", cursor: "pointer" }}>
                 {selectedStudents.size === filteredStudents.length ? "Deselect All" : "Select All"}
               </button>
               <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>{selectedStudents.size} selected</span>
@@ -137,8 +137,8 @@ export function BulkPromotion() {
               const checked = selectedStudents.has(s.id);
               return (
                 <div key={s.id} onClick={() => toggleStudent(s.id)}
-                  style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 20px", borderBottom: "1px solid var(--border-glass)", cursor: "pointer", background: checked ? "hsla(271,91%,60%,0.04)" : "transparent" }}>
-                  <input type="checkbox" checked={checked} onChange={() => {}} style={{ width: "16px", height: "16px", accentColor: "hsl(271,91%,60%)" }} />
+                  style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 20px", borderBottom: "1px solid var(--border-glass)", cursor: "pointer", background: checked ? "hsla(200, 85%, 48%,0.04)" : "transparent" }}>
+                  <input type="checkbox" checked={checked} onChange={() => {}} style={{ width: "16px", height: "16px", accentColor: "hsl(200, 85%, 48%)" }} />
                   <div>
                     <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{name}</p>
                     <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{s.user?.email || s.parentEmail}</p>

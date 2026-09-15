@@ -344,7 +344,7 @@ function App() {
   const ROLE_META: Record<string, { color: string; bg: string }> = {
     ADMIN:   { color: "hsl(38,92%,50%)",    bg: "hsla(38,92%,50%,0.1)" },
     TEACHER: { color: "var(--color-success)", bg: "hsla(142,70%,45%,0.1)" },
-    SALES:   { color: "var(--color-accent)",  bg: "hsla(328,100%,54%,0.1)" },
+    SALES:   { color: "var(--color-accent)",  bg: "hsla(202, 90%, 58%,0.1)" },
     BILLING: { color: "hsl(38,92%,45%)",    bg: "hsla(38,92%,45%,0.1)" },
     SUPPORT: { color: "var(--color-info)",    bg: "hsla(200,95%,50%,0.1)" },
   };
@@ -419,7 +419,6 @@ function App() {
             </button>
             <GraduationCap size={26} style={{ color: "var(--color-accent)" }} />
             <h2 style={{ fontSize: "19px", fontWeight: 800, margin: 0 }} className="text-gradient-indigo">E-CRM Portal</h2>
-            <span className="navbar-logo-badge">PRO</span>
 
             {/* Back & Forward History Controls */}
             <div style={{ display: "flex", gap: "4px", marginLeft: "6px" }}>
@@ -543,12 +542,12 @@ function App() {
                           borderBottom: "1px solid hsla(285,30%,20%,0.04)",
                           transition: "background 0.15s"
                         }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "hsla(271,91%,60%,0.05)")}
+                        onMouseEnter={e => (e.currentTarget.style.background = "hsla(200, 85%, 48%,0.05)")}
                         onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                       >
                         <div style={{
                           width: "34px", height: "34px", borderRadius: "10px", flexShrink: 0,
-                          background: s.type === "NAV" ? "linear-gradient(135deg, #0284c7, #2563eb)" : "linear-gradient(135deg,hsl(271,91%,60%),hsl(328,100%,54%))",
+                          background: s.type === "NAV" ? "linear-gradient(135deg, #0284c7, #2563eb)" : "linear-gradient(135deg,hsl(200, 85%, 48%),hsl(202, 90%, 58%))",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: "11px", fontWeight: 900, color: "#fff"
                         }}>{initials}</div>
@@ -572,15 +571,6 @@ function App() {
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <Button
-              variant="ghost"
-              title="Activity History"
-              onClick={() => setIsHistoryOpen(true)}
-              style={{ position: "relative", width: "36px", height: "36px", padding: 0, borderRadius: "50%" }}
-            >
-              <History size={17} />
-            </Button>
-
             {/* Notification Center */}
             <NotificationCenter
               invoiceCount={invoicesList.filter((i: any) => i.status === "UNPAID").length}
@@ -780,7 +770,7 @@ function App() {
                       <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "12px", color: "var(--text-secondary)" }}>
                         {staff.phone && <span>📞 {staff.phone}</span>}
                       </div>
-                      <p style={{ margin: "10px 0 0", fontSize: "10px", color: "hsl(271,91%,60%)", fontWeight: 600 }}>Click to edit details & salary</p>
+                      <p style={{ margin: "10px 0 0", fontSize: "10px", color: "hsl(200, 85%, 48%)", fontWeight: 600 }}>Click to edit details & salary</p>
                     </div>
                   );
                 })}
@@ -827,7 +817,7 @@ function App() {
                       {teacher.phone && <span>📞 {teacher.phone}</span>}
                       <span>📚 {teacher.title || "General"}</span>
                     </div>
-                    <p style={{ margin: "10px 0 0", fontSize: "10px", color: "hsl(271,91%,60%)", fontWeight: 600 }}>Click to edit details & salary</p>
+                    <p style={{ margin: "10px 0 0", fontSize: "10px", color: "hsl(200, 85%, 48%)", fontWeight: 600 }}>Click to edit details & salary</p>
                   </div>
                 ))}
               </div>

@@ -56,9 +56,9 @@ export function ExamsManagement() {
       {/* KPI Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
         {[
-          { icon: <Award size={22} />, value: String(batches.length), label: "TOTAL BATCHES", color: "hsl(328,100%,54%)", bg: "hsla(328,100%,54%,0.08)" },
+          { icon: <Award size={22} />, value: String(batches.length), label: "TOTAL BATCHES", color: "hsl(202, 90%, 58%)", bg: "hsla(202, 90%, 58%,0.08)" },
           { icon: <CheckCircle2 size={22} />, value: `${totalStudents}`, label: "TOTAL STUDENTS", color: "hsl(160,70%,40%)", bg: "hsla(160,70%,40%,0.08)" },
-          { icon: <GraduationCap size={22} />, value: String(batchStudents.length), label: "IN SELECTED BATCH", color: "hsl(271,91%,60%)", bg: "hsla(271,91%,60%,0.08)" },
+          { icon: <GraduationCap size={22} />, value: String(batchStudents.length), label: "IN SELECTED BATCH", color: "hsl(200, 85%, 48%)", bg: "hsla(200, 85%, 48%,0.08)" },
           { icon: <Sparkles size={22} />, value: selectedBatch || "—", label: "CURRENT BATCH", color: "hsl(38,92%,50%)", bg: "hsla(38,92%,50%,0.08)" },
         ].map((stat, i) => (
           <div key={i} style={{
@@ -122,7 +122,7 @@ export function ExamsManagement() {
                     const status = student.enrollments?.[0]?.status || "—";
                     return (
                       <tr key={student.id} style={{ borderBottom: "1px solid var(--border-glass)", transition: "background 0.1s" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "hsla(328,100%,54%,0.02)")}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "hsla(202, 90%, 58%,0.02)")}
                         onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
                         <td style={{ padding: "12px 16px", fontWeight: 700, color: "var(--text-secondary)" }}>#{String(idx + 101)}</td>
                         <td style={{ padding: "12px 16px", fontWeight: 700, color: "var(--text-primary)" }}>{name}</td>
@@ -135,7 +135,7 @@ export function ExamsManagement() {
                         <td style={{ padding: "12px 16px" }}>
                           <button
                             onClick={() => setSelectedStudent(student)}
-                            style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.08)", border: "1px solid hsla(328,100%,54%,0.2)", padding: "4px 10px", borderRadius: "8px", cursor: "pointer" }}
+                            style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(202, 90%, 58%,0.08)", border: "1px solid hsla(202, 90%, 58%,0.2)", padding: "4px 10px", borderRadius: "8px", cursor: "pointer" }}
                           >
                             Report Card
                           </button>
@@ -150,8 +150,8 @@ export function ExamsManagement() {
         </div>
 
         {/* Report Card Preview */}
-        <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid hsla(328,100%,54%,0.15)", padding: "20px", backgroundImage: "linear-gradient(to bottom, #fff, hsla(328,100%,54%,0.02))" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid hsla(328,100%,54%,0.1)" }}>
+        <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid hsla(202, 90%, 58%,0.15)", padding: "20px", backgroundImage: "linear-gradient(to bottom, #fff, hsla(202, 90%, 58%,0.02))" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid hsla(202, 90%, 58%,0.1)" }}>
             <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
               <Printer size={16} style={{ color: "var(--color-accent)" }} /> Printable Report Card
             </h3>
@@ -159,7 +159,7 @@ export function ExamsManagement() {
           </div>
 
           {selectedStudent ? (
-            <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid hsla(328,100%,54%,0.15)", padding: "20px", boxShadow: "0 4px 16px rgba(29,10,39,0.06)" }}>
+            <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid hsla(202, 90%, 58%,0.15)", padding: "20px", boxShadow: "0 4px 16px rgba(29,10,39,0.06)" }}>
               {/* School Header */}
               <div style={{ textAlign: "center", paddingBottom: "12px", borderBottom: "1px solid var(--border-glass)", marginBottom: "14px" }}>
                 <GraduationCap size={28} style={{ color: "var(--color-accent)", marginBottom: "4px" }} />
@@ -168,7 +168,7 @@ export function ExamsManagement() {
               </div>
 
               {/* Student Info */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", padding: "10px", background: "hsla(328,100%,54%,0.03)", borderRadius: "10px", border: "1px solid hsla(328,100%,54%,0.08)", marginBottom: "14px", fontSize: "11px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px", padding: "10px", background: "hsla(202, 90%, 58%,0.03)", borderRadius: "10px", border: "1px solid hsla(202, 90%, 58%,0.08)", marginBottom: "14px", fontSize: "11px" }}>
                 <div><span style={{ color: "var(--text-secondary)" }}>Name: </span><strong>{selectedStudent.user ? `${selectedStudent.user.firstName} ${selectedStudent.user.lastName}` : selectedStudent.parentName}</strong></div>
                 <div><span style={{ color: "var(--text-secondary)" }}>Batch: </span><strong>{selectedStudent.enrollments?.[0]?.batch?.name || "—"}</strong></div>
                 <div><span style={{ color: "var(--text-secondary)" }}>Email: </span><strong>{selectedStudent.user?.email || "—"}</strong></div>

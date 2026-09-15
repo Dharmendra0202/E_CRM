@@ -73,7 +73,7 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
         <div style={{ padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(29,10,39,0.04)", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
             <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-secondary)", display: "flex" }}><ArrowLeft size={20} /></button>
-            <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 800, color: "#fff" }}>
+            <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", fontWeight: 800, color: "#fff" }}>
               {initials}
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>
@@ -146,7 +146,7 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
             {/* Batch Info */}
             <h3 style={{ margin: "20px 0 12px", fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.8px" }}>Enrollment</h3>
             {enrollments?.length > 0 ? enrollments.map((e: any) => (
-              <div key={e.id} style={{ padding: "12px", background: "hsla(271,91%,60%,0.04)", borderRadius: "10px", marginBottom: "8px" }}>
+              <div key={e.id} style={{ padding: "12px", background: "hsla(200, 85%, 48%,0.04)", borderRadius: "10px", marginBottom: "8px" }}>
                 <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 700 }}>{e.batch?.name}</p>
                 <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>
                   {e.batch?.subject} · Fee: ₹{Number(e.batch?.feeAmount || 0).toLocaleString("en-IN")}
@@ -164,7 +164,7 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
                 <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "var(--color-success)" }}>₹{stats.totalPaid.toLocaleString("en-IN")}</p>
                 <p style={{ margin: "2px 0 0", fontSize: "9px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Paid</p>
               </div>
-              <div style={{ padding: "10px", background: stats.outstanding > 0 ? "hsla(342,90%,48%,0.05)" : "hsla(142,70%,42%,0.05)", borderRadius: "8px", textAlign: "center" }}>
+              <div style={{ padding: "10px", background: stats.outstanding > 0 ? "hsla(205, 85%, 50%,0.05)" : "hsla(142,70%,42%,0.05)", borderRadius: "8px", textAlign: "center" }}>
                 <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: stats.outstanding > 0 ? "var(--color-danger)" : "var(--color-success)" }}>₹{stats.outstanding.toLocaleString("en-IN")}</p>
                 <p style={{ margin: "2px 0 0", fontSize: "9px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Due</p>
               </div>
@@ -178,7 +178,7 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" }}>
               {[
                 { label: "Attendance", value: `${stats.attendanceRate}%`, color: stats.attendanceRate >= 75 ? "var(--color-success)" : "var(--color-danger)", icon: <Activity size={16} /> },
-                { label: "Classes", value: totalClasses, color: "hsl(271,91%,60%)", icon: <BookOpen size={16} /> },
+                { label: "Classes", value: totalClasses, color: "hsl(200, 85%, 48%)", icon: <BookOpen size={16} /> },
                 { label: "Present", value: presentCount, color: "var(--color-success)", icon: <CheckCircle2 size={16} /> },
                 { label: "Absent", value: absentCount, color: "var(--color-danger)", icon: <XCircle size={16} /> },
               ].map((s, i) => (
@@ -246,7 +246,7 @@ export function StudentProfile({ studentId, onClose }: StudentProfileProps) {
                         <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>₹{Number(inv.totalAmount).toLocaleString("en-IN")}</p>
                         <p style={{ margin: 0, fontSize: "10px", color: "var(--text-secondary)" }}>Due: {new Date(inv.dueDate).toLocaleDateString("en-IN")}</p>
                       </div>
-                      <span style={{ fontSize: "10px", fontWeight: 700, color: isPaid ? "var(--color-success)" : "var(--color-danger)", background: isPaid ? "hsla(142,70%,42%,0.08)" : "hsla(342,90%,48%,0.08)", padding: "3px 8px", borderRadius: "8px" }}>
+                      <span style={{ fontSize: "10px", fontWeight: 700, color: isPaid ? "var(--color-success)" : "var(--color-danger)", background: isPaid ? "hsla(142,70%,42%,0.08)" : "hsla(205, 85%, 50%,0.08)", padding: "3px 8px", borderRadius: "8px" }}>
                         {isPaid ? "PAID" : `Due ₹${(Number(inv.totalAmount) - paid).toLocaleString("en-IN")}`}
                       </span>
                     </div>

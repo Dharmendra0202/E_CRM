@@ -268,7 +268,7 @@ export const NewEnrollment: React.FC = () => {
             onClick={resetForm}
             style={{
               padding: "12px 28px", borderRadius: "12px", border: "none", cursor: "pointer",
-              background: "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))",
+              background: "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
               color: "#fff", fontSize: "14px", fontWeight: 700, transition: "transform 0.2s",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
@@ -319,7 +319,7 @@ export const NewEnrollment: React.FC = () => {
                 width: "28px", height: "28px", borderRadius: "50%", display: "flex",
                 alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700,
                 background: currentStep >= step.num
-                  ? "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))"
+                  ? "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))"
                   : "hsla(285,30%,20%,0.06)",
                 color: currentStep >= step.num ? "#fff" : "hsl(285,20%,50%)",
                 transition: "all 0.3s ease",
@@ -346,7 +346,7 @@ export const NewEnrollment: React.FC = () => {
                 <div style={{
                   height: "100%",
                   width: `${getConnectorProgress(step.num)}%`,
-                  background: "linear-gradient(90deg, hsl(271,91%,60%), hsl(328,100%,54%))",
+                  background: "linear-gradient(90deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
                   borderRadius: "3px",
                   transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 }} />
@@ -385,19 +385,19 @@ export const NewEnrollment: React.FC = () => {
                   onClick={() => { setRole(item.key); setErrors({}); setCurrentStep(2); }}
                   style={{
                     padding: "24px 16px", borderRadius: "16px", border: "2px solid",
-                    borderColor: role === item.key ? "hsl(271,91%,60%)" : "hsla(285,30%,20%,0.08)",
-                    background: role === item.key ? "hsla(271,91%,60%,0.04)" : "#fff",
+                    borderColor: role === item.key ? "hsl(200, 85%, 48%)" : "hsla(285,30%,20%,0.08)",
+                    background: role === item.key ? "hsla(200, 85%, 48%,0.04)" : "#fff",
                     cursor: "pointer", textAlign: "center", transition: "all 0.2s",
                     display: "flex", flexDirection: "column", alignItems: "center", gap: "10px",
                   }}
                   onMouseEnter={(e) => {
-                    if (role !== item.key) e.currentTarget.style.borderColor = "hsla(271,91%,60%,0.3)";
+                    if (role !== item.key) e.currentTarget.style.borderColor = "hsla(200, 85%, 48%,0.3)";
                   }}
                   onMouseLeave={(e) => {
                     if (role !== item.key) e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.08)";
                   }}
                 >
-                  <div style={{ color: role === item.key ? "hsl(271,91%,60%)" : "hsl(285,20%,50%)", transition: "color 0.2s" }}>
+                  <div style={{ color: role === item.key ? "hsl(200, 85%, 48%)" : "hsl(285,20%,50%)", transition: "color 0.2s" }}>
                     {item.icon}
                   </div>
                   <span style={{ fontSize: "14px", fontWeight: 700, color: "hsl(285,50%,12%)" }}>
@@ -661,12 +661,12 @@ export const NewEnrollment: React.FC = () => {
                   onClick={() => setFee({ ...fee, paymentPlan: plan.key })}
                   style={{
                     padding: "14px 16px", borderRadius: "12px", border: "2px solid",
-                    borderColor: fee.paymentPlan === plan.key ? "hsl(271,91%,60%)" : "hsla(285,30%,20%,0.08)",
-                    background: fee.paymentPlan === plan.key ? "hsla(271,91%,60%,0.04)" : "#fff",
+                    borderColor: fee.paymentPlan === plan.key ? "hsl(200, 85%, 48%)" : "hsla(285,30%,20%,0.08)",
+                    background: fee.paymentPlan === plan.key ? "hsla(200, 85%, 48%,0.04)" : "#fff",
                     cursor: "pointer", textAlign: "left", transition: "all 0.2s",
                   }}
                   onMouseEnter={(e) => {
-                    if (fee.paymentPlan !== plan.key) e.currentTarget.style.borderColor = "hsla(271,91%,60%,0.3)";
+                    if (fee.paymentPlan !== plan.key) e.currentTarget.style.borderColor = "hsla(200, 85%, 48%,0.3)";
                   }}
                   onMouseLeave={(e) => {
                     if (fee.paymentPlan !== plan.key) e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.08)";
@@ -698,10 +698,10 @@ export const NewEnrollment: React.FC = () => {
             {fee.totalAmount && (
               <div style={{
                 marginTop: "20px", padding: "18px", borderRadius: "14px",
-                background: "hsla(271,91%,60%,0.05)", border: "1px solid hsla(271,91%,60%,0.15)",
+                background: "hsla(200, 85%, 48%,0.05)", border: "1px solid hsla(200, 85%, 48%,0.15)",
                 display: "flex", flexDirection: "column", gap: "10px"
               }}>
-                <p style={{ fontSize: "12px", fontWeight: 800, color: "hsl(271,91%,50%)", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <p style={{ fontSize: "12px", fontWeight: 800, color: "hsl(200, 85%, 42%)", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                   📊 Auto-Calculated Fee & Installment Breakdown
                 </p>
 
@@ -716,7 +716,7 @@ export const NewEnrollment: React.FC = () => {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", background: "#fff", padding: "14px", borderRadius: "12px", border: "1px solid hsla(285,30%,20%,0.06)" }}>
                       <div>
                         <span style={{ fontSize: "11px", color: "hsl(285,20%,50%)", fontWeight: 600 }}>Total Fee Billed</span>
-                        <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: "hsl(271,91%,60%)" }}>₹{total.toLocaleString("en-IN")}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: "hsl(200, 85%, 48%)" }}>₹{total.toLocaleString("en-IN")}</p>
                       </div>
                       <div>
                         <span style={{ fontSize: "11px", color: "hsl(285,20%,50%)", fontWeight: 600 }}>Paid Today ({fee.paymentMethod})</span>
@@ -724,7 +724,7 @@ export const NewEnrollment: React.FC = () => {
                       </div>
                       <div>
                         <span style={{ fontSize: "11px", color: "hsl(285,20%,50%)", fontWeight: 600 }}>Remaining Dues</span>
-                        <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: remaining > 0 ? "hsl(342,90%,48%)" : "hsl(142,70%,40%)" }}>₹{remaining.toLocaleString("en-IN")}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: remaining > 0 ? "hsl(205, 85%, 50%)" : "hsl(142,70%,40%)" }}>₹{remaining.toLocaleString("en-IN")}</p>
                       </div>
                       {remaining > 0 ? (
                         <div style={{ gridColumn: "1 / -1", borderTop: "1px solid hsla(285,30%,20%,0.08)", paddingTop: "10px", marginTop: "4px" }}>
@@ -759,7 +759,7 @@ export const NewEnrollment: React.FC = () => {
                   outline: "none", resize: "vertical", fontFamily: "inherit",
                   transition: "border-color 0.2s",
                 }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "hsl(271,91%,60%)")}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "hsl(200, 85%, 48%)")}
                 onBlur={(e) => (e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.12)")}
               />
             </div>
@@ -781,7 +781,7 @@ export const NewEnrollment: React.FC = () => {
               background: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: 600,
               color: "hsl(285,20%,40%)", transition: "all 0.2s",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "hsl(271,91%,60%)")}
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "hsl(200, 85%, 48%)")}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.12)")}
           >
             <ChevronLeft size={15} /> Back
@@ -795,7 +795,7 @@ export const NewEnrollment: React.FC = () => {
                 display: "flex", alignItems: "center", gap: "6px", padding: "8px 20px",
                 borderRadius: "8px", border: "none", cursor: isSubmitting ? "not-allowed" : "pointer",
                 fontSize: "12.5px", fontWeight: 700,
-                background: isSubmitting ? "hsl(0,0%,75%)" : "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))",
+                background: isSubmitting ? "hsl(0,0%,75%)" : "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
                 color: "#fff", opacity: isSubmitting ? 0.7 : 1, transition: "transform 0.2s",
               }}
               onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.transform = "scale(1.03)"; }}
@@ -876,7 +876,7 @@ const InputField: React.FC<InputFieldProps> = ({ label, icon, value, onChange, e
           transition: "border-color 0.2s",
           textTransform: type === "text" ? "capitalize" : "none",
         }}
-        onFocus={(e) => (e.currentTarget.style.borderColor = error ? "hsl(0,70%,55%)" : "hsl(271,91%,60%)")}
+        onFocus={(e) => (e.currentTarget.style.borderColor = error ? "hsl(0,70%,55%)" : "hsl(200, 85%, 48%)")}
         onBlur={(e) => (e.currentTarget.style.borderColor = error ? "hsl(0,70%,55%)" : "hsla(285,30%,20%,0.12)")}
       />
     </div>
@@ -907,7 +907,7 @@ const SelectField: React.FC<SelectFieldProps> = ({ label, value, options, onChan
         fontSize: "12.5px", outline: "none", background: "#fff", fontFamily: "inherit",
         cursor: "pointer", boxSizing: "border-box", transition: "border-color 0.2s",
       }}
-      onFocus={(e) => (e.currentTarget.style.borderColor = "hsl(271,91%,60%)")}
+      onFocus={(e) => (e.currentTarget.style.borderColor = "hsl(200, 85%, 48%)")}
       onBlur={(e) => (e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.12)")}
     >
       {options.map((opt) => (

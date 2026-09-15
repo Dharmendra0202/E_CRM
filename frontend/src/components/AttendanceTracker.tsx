@@ -255,8 +255,8 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
                 gap: "8px",
                 padding: "8px 14px",
                 borderRadius: "20px",
-                background: isConnected ? "hsla(142,70%,40%,0.08)" : "hsla(342,90%,48%,0.08)",
-                border: `1px solid ${isConnected ? "hsla(142,70%,40%,0.2)" : "hsla(342,90%,48%,0.2)"}`,
+                background: isConnected ? "hsla(142,70%,40%,0.08)" : "hsla(205, 85%, 50%,0.08)",
+                border: `1px solid ${isConnected ? "hsla(142,70%,40%,0.2)" : "hsla(205, 85%, 50%,0.2)"}`,
                 fontSize: "12px",
                 fontWeight: 700,
                 color: isConnected ? "var(--color-success)" : "var(--color-danger)",
@@ -324,7 +324,7 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
           { label: "Present", value: summary.present, icon: <CheckCircle2 size={18} />, color: "var(--color-success)" },
           { label: "Absent", value: summary.absent, icon: <Activity size={18} />, color: "var(--color-danger)" },
           { label: "Late", value: summary.late, icon: <Clock size={18} />, color: "hsl(38,92%,50%)" },
-          { label: "Completion", value: `${completionRate}%`, icon: <TrendingUp size={18} />, color: "hsl(271,91%,60%)" },
+          { label: "Completion", value: `${completionRate}%`, icon: <TrendingUp size={18} />, color: "hsl(200, 85%, 48%)" },
         ].map((stat, i) => (
           <div
             key={i}
@@ -532,14 +532,14 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
                         width: "40px",
                         height: "40px",
                         borderRadius: "50%",
-                        background: "hsla(271,91%,60%,0.12)",
-                        border: "2px solid hsla(271,91%,60%,0.2)",
+                        background: "hsla(200, 85%, 48%,0.12)",
+                        border: "2px solid hsla(200, 85%, 48%,0.2)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         fontSize: "12px",
                         fontWeight: 700,
-                        color: "hsl(271,91%,60%)",
+                        color: "hsl(200, 85%, 48%)",
                         flexShrink: 0,
                         position: "relative",
                       }}
@@ -600,7 +600,7 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
                       const isActive = student.status === s;
                       const colorMap = {
                         PRESENT: { active: "var(--color-success)", bg: "hsla(142,70%,40%,0.15)", border: "var(--color-success)" },
-                        ABSENT:  { active: "var(--color-danger)",  bg: "hsla(342,90%,48%,0.15)", border: "var(--color-danger)"  },
+                        ABSENT:  { active: "var(--color-danger)",  bg: "hsla(205, 85%, 50%,0.15)", border: "var(--color-danger)"  },
                         LATE:    { active: "hsl(38,92%,50%)",      bg: "hsla(38,92%,50%,0.15)",  border: "hsl(38,92%,50%)"     },
                       }[s];
                       return (

@@ -271,7 +271,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
             <h1 style={{ fontSize: "26px", fontWeight: 800, margin: 0, color: "var(--text-primary)" }}>Batches & Student Groups</h1>
-            <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.08)", padding: "4px 12px", borderRadius: "20px", border: "1px solid hsla(328,100%,54%,0.15)" }}>
+            <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-accent)", background: "hsla(202, 90%, 58%,0.08)", padding: "4px 12px", borderRadius: "20px", border: "1px solid hsla(202, 90%, 58%,0.15)" }}>
               {totalBatches} Active Cohorts
             </span>
           </div>
@@ -285,9 +285,9 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
             onClick={() => setIsCreateModalOpen(true)}
             style={{
               padding: "11px 22px", borderRadius: "14px", border: "none", cursor: "pointer",
-              background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+              background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
               color: "#fff", fontSize: "13.5px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px",
-              boxShadow: "0 6px 20px -4px hsla(328,100%,54%,0.35)", transition: "all 0.25s ease"
+              boxShadow: "0 6px 20px -4px hsla(202, 90%, 58%,0.35)", transition: "all 0.25s ease"
             }}
             onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
             onMouseLeave={e => e.currentTarget.style.transform = "none"}
@@ -300,8 +300,8 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
       {/* ══════════════ KPI METRICS SUMMARY ══════════════ */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px", marginBottom: "28px" }}>
         {[
-          { label: "Active Batches", value: totalBatches, icon: <BookOpen size={20} />, color: "hsl(271,91%,60%)", bg: "hsla(271,91%,60%,0.08)", sub: "Configured cohorts" },
-          { label: "Total Enrolled Students", value: totalEnrolledStudents, icon: <Users2 size={20} />, color: "hsl(328,100%,54%)", bg: "hsla(328,100%,54%,0.08)", sub: "Across all batches" },
+          { label: "Active Batches", value: totalBatches, icon: <BookOpen size={20} />, color: "hsl(200, 85%, 48%)", bg: "hsla(200, 85%, 48%,0.08)", sub: "Configured cohorts" },
+          { label: "Total Enrolled Students", value: totalEnrolledStudents, icon: <Users2 size={20} />, color: "hsl(202, 90%, 58%)", bg: "hsla(202, 90%, 58%,0.08)", sub: "Across all batches" },
           { label: "Avg Capacity Fill Rate", value: `${avgFillRate}%`, icon: <BarChart2 size={20} />, color: "hsl(142,70%,40%)", bg: "hsla(142,70%,40%,0.08)", sub: `${totalEnrolledStudents} of ${totalCapacity} seats filled` },
           { label: "Course Revenue Potential", value: `₹${totalRevenue.toLocaleString("en-IN")}`, icon: <IndianRupee size={20} />, color: "hsl(200,95%,45%)", bg: "hsla(200,95%,45%,0.08)", sub: "Active batch fees" },
         ].map((stat, i) => (
@@ -358,10 +358,10 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
               style={{
                 padding: "8px 16px", borderRadius: "12px", fontSize: "12.5px", fontWeight: 700,
                 cursor: "pointer", border: "1px solid", transition: "all 0.2s ease",
-                background: selectedSubjectFilter === tab.key ? "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))" : "transparent",
+                background: selectedSubjectFilter === tab.key ? "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))" : "transparent",
                 borderColor: selectedSubjectFilter === tab.key ? "transparent" : "var(--border-glass)",
                 color: selectedSubjectFilter === tab.key ? "#fff" : "var(--text-secondary)",
-                boxShadow: selectedSubjectFilter === tab.key ? "0 4px 14px hsla(328,100%,54%,0.25)" : "none",
+                boxShadow: selectedSubjectFilter === tab.key ? "0 4px 14px hsla(202, 90%, 58%,0.25)" : "none",
               }}
             >
               {tab.label}
@@ -406,8 +406,8 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.transform = "translateY(-6px)";
-                  e.currentTarget.style.boxShadow = "0 20px 40px -12px rgba(328, 100%, 54%, 0.18)";
-                  e.currentTarget.style.borderColor = "hsla(328, 100%, 54%, 0.3)";
+                  e.currentTarget.style.boxShadow = "0 20px 40px -12px rgba(202, 90%, 58%, 0.18)";
+                  e.currentTarget.style.borderColor = "hsla(202, 90%, 58%, 0.3)";
                 }}
                 onMouseLeave={e => {
                   e.currentTarget.style.transform = "none";
@@ -418,15 +418,15 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                 {/* Stunning Top Header Bar */}
                 <div style={{
                   padding: "16px 20px",
-                  background: "linear-gradient(135deg, hsla(328,100%,54%,0.05), hsla(271,91%,60%,0.08))",
+                  background: "linear-gradient(135deg, hsla(202, 90%, 58%,0.05), hsla(200, 85%, 48%,0.08))",
                   borderBottom: "1px solid var(--border-glass)",
                   display: "flex", alignItems: "center", justifyContent: "space-between"
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: "38px", height: "38px", borderRadius: "12px", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ width: "38px", height: "38px", borderRadius: "12px", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <Layers size={18} />
                     </div>
-                    <span style={{ fontSize: "11px", fontWeight: 800, color: "hsl(271,91%,55%)", textTransform: "uppercase", letterSpacing: "0.6px", background: "#fff", padding: "4px 10px", borderRadius: "20px", border: "1px solid hsla(271,91%,60%,0.2)" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 800, color: "hsl(200, 85%, 46%)", textTransform: "uppercase", letterSpacing: "0.6px", background: "#fff", padding: "4px 10px", borderRadius: "20px", border: "1px solid hsla(200, 85%, 48%,0.2)" }}>
                       {batch.subject}
                     </span>
                   </div>
@@ -450,7 +450,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
 
                   {/* Teacher Chip */}
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", background: "var(--bg-secondary)", borderRadius: "14px", marginBottom: "16px" }}>
-                    <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, flexShrink: 0 }}>
+                    <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, flexShrink: 0 }}>
                       {batch.teacher?.avatar || "T"}
                     </div>
                     <div style={{ minWidth: 0, flex: 1 }}>
@@ -465,8 +465,8 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
 
                   {/* Schedule & Timing Pills */}
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "16px" }}>
-                    <div style={{ padding: "8px 10px", background: "hsla(271,91%,60%,0.04)", borderRadius: "10px", border: "1px solid hsla(271,91%,60%,0.1)", display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Clock size={13} style={{ color: "hsl(271,91%,60%)", flexShrink: 0 }} />
+                    <div style={{ padding: "8px 10px", background: "hsla(200, 85%, 48%,0.04)", borderRadius: "10px", border: "1px solid hsla(200, 85%, 48%,0.1)", display: "flex", alignItems: "center", gap: "6px" }}>
+                      <Clock size={13} style={{ color: "hsl(200, 85%, 48%)", flexShrink: 0 }} />
                       <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-primary)", wordBreak: "break-word" }}>
                         {batch.timings || "Mon, Wed, Fri"}
                       </span>
@@ -494,7 +494,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                     <div style={{ width: "100%", height: "8px", background: "var(--bg-secondary)", borderRadius: "4px", overflow: "hidden", marginBottom: "16px" }}>
                       <div style={{
                         width: `${fillPct}%`, height: "100%", borderRadius: "4px", transition: "width 0.5s ease",
-                        background: isFull ? "var(--color-danger)" : isAlmostFull ? "hsl(38,92%,50%)" : "linear-gradient(90deg, hsl(328,100%,54%), hsl(271,91%,60%))"
+                        background: isFull ? "var(--color-danger)" : isAlmostFull ? "hsl(38,92%,50%)" : "linear-gradient(90deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))"
                       }} />
                     </div>
 
@@ -510,7 +510,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                               title={sName}
                               style={{
                                 width: "30px", height: "30px", borderRadius: "50%",
-                                background: "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))",
+                                background: "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
                                 color: "#fff", fontSize: "11px", fontWeight: 800,
                                 display: "flex", alignItems: "center", justifyContent: "center",
                                 border: "2px solid #fff", marginLeft: idx === 0 ? 0 : "-8px",
@@ -532,9 +532,9 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                         onClick={(e) => { e.stopPropagation(); setSelectedBatchForStudents(batch); }}
                         style={{
                           padding: "8px 18px", borderRadius: "12px", border: "none", cursor: "pointer",
-                          background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff",
+                          background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff",
                           fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px",
-                          boxShadow: "0 4px 14px hsla(328,100%,54%,0.25)", transition: "all 0.2s"
+                          boxShadow: "0 4px 14px hsla(202, 90%, 58%,0.25)", transition: "all 0.2s"
                         }}
                         onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
                         onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
@@ -575,7 +575,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
               color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0
             }}>
               <div>
-                <span style={{ fontSize: "10px", fontWeight: 800, color: "hsl(328,100%,65%)", textTransform: "uppercase", letterSpacing: "0.8px" }}>
+                <span style={{ fontSize: "10px", fontWeight: 800, color: "hsl(202, 90%, 65%)", textTransform: "uppercase", letterSpacing: "0.8px" }}>
                   {selectedBatchForStudents.subject}
                 </span>
                 <h2 style={{ margin: "2px 0 0", fontSize: "20px", fontWeight: 800, color: "#fff", wordBreak: "break-word" }}>
@@ -591,7 +591,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                   onClick={() => setEnrollStudentModalOpen(true)}
                   style={{
                     padding: "8px 16px", borderRadius: "10px", border: "none", cursor: "pointer",
-                    background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+                    background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
                     color: "#fff", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px"
                   }}
                 >
@@ -662,7 +662,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                           }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flex: 1 }}>
-                            <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", fontSize: "14px", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff", fontSize: "14px", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               {initial}
                             </div>
                             <div style={{ minWidth: 0, flex: 1 }}>
@@ -679,7 +679,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                             <div style={{ textAlign: "right" }}>
                               <span style={{
                                 fontSize: "10px", fontWeight: 800, padding: "3px 8px", borderRadius: "6px",
-                                background: stu.feeStatus === "PAID" ? "hsla(142,70%,42%,0.08)" : "hsla(342,90%,48%,0.08)",
+                                background: stu.feeStatus === "PAID" ? "hsla(142,70%,42%,0.08)" : "hsla(205, 85%, 50%,0.08)",
                                 color: stu.feeStatus === "PAID" ? "var(--color-success)" : "var(--color-danger)"
                               }}>
                                 Fee: {stu.feeStatus || "PAID"}
@@ -746,7 +746,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
               <button
                 onClick={handleEnrollStudent}
                 disabled={!selectedStudentToEnroll}
-                style={{ padding: "9px 22px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", cursor: selectedStudentToEnroll ? "pointer" : "not-allowed", opacity: selectedStudentToEnroll ? 1 : 0.6, fontSize: "12px", fontWeight: 700 }}
+                style={{ padding: "9px 22px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff", cursor: selectedStudentToEnroll ? "pointer" : "not-allowed", opacity: selectedStudentToEnroll ? 1 : 0.6, fontSize: "12px", fontWeight: 700 }}
               >
                 Confirm Enrollment
               </button>
@@ -856,7 +856,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                 <button type="button" onClick={() => setIsCreateModalOpen(false)} style={{ padding: "10px 20px", borderRadius: "10px", border: "1px solid var(--border-glass)", background: "none", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
                   Cancel
                 </button>
-                <button type="submit" style={{ padding: "10px 24px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", color: "#fff", cursor: "pointer", fontSize: "13px", fontWeight: 700 }}>
+                <button type="submit" style={{ padding: "10px 24px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff", cursor: "pointer", fontSize: "13px", fontWeight: 700 }}>
                   Create Batch
                 </button>
               </div>

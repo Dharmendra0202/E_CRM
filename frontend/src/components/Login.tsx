@@ -338,7 +338,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         {screen === "form" && (
           <>
             {errorMsg && (
-              <div className="animate-fade-in" style={{ background: "hsla(342,90%,48%,0.08)", border: "1px solid hsla(342,90%,48%,0.25)", padding: "10px 14px", borderRadius: "10px", fontSize: "13px", color: "hsl(342,90%,48%)", marginBottom: "16px" }}>
+              <div className="animate-fade-in" style={{ background: "hsla(205, 85%, 50%,0.08)", border: "1px solid hsla(205, 85%, 50%,0.25)", padding: "10px 14px", borderRadius: "10px", fontSize: "13px", color: "hsl(205, 85%, 50%)", marginBottom: "16px" }}>
                 {errorMsg}
               </div>
             )}

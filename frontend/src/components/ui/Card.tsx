@@ -12,8 +12,8 @@ function Card({ className, glow, hoverLift, ...props }: CardProps) {
       data-slot="card"
       className={cn(
         "bg-card text-card-foreground flex flex-col rounded-xl border py-6 shadow-sm transition-all duration-300",
-        hoverLift && "hover:-translate-y-1 hover:shadow-md hover:border-[hsl(328,100%,54%,0.35)]",
-        glow && "border-[hsl(328,100%,54%,0.2)] shadow-[0_0_20px_hsla(328,100%,54%,0.08)]",
+        hoverLift && "hover:-translate-y-1 hover:shadow-md hover:border-[hsl(202, 90%, 58%,0.35)]",
+        glow && "border-[hsl(202, 90%, 58%,0.2)] shadow-[0_0_20px_hsla(202, 90%, 58%,0.08)]",
         className
       )}
       {...props}

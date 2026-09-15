@@ -68,9 +68,9 @@ const TIME_SLOTS = [
 ];
 
 const COLOR_PALETTE = [
-  { color: "#ec4899", bg: "rgba(236,72,153,0.09)" },
+  { color: "#38b6ff", bg: "rgba(56,182,255,0.09)" },
   { color: "#10b981", bg: "rgba(16,185,129,0.09)" },
-  { color: "#8b5cf6", bg: "rgba(139,92,246,0.09)" },
+  { color: "#0ea5e9", bg: "rgba(14,165,233,0.09)" },
   { color: "#f59e0b", bg: "rgba(245,158,11,0.09)" },
   { color: "#06b6d4", bg: "rgba(6,182,212,0.09)" },
   { color: "#6366f1", bg: "rgba(99,102,241,0.09)" },
@@ -234,7 +234,7 @@ function DigitalTimePicker({ value, onChange, label }: { value: string; onChange
         <button
           type="button"
           onClick={() => onChange(fmt(hour, minute, ampm === "AM" ? "PM" : "AM"))}
-          style={{ marginLeft: "auto", fontSize: "12px", fontWeight: 800, color: "#fff", background: ampm === "AM" ? "hsl(271,91%,60%)" : "hsl(328,100%,54%)", border: "none", borderRadius: "8px", padding: "6px 12px", cursor: "pointer", transition: "all 0.2s" }}
+          style={{ marginLeft: "auto", fontSize: "12px", fontWeight: 800, color: "#fff", background: ampm === "AM" ? "hsl(200, 85%, 48%)" : "hsl(202, 90%, 58%)", border: "none", borderRadius: "8px", padding: "6px 12px", cursor: "pointer", transition: "all 0.2s" }}
         >
           {ampm}
         </button>
@@ -285,8 +285,8 @@ function CustomDropdown<T extends { label: string; value: string }>({
                 style={{
                   textAlign: "left", padding: "8px 12px", borderRadius: "8px",
                   border: "none", fontSize: "12px", fontWeight: item.value === value ? 800 : 500,
-                  background: item.value === value ? "hsla(328,100%,54%,0.1)" : "transparent",
-                  color: item.value === value ? "hsl(328,100%,54%)" : "var(--text-primary)",
+                  background: item.value === value ? "hsla(202, 90%, 58%,0.1)" : "transparent",
+                  color: item.value === value ? "hsl(202, 90%, 58%)" : "var(--text-primary)",
                   cursor: "pointer", whiteSpace: "nowrap"
                 }}
               >
@@ -303,7 +303,7 @@ function CustomDropdown<T extends { label: string; value: string }>({
 // ─── ScrollWheelPicker (CardTilePicker) ────────────────────────────────────────
 // A sleek vertical scrollable tile list with quick selection & search indicators
 function ScrollWheelPicker<T extends { label: string; value: string }>({
-  items, value, onChange, label, accent = "hsl(328,100%,54%)"
+  items, value, onChange, label, accent = "hsl(202, 90%, 58%)"
 }: { items: T[]; value: string; onChange: (v: string) => void; label: string; accent?: string }) {
   const selectedItem = items.find(i => i.value === value);
 
@@ -696,9 +696,9 @@ export function TimetableScheduler() {
 
       {/* ── HERO HEADER ─────────────────────────────────────────────────────── */}
       <div style={{
-        background: "linear-gradient(135deg, hsl(328,100%,54%) 0%, hsl(271,91%,60%) 55%, hsl(240,80%,65%) 100%)",
+        background: "linear-gradient(135deg, hsl(202, 90%, 58%) 0%, hsl(200, 85%, 48%) 55%, hsl(240,80%,65%) 100%)",
         borderRadius: "20px", padding: "24px 30px", color: "#fff",
-        boxShadow: "0 12px 36px -6px hsla(328,100%,54%,0.25)",
+        boxShadow: "0 12px 36px -6px hsla(202, 90%, 58%,0.25)",
         display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px"
       }}>
         <div>
@@ -789,7 +789,7 @@ export function TimetableScheduler() {
         {/* Row 1: Search & Filter Title */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: 800, color: "var(--text-primary)" }}>
-            <Filter size={16} style={{ color: "hsl(328,100%,54%)" }} />
+            <Filter size={16} style={{ color: "hsl(202, 90%, 58%)" }} />
             <span>Filter Batches & Classes</span>
             <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)", background: "rgba(0,0,0,0.04)", padding: "2px 8px", borderRadius: "12px" }}>
               {filtered.length} session{filtered.length !== 1 ? "s" : ""}
@@ -829,10 +829,10 @@ export function TimetableScheduler() {
               style={{
                 padding: "6px 14px", borderRadius: "20px", fontSize: "11px", fontWeight: 800,
                 border: filterBatch === "ALL" ? "none" : "1px solid hsla(285,40%,60%,0.15)",
-                background: filterBatch === "ALL" ? "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))" : "hsl(320,20%,96%)",
+                background: filterBatch === "ALL" ? "linear-gradient(135deg,hsl(202, 90%, 58%),hsl(200, 85%, 48%))" : "hsl(320,20%,96%)",
                 color: filterBatch === "ALL" ? "#ffffff" : "var(--text-primary)",
                 cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
-                boxShadow: filterBatch === "ALL" ? "0 4px 12px hsla(328,100%,54%,0.3)" : "none",
+                boxShadow: filterBatch === "ALL" ? "0 4px 12px hsla(202, 90%, 58%,0.3)" : "none",
                 transition: "all 0.15s"
               }}
             >
@@ -845,10 +845,10 @@ export function TimetableScheduler() {
                 style={{
                   padding: "6px 14px", borderRadius: "20px", fontSize: "11px", fontWeight: 700,
                   border: filterBatch === b.id ? "none" : "1px solid hsla(285,40%,60%,0.15)",
-                  background: filterBatch === b.id ? "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))" : "hsl(320,20%,96%)",
+                  background: filterBatch === b.id ? "linear-gradient(135deg,hsl(202, 90%, 58%),hsl(200, 85%, 48%))" : "hsl(320,20%,96%)",
                   color: filterBatch === b.id ? "#ffffff" : "var(--text-primary)",
                   cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
-                  boxShadow: filterBatch === b.id ? "0 4px 12px hsla(328,100%,54%,0.3)" : "none",
+                  boxShadow: filterBatch === b.id ? "0 4px 12px hsla(202, 90%, 58%,0.3)" : "none",
                   transition: "all 0.15s"
                 }}
               >
@@ -868,7 +868,7 @@ export function TimetableScheduler() {
                 style={{
                   padding: "5px 12px", borderRadius: "16px", fontSize: "11px", fontWeight: 700,
                   border: filterTeacher === "ALL" ? "none" : "1px solid hsla(285,40%,60%,0.15)",
-                  background: filterTeacher === "ALL" ? "hsl(271,91%,60%)" : "hsl(320,20%,96%)",
+                  background: filterTeacher === "ALL" ? "hsl(200, 85%, 48%)" : "hsl(320,20%,96%)",
                   color: filterTeacher === "ALL" ? "#ffffff" : "var(--text-primary)",
                   cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0
                 }}
@@ -882,7 +882,7 @@ export function TimetableScheduler() {
                   style={{
                     padding: "5px 12px", borderRadius: "16px", fontSize: "11px", fontWeight: 700,
                     border: filterTeacher === t ? "none" : "1px solid hsla(285,40%,60%,0.15)",
-                    background: filterTeacher === t ? "hsl(271,91%,60%)" : "hsl(320,20%,96%)",
+                    background: filterTeacher === t ? "hsl(200, 85%, 48%)" : "hsl(320,20%,96%)",
                     color: filterTeacher === t ? "#ffffff" : "var(--text-primary)",
                     cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0
                   }}
@@ -912,13 +912,13 @@ export function TimetableScheduler() {
             return (
               <div key={dayName} style={{
                 background: "#ffffff", borderRadius: "18px",
-                border: isSunday ? "1px solid hsla(328,100%,54%,0.3)" : "1px solid rgba(29,10,39,0.08)",
-                boxShadow: isSunday ? "0 4px 20px hsla(328,100%,54%,0.08)" : "0 2px 12px rgba(0,0,0,0.04)",
+                border: isSunday ? "1px solid hsla(202, 90%, 58%,0.3)" : "1px solid rgba(29,10,39,0.08)",
+                boxShadow: isSunday ? "0 4px 20px hsla(202, 90%, 58%,0.08)" : "0 2px 12px rgba(0,0,0,0.04)",
                 overflow: "hidden"
               }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", background: isSunday ? "linear-gradient(90deg,hsla(328,100%,54%,0.08),transparent)" : "rgba(29,10,39,0.025)", borderBottom: "1px solid hsla(285,40%,60%,0.15)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", background: isSunday ? "linear-gradient(90deg,hsla(202, 90%, 58%,0.08),transparent)" : "rgba(29,10,39,0.025)", borderBottom: "1px solid hsla(285,40%,60%,0.15)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: isSunday ? "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))" : "linear-gradient(135deg,#1e1b4b,#4c1d95)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 900 }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: isSunday ? "linear-gradient(135deg,hsl(202, 90%, 58%),hsl(200, 85%, 48%))" : "linear-gradient(135deg,#1e1b4b,#4c1d95)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 900 }}>
                       {dayName.slice(0, 3).toUpperCase()}
                     </div>
                     <div>
@@ -926,7 +926,7 @@ export function TimetableScheduler() {
                       <div style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600 }}>{dayCards.length === 0 ? "No classes scheduled" : `${dayCards.length} class${dayCards.length > 1 ? "es" : ""} scheduled`}</div>
                     </div>
                   </div>
-                  <button onClick={() => openNew(dayIdx)} style={{ display: "flex", alignItems: "center", gap: "4px", background: "hsla(328,100%,54%,0.08)", border: "1px solid hsla(328,100%,54%,0.18)", color: "hsl(328,100%,54%)", borderRadius: "10px", padding: "7px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
+                  <button onClick={() => openNew(dayIdx)} style={{ display: "flex", alignItems: "center", gap: "4px", background: "hsla(202, 90%, 58%,0.08)", border: "1px solid hsla(202, 90%, 58%,0.18)", color: "hsl(202, 90%, 58%)", borderRadius: "10px", padding: "7px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
                     <Plus size={14} /> Add Class
                   </button>
                 </div>
@@ -958,7 +958,7 @@ export function TimetableScheduler() {
                         </div>
                       ))}
                       <div style={{ display: "flex", alignItems: "center", paddingLeft: "14px", flexShrink: 0 }}>
-                        <button onClick={() => openNew(dayIdx)} style={{ width: "80px", height: "90px", border: "2px dashed hsla(328,100%,54%,0.3)", borderRadius: "14px", background: "transparent", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", color: "var(--color-accent)", opacity: 0.7 }}>
+                        <button onClick={() => openNew(dayIdx)} style={{ width: "80px", height: "90px", border: "2px dashed hsla(202, 90%, 58%,0.3)", borderRadius: "14px", background: "transparent", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "4px", color: "var(--color-accent)", opacity: 0.7 }}>
                           <Plus size={18} />
                           <span style={{ fontSize: "10px", fontWeight: 700 }}>Add</span>
                         </button>
@@ -985,7 +985,7 @@ export function TimetableScheduler() {
                     <h3 style={{ margin: "0 0 4px", fontSize: "17px", fontWeight: 800, color: "var(--text-primary)" }}>{batch.name}</h3>
                     <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>{batch.subject} · {cards.length} sessions · {batch.teacher.user.firstName} {batch.teacher.user.lastName}</p>
                   </div>
-                  <button onClick={() => openNew()} style={{ background: "hsla(328,100%,54%,0.1)", border: "1px solid hsla(328,100%,54%,0.2)", color: "var(--color-accent)", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <button onClick={() => openNew()} style={{ background: "hsla(202, 90%, 58%,0.1)", border: "1px solid hsla(202, 90%, 58%,0.2)", color: "var(--color-accent)", borderRadius: "10px", padding: "8px 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
                     <Plus size={14} /> Add Slot
                   </button>
                 </div>
@@ -1081,7 +1081,7 @@ export function TimetableScheduler() {
 
             {/* Conflict Warning */}
             {conflictMsg && (
-              <div style={{ background: "hsla(342,90%,48%,0.08)", border: "1px solid hsla(342,90%,48%,0.2)", padding: "10px 14px", borderRadius: "10px", color: "var(--color-danger)", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ background: "hsla(205, 85%, 50%,0.08)", border: "1px solid hsla(205, 85%, 50%,0.2)", padding: "10px 14px", borderRadius: "10px", color: "var(--color-danger)", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "8px" }}>
                 <AlertCircle size={15} /> {conflictMsg}
               </div>
             )}
@@ -1104,7 +1104,7 @@ export function TimetableScheduler() {
 
               {/* Batch Info */}
               {selectedBatchInfo && (
-                <div style={{ background: "hsla(271,91%,60%,0.04)", padding: "10px 14px", borderRadius: "10px", fontSize: "12px", color: "var(--text-secondary)", border: "1px solid hsla(271,91%,60%,0.1)" }}>
+                <div style={{ background: "hsla(200, 85%, 48%,0.04)", padding: "10px 14px", borderRadius: "10px", fontSize: "12px", color: "var(--text-secondary)", border: "1px solid hsla(200, 85%, 48%,0.1)" }}>
                   <strong style={{ color: "var(--text-primary)" }}>{selectedBatchInfo.subject}</strong> · Teacher: {selectedBatchInfo.teacher.user.firstName} {selectedBatchInfo.teacher.user.lastName} · {selectedBatchInfo.enrollments.length} students
                 </div>
               )}
@@ -1199,7 +1199,7 @@ export function TimetableScheduler() {
                 <button type="button" onClick={() => setIsFormOpen(false)} style={{ flex: 1, padding: "12px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", background: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer", color: "hsl(285,20%,40%)" }}>Cancel</button>
                 <button type="submit" disabled={!!conflictMsg || isSaving} style={{
                   flex: 1.5, padding: "12px", borderRadius: "10px", border: "none", fontSize: "13px", fontWeight: 700,
-                  background: conflictMsg ? "#e2e8f0" : "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))",
+                  background: conflictMsg ? "#e2e8f0" : "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
                   color: conflictMsg ? "#94a3b8" : "#fff", cursor: conflictMsg || isSaving ? "not-allowed" : "pointer",
                 }}>{isSaving ? "Saving..." : form.id ? "Update Class" : "Schedule Class"}</button>
               </div>
@@ -1276,7 +1276,7 @@ export function TimetableScheduler() {
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid hsla(285,40%,60%,0.15)", paddingBottom: "10px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <User size={18} style={{ color: "hsl(271,91%,60%)" }} />
+                <User size={18} style={{ color: "hsl(200, 85%, 48%)" }} />
                 <h3 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "var(--text-primary)" }}>
                   Assign Substitute / Quick Reschedule
                 </h3>
@@ -1326,7 +1326,7 @@ export function TimetableScheduler() {
                 items={uniqueTeachers.map(t => ({ label: t, value: t }))}
                 value={substituteTeacher}
                 onChange={val => setSubstituteTeacher(val)}
-                accent="hsl(271,91%,60%)"
+                accent="hsl(200, 85%, 48%)"
               />
 
               <DigitalTimePicker

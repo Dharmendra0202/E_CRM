@@ -110,12 +110,12 @@ export function ProfilePage() {
 
   const getRoleBadge = (role: string) => {
     const map: Record<string, { bg: string; color: string; label: string }> = {
-      ADMIN: { bg: "hsla(271,91%,60%,0.1)", color: "hsl(271,91%,60%)", label: "Administrator" },
-      SUPER_ADMIN: { bg: "hsla(271,91%,60%,0.1)", color: "hsl(271,91%,60%)", label: "Super Admin" },
+      ADMIN: { bg: "hsla(200, 85%, 48%,0.1)", color: "hsl(200, 85%, 48%)", label: "Administrator" },
+      SUPER_ADMIN: { bg: "hsla(200, 85%, 48%,0.1)", color: "hsl(200, 85%, 48%)", label: "Super Admin" },
       TEACHER: { bg: "hsla(199,89%,48%,0.1)", color: "hsl(199,89%,48%)", label: "Teacher" },
       STUDENT: { bg: "hsla(142,70%,42%,0.1)", color: "hsl(142,70%,42%)", label: "Student" },
       PARENT: { bg: "hsla(39,100%,50%,0.1)", color: "hsl(39,100%,50%)", label: "Parent" },
-      STAFF: { bg: "hsla(328,100%,54%,0.1)", color: "hsl(328,100%,54%)", label: "Staff" },
+      STAFF: { bg: "hsla(202, 90%, 58%,0.1)", color: "hsl(202, 90%, 58%)", label: "Staff" },
       ACCOUNTANT: { bg: "hsla(199,89%,48%,0.1)", color: "hsl(199,89%,48%)", label: "Accountant" },
     };
     return map[role] || { bg: "hsla(0,0%,50%,0.1)", color: "hsl(0,0%,50%)", label: role };
@@ -189,9 +189,9 @@ export function ProfilePage() {
       )}
       {errorMsg && (
         <div style={{
-          background: "hsla(342,90%,48%,0.08)", border: "1px solid hsla(342,90%,48%,0.2)",
+          background: "hsla(205, 85%, 50%,0.08)", border: "1px solid hsla(205, 85%, 50%,0.2)",
           padding: "12px 16px", borderRadius: "12px", marginBottom: "16px", fontSize: "13px",
-          fontWeight: 600, color: "hsl(342,90%,48%)", display: "flex", alignItems: "center", gap: "8px",
+          fontWeight: 600, color: "hsl(205, 85%, 50%)", display: "flex", alignItems: "center", gap: "8px",
         }}>
           <X size={16} /> {errorMsg}
         </div>
@@ -199,7 +199,7 @@ export function ProfilePage() {
 
       {/* ═══════ PROFILE HEADER CARD ═══════ */}
       <div style={{
-        background: "linear-gradient(135deg, hsl(271,91%,60%) 0%, hsl(328,100%,54%) 50%, hsl(350,100%,64%) 100%)",
+        background: "linear-gradient(135deg, hsl(200, 85%, 48%) 0%, hsl(202, 90%, 58%) 50%, hsl(205, 90%, 66%) 100%)",
         borderRadius: "20px", padding: "32px", marginBottom: "20px",
         position: "relative", overflow: "hidden",
       }}>
@@ -279,8 +279,8 @@ export function ProfilePage() {
                 style={{
                   display: "flex", alignItems: "center", gap: "6px",
                   padding: "10px 18px", borderRadius: "12px",
-                  background: "hsla(342,90%,48%,0.3)", backdropFilter: "blur(10px)",
-                  border: "1px solid hsla(342,90%,48%,0.4)",
+                  background: "hsla(205, 85%, 50%,0.3)", backdropFilter: "blur(10px)",
+                  border: "1px solid hsla(205, 85%, 50%,0.4)",
                   color: "#fff", fontSize: "12px", fontWeight: 700,
                   cursor: "pointer", transition: "all 0.2s",
                 }}
@@ -312,8 +312,8 @@ export function ProfilePage() {
       {/* ═══════ PERSONAL INFORMATION ═══════ */}
       <div style={sectionStyle}>
         <div style={sectionTitleStyle}>
-          <div style={iconBadgeStyle("hsla(271,91%,60%,0.1)")}>
-            <User size={16} style={{ color: "hsl(271,91%,60%)" }} />
+          <div style={iconBadgeStyle("hsla(200, 85%, 48%,0.1)")}>
+            <User size={16} style={{ color: "hsl(200, 85%, 48%)" }} />
           </div>
           Personal Information
         </div>
@@ -367,8 +367,8 @@ export function ProfilePage() {
         <>
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>
-              <div style={iconBadgeStyle("hsla(328,100%,54%,0.1)")}>
-                <Users2 size={16} style={{ color: "hsl(328,100%,54%)" }} />
+              <div style={iconBadgeStyle("hsla(202, 90%, 58%,0.1)")}>
+                <Users2 size={16} style={{ color: "hsl(202, 90%, 58%)" }} />
               </div>
               Father / Guardian Details
             </div>
@@ -405,8 +405,8 @@ export function ProfilePage() {
 
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>
-              <div style={iconBadgeStyle("hsla(350,100%,64%,0.1)")}>
-                <Heart size={16} style={{ color: "hsl(350,100%,64%)" }} />
+              <div style={iconBadgeStyle("hsla(205,90%,60%,0.1)")}>
+                <Heart size={16} style={{ color: "hsl(205,90%,60%)" }} />
               </div>
               Mother Details
             </div>

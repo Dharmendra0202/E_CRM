@@ -91,8 +91,8 @@ export function LibraryManagement() {
       {stats && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "20px" }}>
           {[
-            { label: "Total Books", value: stats.totalBooks, color: "hsl(271,91%,60%)" },
-            { label: "Total Copies", value: stats.totalCopies, color: "hsl(328,100%,54%)" },
+            { label: "Total Books", value: stats.totalBooks, color: "hsl(200, 85%, 48%)" },
+            { label: "Total Copies", value: stats.totalCopies, color: "hsl(202, 90%, 58%)" },
             { label: "Currently Issued", value: stats.issued, color: "hsl(38,92%,50%)" },
             { label: "Overdue", value: stats.overdue, color: "var(--color-danger)" },
           ].map((s, i) => (
@@ -132,14 +132,14 @@ export function LibraryManagement() {
             <div key={book.id} style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
                 <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{book.title}</p>
-                <span style={{ fontSize: "10px", fontWeight: 700, color: book.availableCopies > 0 ? "var(--color-success)" : "var(--color-danger)", background: book.availableCopies > 0 ? "hsla(142,70%,42%,0.08)" : "hsla(342,90%,48%,0.08)", padding: "2px 8px", borderRadius: "10px" }}>
+                <span style={{ fontSize: "10px", fontWeight: 700, color: book.availableCopies > 0 ? "var(--color-success)" : "var(--color-danger)", background: book.availableCopies > 0 ? "hsla(142,70%,42%,0.08)" : "hsla(205, 85%, 50%,0.08)", padding: "2px 8px", borderRadius: "10px" }}>
                   {book.availableCopies}/{book.totalCopies}
                 </span>
               </div>
               <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{book.author} {book.category ? `· ${book.category}` : ""}</p>
               {book.isbn && <p style={{ margin: "2px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>ISBN: {book.isbn}</p>}
               {book.availableCopies > 0 && (
-                <button onClick={() => openIssueModal(book.id)} style={{ marginTop: "8px", fontSize: "11px", fontWeight: 700, color: "hsl(271,91%,60%)", background: "hsla(271,91%,60%,0.08)", border: "1px solid hsla(271,91%,60%,0.2)", padding: "5px 10px", borderRadius: "8px", cursor: "pointer" }}>Issue Book</button>
+                <button onClick={() => openIssueModal(book.id)} style={{ marginTop: "8px", fontSize: "11px", fontWeight: 700, color: "hsl(200, 85%, 48%)", background: "hsla(200, 85%, 48%,0.08)", border: "1px solid hsla(200, 85%, 48%,0.2)", padding: "5px 10px", borderRadius: "8px", cursor: "pointer" }}>Issue Book</button>
               )}
             </div>
           ))}
@@ -151,8 +151,8 @@ export function LibraryManagement() {
           ) : issues.map((issue) => {
             const isOverdue = new Date(issue.dueDate) < new Date();
             return (
-              <div key={issue.id} style={{ background: "#fff", borderRadius: "12px", padding: "14px 16px", border: `1px solid ${isOverdue ? "hsla(342,90%,48%,0.2)" : "var(--border-glass)"}`, display: "flex", alignItems: "center", gap: "12px" }}>
-                <BookOpen size={16} style={{ color: isOverdue ? "var(--color-danger)" : "hsl(271,91%,60%)", flexShrink: 0 }} />
+              <div key={issue.id} style={{ background: "#fff", borderRadius: "12px", padding: "14px 16px", border: `1px solid ${isOverdue ? "hsla(205, 85%, 50%,0.2)" : "var(--border-glass)"}`, display: "flex", alignItems: "center", gap: "12px" }}>
+                <BookOpen size={16} style={{ color: isOverdue ? "var(--color-danger)" : "hsl(200, 85%, 48%)", flexShrink: 0 }} />
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{issue.book?.title}</p>
                   <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>Due: {new Date(issue.dueDate).toLocaleDateString("en-IN")} {isOverdue && <span style={{ color: "var(--color-danger)", fontWeight: 700 }}>· OVERDUE</span>}</p>

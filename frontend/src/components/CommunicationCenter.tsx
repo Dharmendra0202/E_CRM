@@ -84,7 +84,7 @@ export function CommunicationCenter() {
       {/* Quick Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "20px" }}>
         {[
-          { label: "Total", value: announcements.length, color: "hsl(271,91%,60%)" },
+          { label: "Total", value: announcements.length, color: "hsl(200, 85%, 48%)" },
           { label: "Active", value: announcements.filter((a) => a.isActive).length, color: "var(--color-success)" },
           { label: "Urgent", value: announcements.filter((a) => a.priority === "URGENT").length, color: "var(--color-danger)" },
         ].map((s, i) => (
@@ -110,7 +110,7 @@ export function CommunicationCenter() {
           {announcements.map((ann) => {
             const pColor = priorityColors[ann.priority] || "var(--text-secondary)";
             return (
-              <div key={ann.id} style={{ background: "#fff", borderRadius: "14px", padding: "16px 20px", border: `1px solid ${ann.isActive ? "var(--border-glass)" : "hsla(342,90%,48%,0.15)"}`, opacity: ann.isActive ? 1 : 0.6 }}>
+              <div key={ann.id} style={{ background: "#fff", borderRadius: "14px", padding: "16px 20px", border: `1px solid ${ann.isActive ? "var(--border-glass)" : "hsla(205, 85%, 50%,0.15)"}`, opacity: ann.isActive ? 1 : 0.6 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
                   <span style={{ fontSize: "20px", flexShrink: 0 }}>{typeIcons[ann.type] || "📢"}</span>
                   <div style={{ flex: 1 }}>

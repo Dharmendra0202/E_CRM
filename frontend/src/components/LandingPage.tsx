@@ -162,9 +162,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }} onClick={() => { setActivePage("all"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
             <div style={{
               width: "36px", height: "36px", borderRadius: "10px",
-              background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+              background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
               display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 4px 14px hsla(328,100%,54%,0.35)"
+              boxShadow: "0 4px 14px hsla(202, 90%, 58%,0.35)"
             }}>
               <GraduationCap size={20} color="#fff" />
             </div>
@@ -214,9 +214,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
           <button onClick={onLogin} style={{
             padding: "8px 22px", borderRadius: "10px",
-            background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+            background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
             color: "#fff", border: "none", fontSize: "13.5px", fontWeight: 800,
-            cursor: "pointer", boxShadow: "0 4px 16px hsla(328,100%,54%,0.4)", letterSpacing: "0.3px",
+            cursor: "pointer", boxShadow: "0 4px 16px hsla(202, 90%, 58%,0.4)", letterSpacing: "0.3px",
             transition: "transform 0.2s"
           }}>
             Login to ECRM
@@ -241,7 +241,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               <div style={{
                 display: "inline-flex", alignItems: "center", gap: "8px", padding: "5px 14px",
                 borderRadius: "20px", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)",
-                border: "1px solid hsla(328,100%,54%,0.3)", marginBottom: "16px", fontSize: "12px",
+                border: "1px solid hsla(202, 90%, 58%,0.3)", marginBottom: "16px", fontSize: "12px",
                 fontWeight: 800, color: "var(--color-accent)", boxShadow: "0 4px 14px rgba(0,0,0,0.04)"
               }}>
                 <Sparkles size={13} /> Complete Enterprise Education Management Software
@@ -256,10 +256,10 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
                 <button onClick={onLogin} style={{
                   padding: "12px 26px", borderRadius: "10px",
-                  background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+                  background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
                   color: "#fff", border: "none", fontSize: "14.5px", fontWeight: 800,
                   cursor: "pointer", display: "flex", alignItems: "center", gap: "8px",
-                  boxShadow: "0 6px 20px hsla(328,100%,54%,0.35)"
+                  boxShadow: "0 6px 20px hsla(202, 90%, 58%,0.35)"
                 }}>
                   Try Free Demo <ArrowRight size={16} />
                 </button>
@@ -304,11 +304,11 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                   borderRadius: "16px", padding: "20px 18px", border: "1px solid hsla(285,40%,60%,0.18)",
                   boxShadow: "0 4px 16px rgba(0,0,0,0.03)", transition: "all 0.25s"
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = "hsla(328,100%,54%,0.4)"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = "hsla(202, 90%, 58%,0.4)"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; e.currentTarget.style.borderColor = "hsla(285,40%,60%,0.18)"; }}>
                   <div style={{
                     width: "42px", height: "42px", borderRadius: "12px",
-                    background: "hsla(328,100%,54%,0.12)", display: "flex",
+                    background: "hsla(202, 90%, 58%,0.12)", display: "flex",
                     alignItems: "center", justifyContent: "center", color: "var(--color-accent)", marginBottom: "14px"
                   }}>
                     {f.icon}
@@ -325,7 +325,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         {(activePage === "all" || activePage === "modules") && (
           <section id="modules" style={{ padding: activePage === "modules" ? "20px 24px 40px" : "40px 24px", maxWidth: "1100px", width: "100%", boxSizing: "border-box", margin: "0 auto", background: "rgba(255,255,255,0.4)", borderRadius: "24px", backdropFilter: "blur(10px)", scrollMarginTop: "90px" }}>
             <div style={{ textAlign: "center", marginBottom: "32px" }}>
-              <span style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1.5px", color: "hsl(271,91%,60%)" }}>
+              <span style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1.5px", color: "hsl(200, 85%, 48%)" }}>
                 Powerful Suite
               </span>
               <h2 style={{ fontSize: "28px", fontWeight: 900, margin: "6px 0 8px" }}>
@@ -345,7 +345,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 }}>
                   <span style={{
                     fontSize: "10px", fontWeight: 800, padding: "3px 8px", borderRadius: "10px",
-                    background: "hsla(271,91%,60%,0.12)", color: "hsl(271,91%,60%)", textTransform: "uppercase",
+                    background: "hsla(200, 85%, 48%,0.12)", color: "hsl(200, 85%, 48%)", textTransform: "uppercase",
                     letterSpacing: "0.5px"
                   }}>
                     {m.tag}
@@ -410,7 +410,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                 <button onClick={onLogin} style={{
                   width: "100%", padding: "11px", borderRadius: "10px",
                   background: "rgba(255,255,255,0.9)", color: "var(--color-accent)",
-                  border: "2px solid hsla(328,100%,54%,0.4)", fontSize: "14px", fontWeight: 800,
+                  border: "2px solid hsla(202, 90%, 58%,0.4)", fontSize: "14px", fontWeight: 800,
                   cursor: "pointer", transition: "all 0.2s"
                 }}>
                   Start Free Testing Demo
@@ -419,9 +419,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
               {/* Plan 2: ₹10,000 / month (Popular) */}
               <div style={{
-                background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+                background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
                 color: "#fff", borderRadius: "20px", padding: "26px 22px",
-                boxShadow: "0 12px 32px hsla(328,100%,54%,0.35)", display: "flex", flexDirection: "column",
+                boxShadow: "0 12px 32px hsla(202, 90%, 58%,0.35)", display: "flex", flexDirection: "column",
                 justifyContent: "space-between", position: "relative", transform: "scale(1.02)", zIndex: 10
               }}>
                 <div style={{
@@ -506,7 +506,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                       "Dedicated Account Manager & Training"
                     ].map((feat, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", fontWeight: 600 }}>
-                        <Check size={15} color="hsl(271,91%,60%)" /> {feat}
+                        <Check size={15} color="hsl(200, 85%, 48%)" /> {feat}
                       </div>
                     ))}
                   </div>
@@ -644,10 +644,10 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
                   <button type="submit" style={{
                     padding: "10px 20px", borderRadius: "10px",
-                    background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+                    background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
                     color: "#fff", border: "none", fontSize: "14px", fontWeight: 800,
                     cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                    gap: "8px", boxShadow: "0 4px 16px hsla(328,100%,54%,0.35)", marginTop: "4px"
+                    gap: "8px", boxShadow: "0 4px 16px hsla(202, 90%, 58%,0.35)", marginTop: "4px"
                   }}>
                     <Send size={15} /> Submit Inquiry
                   </button>
@@ -744,7 +744,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "16px" }}>
                 <div style={{
                   width: "36px", height: "36px", borderRadius: "10px",
-                  background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+                  background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
                   display: "flex", alignItems: "center", justifyContent: "center"
                 }}>
                   <GraduationCap size={20} color="#fff" />

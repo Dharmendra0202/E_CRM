@@ -124,7 +124,7 @@ export function UserRoleManagement() {
   const statusMeta: Record<string, { color: string; bg: string; icon: any }> = {
     ACTIVE: { color: "var(--color-success)", bg: "hsla(142,70%,42%,0.08)", icon: <CheckCircle2 size={12} /> },
     INVITED: { color: "hsl(38,92%,50%)", bg: "hsla(38,92%,50%,0.08)", icon: <Clock size={12} /> },
-    DISABLED: { color: "var(--color-danger)", bg: "hsla(342,90%,48%,0.08)", icon: <XCircle size={12} /> },
+    DISABLED: { color: "var(--color-danger)", bg: "hsla(205, 85%, 50%,0.08)", icon: <XCircle size={12} /> },
   };
 
   
@@ -200,7 +200,7 @@ export function UserRoleManagement() {
                 return (
                   <div key={member.id} style={{ display: "grid", gridTemplateColumns: "1fr 150px 120px 100px", padding: "14px 20px", borderBottom: "1px solid var(--border-glass)", alignItems: "center" }}>
                     <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                      <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "hsla(271,91%,60%,0.1)", border: "1.5px solid hsla(271,91%,60%,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, color: "hsl(271,91%,60%)" }}>
+                      <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "hsla(200, 85%, 48%,0.1)", border: "1.5px solid hsla(200, 85%, 48%,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, color: "hsl(200, 85%, 48%)" }}>
                         {member.name?.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
@@ -209,7 +209,7 @@ export function UserRoleManagement() {
                       </div>
                     </div>
                     <div>
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: "hsl(271,91%,60%)", background: "hsla(271,91%,60%,0.08)", padding: "3px 10px", borderRadius: "20px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "hsl(200, 85%, 48%)", background: "hsla(200, 85%, 48%,0.08)", padding: "3px 10px", borderRadius: "20px" }}>
                         {member.role}
                       </span>
                     </div>
@@ -259,7 +259,7 @@ export function UserRoleManagement() {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "10px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: role.isSystem ? "hsla(328,100%,54%,0.1)" : "hsla(200,95%,50%,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: role.isSystem ? "hsla(202, 90%, 58%,0.1)" : "hsla(200,95%,50%,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <ShieldCheck size={18} style={{ color: role.isSystem ? "var(--color-accent)" : "var(--color-info)" }} />
                     </div>
                     <div>
@@ -282,10 +282,10 @@ export function UserRoleManagement() {
                     {role.memberCount} member{role.memberCount !== 1 ? "s" : ""}
                   </span>
                   {role.isSystem && (
-                    <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.08)", padding: "2px 8px", borderRadius: "10px" }}>SYSTEM</span>
+                    <span style={{ fontSize: "10px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(202, 90%, 58%,0.08)", padding: "2px 8px", borderRadius: "10px" }}>SYSTEM</span>
                   )}
                   {role.permissions?.length > 0 && (
-                    <span style={{ fontSize: "10px", fontWeight: 700, color: "hsl(271,91%,60%)", background: "hsla(271,91%,60%,0.08)", padding: "2px 8px", borderRadius: "10px" }}>
+                    <span style={{ fontSize: "10px", fontWeight: 700, color: "hsl(200, 85%, 48%)", background: "hsla(200, 85%, 48%,0.08)", padding: "2px 8px", borderRadius: "10px" }}>
                       {role.permissions.length} permissions
                     </span>
                   )}

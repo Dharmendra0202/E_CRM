@@ -322,7 +322,7 @@ export function FeeManagement() {
       {/* Revenue & Payment Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", marginBottom: "24px" }}>
         {[
-          { label: "Total Billed", value: `₹${totalBilled.toLocaleString("en-IN")}`, icon: <IndianRupee size={18} />, color: "hsl(271,91%,60%)" },
+          { label: "Total Billed", value: `₹${totalBilled.toLocaleString("en-IN")}`, icon: <IndianRupee size={18} />, color: "hsl(200, 85%, 48%)" },
           { label: "Done / Settlement", value: `₹${totalPaid.toLocaleString("en-IN")}`, icon: <CheckCircle2 size={18} />, color: "var(--color-success)" },
           { label: "Pending Dues", value: `₹${outstanding.toLocaleString("en-IN")}`, icon: <AlertCircle size={18} />, color: "var(--color-danger)" },
           { label: "Overdue Invoices", value: overdueCount, icon: <Clock size={18} />, color: "hsl(38,92%,50%)" },
@@ -351,7 +351,7 @@ export function FeeManagement() {
             style={{
               padding: "8px 16px", borderRadius: "10px", border: "none",
               fontSize: "13px", fontWeight: activeTab === tab.id ? 800 : 600,
-              background: activeTab === tab.id ? "hsla(328,100%,54%,0.1)" : "transparent",
+              background: activeTab === tab.id ? "hsla(202, 90%, 58%,0.1)" : "transparent",
               color: activeTab === tab.id ? "var(--color-accent)" : "var(--text-secondary)",
               cursor: "pointer", transition: "all 0.2s"
             }}
@@ -435,7 +435,7 @@ export function FeeManagement() {
                       {inv.status !== "PAID" ? (
                         <>
                           <button onClick={() => { setShowPay(inv); setPayForm({ amount: String(remaining), paymentMethod: "CASH", transactionReference: "" }); }}
-                            style={{ fontSize: "11px", fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", border: "none", padding: "6px 12px", borderRadius: "8px", cursor: "pointer", boxShadow: "0 2px 8px hsla(328,100%,54%,0.3)" }}>
+                            style={{ fontSize: "11px", fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", border: "none", padding: "6px 12px", borderRadius: "8px", cursor: "pointer", boxShadow: "0 2px 8px hsla(202, 90%, 58%,0.3)" }}>
                             Pay Now
                           </button>
                           <a
@@ -506,7 +506,7 @@ export function FeeManagement() {
             ) : staffList.map((member) => (
               <div key={member.id} style={{ background: "rgba(29,10,39,0.02)", borderRadius: "14px", padding: "18px", border: "1px solid var(--border-glass)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-                  <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "hsla(271,91%,60%,0.12)", color: "hsl(271,91%,60%)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "14px" }}>
+                  <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "hsla(200, 85%, 48%,0.12)", color: "hsl(200, 85%, 48%)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "14px" }}>
                     {`${member.firstName[0]}${member.lastName[0]}`.toUpperCase()}
                   </div>
                   <div>
@@ -701,9 +701,9 @@ export function FeeManagement() {
 
             {/* Billing Summary */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "20px", textAlign: "center" }}>
-              <div style={{ background: "hsla(271,91%,60%,0.08)", padding: "12px", borderRadius: "12px" }}>
+              <div style={{ background: "hsla(200, 85%, 48%,0.08)", padding: "12px", borderRadius: "12px" }}>
                 <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Total Billed</span>
-                <p style={{ margin: "2px 0 0", fontSize: "16px", fontWeight: 800, color: "hsl(271,91%,60%)" }}>₹{Number(selectedReceipt.totalAmount).toLocaleString("en-IN")}</p>
+                <p style={{ margin: "2px 0 0", fontSize: "16px", fontWeight: 800, color: "hsl(200, 85%, 48%)" }}>₹{Number(selectedReceipt.totalAmount).toLocaleString("en-IN")}</p>
               </div>
               <div style={{ background: "hsla(142,70%,45%,0.08)", padding: "12px", borderRadius: "12px" }}>
                 <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Paid Amount</span>

@@ -62,17 +62,17 @@ export function WeakStudentModule() {
       {/* Summary Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px", marginBottom: "24px" }}>
         <div style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "hsla(342,90%,48%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-danger)" }}><TrendingDown size={20} /></div>
+          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "hsla(205, 85%, 50%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-danger)" }}><TrendingDown size={20} /></div>
           <div>
             <p style={{ margin: 0, fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Below 40%</p>
             <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "var(--color-danger)" }}>{weakStudents.length}</p>
           </div>
         </div>
         <div style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "hsla(271,91%,60%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "hsl(271,91%,60%)" }}><Target size={20} /></div>
+          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "hsla(200, 85%, 48%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "hsl(200, 85%, 48%)" }}><Target size={20} /></div>
           <div>
             <p style={{ margin: 0, fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Total in Batch</p>
-            <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "hsl(271,91%,60%)" }}>{batchStudents.length}</p>
+            <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "hsl(200, 85%, 48%)" }}>{batchStudents.length}</p>
           </div>
         </div>
         <div style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -94,15 +94,15 @@ export function WeakStudentModule() {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {weakStudents.map(ws => (
-            <div key={ws.id} style={{ background: "#fff", borderRadius: "14px", padding: "16px 20px", border: "1px solid hsla(342,90%,48%,0.12)", display: "flex", alignItems: "center", gap: "14px" }}>
-              <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "hsla(342,90%,48%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-danger)", fontSize: "12px", fontWeight: 800, flexShrink: 0 }}>
+            <div key={ws.id} style={{ background: "#fff", borderRadius: "14px", padding: "16px 20px", border: "1px solid hsla(205, 85%, 50%,0.12)", display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "hsla(205, 85%, 50%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-danger)", fontSize: "12px", fontWeight: 800, flexShrink: 0 }}>
                 {ws.name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase()}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 700 }}>{ws.name}</p>
                 <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                   {ws.marks.map((m: any, i: number) => (
-                    <span key={i} style={{ fontSize: "10px", fontWeight: 600, background: "hsla(342,90%,48%,0.08)", color: "var(--color-danger)", padding: "2px 8px", borderRadius: "8px" }}>
+                    <span key={i} style={{ fontSize: "10px", fontWeight: 600, background: "hsla(205, 85%, 50%,0.08)", color: "var(--color-danger)", padding: "2px 8px", borderRadius: "8px" }}>
                       {m.subject}: {m.marks}/{m.totalMarks}
                     </span>
                   ))}
@@ -118,15 +118,15 @@ export function WeakStudentModule() {
       )}
 
       {/* Improvement Resources (Placeholder) */}
-      <div style={{ marginTop: "24px", background: "hsla(271,91%,60%,0.04)", borderRadius: "14px", padding: "20px", border: "1px solid hsla(271,91%,60%,0.1)" }}>
+      <div style={{ marginTop: "24px", background: "hsla(200, 85%, 48%,0.04)", borderRadius: "14px", padding: "20px", border: "1px solid hsla(200, 85%, 48%,0.1)" }}>
         <h3 style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
-          <BookOpen size={16} style={{ color: "hsl(271,91%,60%)" }} /> Improvement Resources
+          <BookOpen size={16} style={{ color: "hsl(200, 85%, 48%)" }} /> Improvement Resources
         </h3>
         <p style={{ margin: "0 0 12px", fontSize: "12px", color: "var(--text-secondary)" }}>Coming soon: MCQs, practice tests, one-word answers, and match-the-column exercises for weak students.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "10px" }}>
           {["MCQ Practice", "One-Word Answers", "Match the Columns", "Practice Tests"].map(item => (
-            <div key={item} style={{ padding: "12px", borderRadius: "10px", background: "#fff", border: "1px solid hsla(271,91%,60%,0.12)", textAlign: "center" }}>
-              <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "hsl(271,91%,60%)" }}>{item}</p>
+            <div key={item} style={{ padding: "12px", borderRadius: "10px", background: "#fff", border: "1px solid hsla(200, 85%, 48%,0.12)", textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "hsl(200, 85%, 48%)" }}>{item}</p>
               <p style={{ margin: "4px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>Coming Soon</p>
             </div>
           ))}

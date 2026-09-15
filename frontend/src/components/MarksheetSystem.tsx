@@ -133,7 +133,7 @@ export function MarksheetSystem({ userRole = "ADMIN" }: { userRole?: string }) {
             <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Your published exam results.</p>
           </div>
           {myResults.length > 0 && (
-            <div style={{ padding: "10px 18px", borderRadius: "10px", background: "hsla(271,91%,60%,0.1)", color: "hsl(271,91%,50%)", fontWeight: 700, fontSize: "14px" }}>
+            <div style={{ padding: "10px 18px", borderRadius: "10px", background: "hsla(200, 85%, 48%,0.1)", color: "hsl(200, 85%, 42%)", fontWeight: 700, fontSize: "14px" }}>
               Overall: {overallPct}%
             </div>
           )}
@@ -170,7 +170,7 @@ export function MarksheetSystem({ userRole = "ADMIN" }: { userRole?: string }) {
                       <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700 }}>{r.marks}/{r.totalMarks}</td>
                       <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: r.percentage >= 60 ? "var(--color-success)" : r.percentage >= 35 ? "hsl(38,92%,50%)" : "var(--color-danger)" }}>{r.percentage}%</td>
                       <td style={{ padding: "12px 16px", textAlign: "center" }}>
-                        <span style={{ fontSize: "11px", fontWeight: 800, padding: "3px 10px", borderRadius: "10px", background: r.grade === "F" ? "hsla(342,90%,48%,0.1)" : "hsla(142,70%,42%,0.1)", color: r.grade === "F" ? "var(--color-danger)" : "var(--color-success)" }}>{r.grade || "—"}</span>
+                        <span style={{ fontSize: "11px", fontWeight: 800, padding: "3px 10px", borderRadius: "10px", background: r.grade === "F" ? "hsla(205, 85%, 50%,0.1)" : "hsla(142,70%,42%,0.1)", color: r.grade === "F" ? "var(--color-danger)" : "var(--color-success)" }}>{r.grade || "—"}</span>
                       </td>
                       <td style={{ padding: "12px 16px", textAlign: "center" }}>
                         <span style={{ fontSize: "11px", fontWeight: 700, color: r.passed ? "var(--color-success)" : "var(--color-danger)" }}>{r.passed ? "PASS" : "FAIL"}</span>
@@ -232,7 +232,7 @@ export function MarksheetSystem({ userRole = "ADMIN" }: { userRole?: string }) {
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                         {sr.subjects.map((sub, i) => (
-                          <span key={i} style={{ fontSize: "10px", fontWeight: 600, background: sub.marks >= sub.total * 0.35 ? "hsla(142,70%,42%,0.08)" : "hsla(342,90%,48%,0.08)", color: sub.marks >= sub.total * 0.35 ? "var(--color-success)" : "var(--color-danger)", padding: "2px 8px", borderRadius: "8px" }}>
+                          <span key={i} style={{ fontSize: "10px", fontWeight: 600, background: sub.marks >= sub.total * 0.35 ? "hsla(142,70%,42%,0.08)" : "hsla(205, 85%, 50%,0.08)", color: sub.marks >= sub.total * 0.35 ? "var(--color-success)" : "var(--color-danger)", padding: "2px 8px", borderRadius: "8px" }}>
                             {sub.subject}: {sub.marks}/{sub.total}
                           </span>
                         ))}
@@ -241,7 +241,7 @@ export function MarksheetSystem({ userRole = "ADMIN" }: { userRole?: string }) {
                     <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700 }}>{sr.totalObtained}/{sr.totalMax}</td>
                     <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: sr.percentage >= 60 ? "var(--color-success)" : sr.percentage >= 35 ? "hsl(38,92%,50%)" : "var(--color-danger)" }}>{sr.percentage.toFixed(1)}%</td>
                     <td style={{ padding: "12px 16px", textAlign: "center" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 800, padding: "3px 10px", borderRadius: "10px", background: sr.grade === "F" ? "hsla(342,90%,48%,0.1)" : "hsla(142,70%,42%,0.1)", color: sr.grade === "F" ? "var(--color-danger)" : "var(--color-success)" }}>{sr.grade}</span>
+                      <span style={{ fontSize: "11px", fontWeight: 800, padding: "3px 10px", borderRadius: "10px", background: sr.grade === "F" ? "hsla(205, 85%, 50%,0.1)" : "hsla(142,70%,42%,0.1)", color: sr.grade === "F" ? "var(--color-danger)" : "var(--color-success)" }}>{sr.grade}</span>
                     </td>
                   </tr>
                 ))}

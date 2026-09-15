@@ -141,7 +141,7 @@ const getStatusColor = (status: string) => {
   switch (status) {
     case "Active":    return { bg: "hsla(142,70%,40%,0.08)", color: "var(--color-success)", dot: "var(--color-success)" };
     case "Inactive":  return { bg: "hsla(0,0%,50%,0.08)",    color: "var(--text-secondary)", dot: "var(--text-secondary)" };
-    case "Graduated": return { bg: "hsla(271,91%,60%,0.08)", color: "var(--color-warning)", dot: "var(--color-warning)" };
+    case "Graduated": return { bg: "hsla(200, 85%, 48%,0.08)", color: "var(--color-warning)", dot: "var(--color-warning)" };
     default:          return { bg: "hsla(0,0%,50%,0.08)",    color: "var(--text-secondary)", dot: "var(--text-secondary)" };
   }
 };
@@ -150,7 +150,7 @@ const getFeeColor = (status: string) => {
   switch (status) {
     case "Paid":    return { bg: "hsla(142,70%,40%,0.08)", color: "var(--color-success)" };
     case "Pending": return { bg: "hsla(38,92%,50%,0.08)",  color: "hsl(38,92%,45%)" };
-    case "Overdue": return { bg: "hsla(342,90%,48%,0.08)", color: "var(--color-danger)" };
+    case "Overdue": return { bg: "hsla(205, 85%, 50%,0.08)", color: "var(--color-danger)" };
     default:        return { bg: "hsla(0,0%,50%,0.08)",    color: "var(--text-secondary)" };
   }
 };
@@ -407,7 +407,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
       action: "Created",
       title: `Student registered: ${optimisticStudent.name}`,
       details: `Batch: ${optimisticStudent.batch} Â· Email: ${optimisticStudent.email} Â· Fee: â‚¹${optimisticStudent.feeAmount}`,
-      badgeColor: "hsl(328,100%,54%)",
+      badgeColor: "hsl(202, 90%, 58%)",
     });
     showToast(`ðŸŽ‰ ${optimisticStudent.name} registered successfully!`, "success");
     setActiveTab("all");
@@ -576,7 +576,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
   const renderStatCards = () => (
     <div className="stu-stats-row">
       <div className="stu-stat-card">
-        <div className="stu-stat-icon" style={{ background: "hsla(328, 100%, 54%, 0.08)" }}>
+        <div className="stu-stat-icon" style={{ background: "hsla(202, 90%, 58%, 0.08)" }}>
           <Users2 size={20} style={{ color: "var(--color-accent)" }} />
         </div>
         <div>
@@ -1013,7 +1013,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
             <>
               {/* Hero Banner */}
               <div style={{
-                background: "linear-gradient(135deg, hsl(271,91%,55%) 0%, hsl(328,100%,50%) 100%)",
+                background: "linear-gradient(135deg, hsl(200, 85%, 46%) 0%, hsl(202, 90%, 52%) 100%)",
                 borderRadius: "24px", padding: "48px 36px", textAlign: "center",
                 marginBottom: "28px", position: "relative", overflow: "hidden"
               }}>
@@ -1073,7 +1073,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                                     padding: "11px 16px", cursor: "pointer",
                                     transition: "background 0.15s", borderBottom: "1px solid hsla(285,30%,20%,0.04)"
                                   }}
-                                  onMouseEnter={e => (e.currentTarget.style.background = "hsla(271,91%,60%,0.05)")}
+                                  onMouseEnter={e => (e.currentTarget.style.background = "hsla(200, 85%, 48%,0.05)")}
                                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                                 >
                                   <div className="avatar-initials-gradient avatar-admin" style={{ width: "38px", height: "38px", fontSize: "12px", flexShrink: 0 }}>
@@ -1197,14 +1197,14 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
             {/* â”€â”€ Loading spinner inside modal â”€â”€ */}
             {isLoadingProfile && (
               <div style={{ position: "absolute", top: "16px", left: "50%", transform: "translateX(-50%)", zIndex: 10, background: "rgba(255,255,255,0.9)", borderRadius: "20px", padding: "6px 14px", display: "flex", alignItems: "center", gap: "8px", fontSize: "11px", fontWeight: 700, color: "hsl(285,50%,12%)", boxShadow: "0 2px 12px rgba(0,0,0,0.1)" }}>
-                <div style={{ width: "14px", height: "14px", border: "2px solid hsla(328,100%,54%,0.3)", borderTopColor: "hsl(328,100%,54%)", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+                <div style={{ width: "14px", height: "14px", border: "2px solid hsla(202, 90%, 58%,0.3)", borderTopColor: "hsl(202, 90%, 58%)", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
                 Refreshing from serverâ€¦
               </div>
             )}
 
             {/* â”€â”€ Header Banner â”€â”€ */}
             <div style={{
-              background: "linear-gradient(135deg, hsl(271,91%,42%) 0%, hsl(328,100%,46%) 100%)",
+              background: "linear-gradient(135deg, hsl(200, 85%, 42%) 0%, hsl(202, 90%, 48%) 100%)",
               padding: "32px 28px 76px", position: "relative", overflow: "hidden", borderRadius: "24px 24px 0 0"
             }}>
               <div style={{ position: "absolute", top: "-50px", right: "-50px", width: "240px", height: "240px", borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
@@ -1312,7 +1312,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                     background: "hsl(285,30%,98.5%)", borderRadius: "12px",
                     padding: "12px 14px", border: "none"
                   }}>
-                    <div style={{ width: "30px", height: "30px", borderRadius: "9px", background: "hsla(271,91%,60%,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "hsl(271,91%,50%)", flexShrink: 0 }}>
+                    <div style={{ width: "30px", height: "30px", borderRadius: "9px", background: "hsla(200, 85%, 48%,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "hsl(200, 85%, 42%)", flexShrink: 0 }}>
                       {item.icon}
                     </div>
                     <div style={{ minWidth: 0 }}>
@@ -1361,10 +1361,10 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                   onClick={() => { setSelectedStudent(profileResult); setActiveTab("all"); setProfileResult(null); }}
                   style={{
                     flex: 1, height: "44px", borderRadius: "12px", border: "none",
-                    background: "linear-gradient(135deg, hsl(271,91%,60%), hsl(328,100%,54%))",
+                    background: "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
                     color: "#fff", fontSize: "13px", fontWeight: 800, cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-                    boxShadow: "0 6px 18px -2px hsla(328,100%,54%,0.35)", transition: "all 0.2s"
+                    boxShadow: "0 6px 18px -2px hsla(202, 90%, 58%,0.35)", transition: "all 0.2s"
                   }}
                   onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-1px)")}
                   onMouseLeave={e => (e.currentTarget.style.transform = "none")}
@@ -1505,7 +1505,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                   <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>Assigned Batch:</span>
-                  <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(328,100%,54%,0.1)", padding: "2px 10px", borderRadius: "12px" }}>{successModalData.student.batch}</span>
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(202, 90%, 58%,0.1)", padding: "2px 10px", borderRadius: "12px" }}>{successModalData.student.batch}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>Login Email:</span>

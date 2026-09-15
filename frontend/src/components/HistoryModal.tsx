@@ -213,7 +213,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                 style={{
                   padding: "5px 12px", borderRadius: "16px", fontSize: "11px", fontWeight: 700,
                   border: selectedCategory === cat ? "none" : "1px solid hsla(285,40%,60%,0.2)",
-                  background: selectedCategory === cat ? "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))" : "#ffffff",
+                  background: selectedCategory === cat ? "linear-gradient(135deg,hsl(202, 90%, 58%),hsl(200, 85%, 48%))" : "#ffffff",
                   color: selectedCategory === cat ? "#ffffff" : "var(--text-primary)",
                   cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0,
                   transition: "all 0.15s"
@@ -264,7 +264,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
                     <span style={{
                       fontSize: "10px", fontWeight: 800, textTransform: "uppercase",
-                      color: item.badgeColor || "hsl(271,91%,60%)",
+                      color: item.badgeColor || "hsl(200, 85%, 48%)",
                       background: item.badgeColor ? `${item.badgeColor}15` : "rgba(139,92,246,0.1)",
                       padding: "2px 8px", borderRadius: "10px"
                     }}>

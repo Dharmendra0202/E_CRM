@@ -216,8 +216,8 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
       }}
     >
       {/* Logo */}
-      <div style={{ height: "60px", minHeight: "60px", maxHeight: "60px", boxSizing: "border-box", padding: collapsed ? "0 16px" : "0 18px", display: "flex", alignItems: "center", gap: "10px", borderBottom: "1px solid var(--border-glass)", flexShrink: 0, overflow: "hidden" }}>
-        <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ height: "65px", minHeight: "65px", maxHeight: "65px", boxSizing: "border-box", padding: collapsed ? "0 16px" : "0 18px", display: "flex", alignItems: "center", gap: "10px", borderBottom: "1px solid var(--border-glass)", flexShrink: 0, overflow: "hidden" }}>
+        <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: "linear-gradient(135deg, #6777ef, #5a68d8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <GraduationCap size={16} color="#fff" />
         </div>
         {!collapsed && <span style={{ fontSize: "16px", fontWeight: 800, fontFamily: "var(--font-headings)", whiteSpace: "nowrap" }} className="text-gradient-indigo">EduFlow</span>}
@@ -237,7 +237,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   width: "100%", padding: "6px 10px", margin: "0 0 2px",
                   border: "none", background: "transparent", cursor: "pointer",
-                  fontSize: "11px", fontWeight: 700, color: hasActive ? "var(--color-accent)" : "var(--text-secondary)",
+                  fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)",
                   textTransform: "uppercase", letterSpacing: "0.8px",
                 }}
               >
@@ -278,8 +278,8 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                       cursor: "pointer",
                       fontSize: "14px",
                       fontWeight: isActive ? 700 : 600,
-                      color: isActive ? "var(--color-accent)" : "var(--text-secondary)",
-                      background: isActive ? "hsla(328,100%,54%,0.08)" : "transparent",
+                      color: "var(--text-secondary)",
+                      background: isActive ? "hsla(205,90%,55%,0.08)" : "transparent",
                       transition: "all 0.2s",
                       textAlign: "left",
                       justifyContent: "center",
@@ -287,7 +287,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                     onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
                     onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
                   >
-                    <span style={{ display: "flex", flexShrink: 0 }}>{item.icon}</span>
+                    <span style={{ display: "flex", flexShrink: 0, color: "hsl(202,90%,58%)" }}>{item.icon}</span>
                   </button>
                 );
               })
@@ -317,8 +317,8 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                           cursor: "pointer",
                           fontSize: "14px",
                           fontWeight: isActive ? 700 : 600,
-                          color: isActive ? "var(--color-accent)" : "var(--text-secondary)",
-                          background: isActive ? "hsla(328,100%,54%,0.08)" : "transparent",
+                          color: "var(--text-secondary)",
+                          background: isActive ? "hsla(205,90%,55%,0.08)" : "transparent",
                           transition: "all 0.2s ease, opacity 0.45s ease-in-out, transform 0.45s ease-in-out",
                           transitionDelay: isOpen ? `${idx * 0.04}s` : "0s",
                           textAlign: "left",
@@ -329,7 +329,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                         onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
                         onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
                       >
-                        <span style={{ display: "flex", flexShrink: 0 }}>{item.icon}</span>
+                        <span style={{ display: "flex", flexShrink: 0, color: "hsl(202,90%,58%)" }}>{item.icon}</span>
                         <span style={{ whiteSpace: "nowrap", flex: 1 }}>{item.label}</span>
                         {hasChildren && (
                           <ChevronDown
@@ -364,8 +364,8 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                                   cursor: "pointer",
                                   fontSize: "13px",
                                   fontWeight: childActive ? 700 : 500,
-                                  color: childActive ? "var(--color-accent)" : "var(--text-secondary)",
-                                  background: childActive ? "hsla(328,100%,54%,0.08)" : "transparent",
+                                  color: "var(--text-secondary)",
+                                  background: childActive ? "hsla(205,90%,55%,0.08)" : "transparent",
                                   transition: "all 0.2s ease",
                                   textAlign: "left",
                                   justifyContent: "flex-start",
@@ -373,7 +373,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                                 onMouseEnter={(e) => { if (!childActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
                                 onMouseLeave={(e) => { if (!childActive) e.currentTarget.style.background = "transparent"; }}
                               >
-                                <span style={{ display: "flex", flexShrink: 0, opacity: 0.7 }}>{child.icon}</span>
+                                <span style={{ display: "flex", flexShrink: 0, color: "hsl(202,90%,58%)", opacity: 0.85 }}>{child.icon}</span>
                                 <span style={{ whiteSpace: "nowrap" }}>{child.label}</span>
                               </button>
                             );

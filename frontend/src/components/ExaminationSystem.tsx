@@ -25,9 +25,9 @@ const EXAM_TYPES = ["Test", "Preliminary", "Extra Test", "Activity", "Unit Test"
 const STATUS_FLOW: ExamStatus[] = ["DRAFT", "SCHEDULED", "CONDUCTED", "EVALUATED", "PUBLISHED"];
 const STATUS_COLORS: Record<ExamStatus, string> = {
   DRAFT: "hsl(200,95%,50%)",
-  SCHEDULED: "hsl(271,91%,60%)",
+  SCHEDULED: "hsl(200, 85%, 48%)",
   CONDUCTED: "hsl(38,92%,50%)",
-  EVALUATED: "hsl(328,100%,54%)",
+  EVALUATED: "hsl(202, 90%, 58%)",
   PUBLISHED: "hsl(142,70%,42%)",
 };
 
@@ -213,7 +213,7 @@ export function ExaminationSystem({ userRole = "ADMIN" }: { userRole?: string })
             </div>
             <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
               <button onClick={() => setMarksExam(exam)} title="Enter marks"
-                style={{ padding: "6px 12px", borderRadius: "8px", border: "none", background: "hsla(271,91%,60%,0.1)", color: "hsl(271,91%,50%)", fontSize: "10px", fontWeight: 700, cursor: "pointer" }}>
+                style={{ padding: "6px 12px", borderRadius: "8px", border: "none", background: "hsla(200, 85%, 48%,0.1)", color: "hsl(200, 85%, 42%)", fontSize: "10px", fontWeight: 700, cursor: "pointer" }}>
                 Enter Marks
               </button>
               {exam.status !== "PUBLISHED" && (
@@ -222,7 +222,7 @@ export function ExaminationSystem({ userRole = "ADMIN" }: { userRole?: string })
                   Next →
                 </button>
               )}
-              <button onClick={() => deleteExam(exam.id)} style={{ padding: "6px", borderRadius: "8px", border: "none", background: "hsla(342,90%,48%,0.08)", color: "var(--color-danger)", cursor: "pointer" }}>
+              <button onClick={() => deleteExam(exam.id)} style={{ padding: "6px", borderRadius: "8px", border: "none", background: "hsla(205, 85%, 50%,0.08)", color: "var(--color-danger)", cursor: "pointer" }}>
                 <Trash2 size={14} />
               </button>
             </div>

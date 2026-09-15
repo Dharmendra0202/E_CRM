@@ -66,8 +66,8 @@ export function ReportsAnalytics() {
       {/* Top KPI Row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px", marginBottom: "24px" }}>
         {[
-          { label: "Students", value: students, icon: <Users2 size={20} />, color: "hsl(328,100%,54%)" },
-          { label: "Staff", value: staff, icon: <GraduationCap size={20} />, color: "hsl(271,91%,60%)" },
+          { label: "Students", value: students, icon: <Users2 size={20} />, color: "hsl(202, 90%, 58%)" },
+          { label: "Staff", value: staff, icon: <GraduationCap size={20} />, color: "hsl(200, 85%, 48%)" },
           { label: "Batches", value: batches, icon: <BookOpen size={20} />, color: "hsl(200,95%,50%)" },
           { label: "Active Homework", value: homework, icon: <Target size={20} />, color: "hsl(38,92%,50%)" },
         ].map((kpi, i) => (
@@ -90,7 +90,7 @@ export function ReportsAnalytics() {
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {[
-              { label: "Total Billed", value: `₹${finance.totalBilled.toLocaleString("en-IN")}`, color: "hsl(271,91%,60%)" },
+              { label: "Total Billed", value: `₹${finance.totalBilled.toLocaleString("en-IN")}`, color: "hsl(200, 85%, 48%)" },
               { label: "Collected", value: `₹${finance.totalCollected.toLocaleString("en-IN")}`, color: "var(--color-success)" },
               { label: "Outstanding", value: `₹${finance.outstanding.toLocaleString("en-IN")}`, color: "var(--color-danger)" },
               { label: "Collection Rate", value: `${finance.collectionRate}%`, color: "hsl(200,95%,50%)" },
@@ -131,11 +131,11 @@ export function ReportsAnalytics() {
       {/* Lead Pipeline */}
       <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", border: "1px solid var(--border-glass)" }}>
         <h3 style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
-          <BarChart3 size={16} style={{ color: "hsl(271,91%,60%)" }} /> Lead Pipeline ({leads.total} total)
+          <BarChart3 size={16} style={{ color: "hsl(200, 85%, 48%)" }} /> Lead Pipeline ({leads.total} total)
         </h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: "8px" }}>
           {Object.entries(leads.pipeline).map(([status, count]) => {
-            const colors: Record<string, string> = { NEW: "hsl(200,95%,50%)", CONTACTED: "hsl(271,91%,60%)", COUNSELLING: "hsl(38,92%,50%)", FOLLOW_UP: "hsl(328,100%,54%)", ENROLLED: "var(--color-success)", LOST: "var(--color-danger)" };
+            const colors: Record<string, string> = { NEW: "hsl(200,95%,50%)", CONTACTED: "hsl(200, 85%, 48%)", COUNSELLING: "hsl(38,92%,50%)", FOLLOW_UP: "hsl(202, 90%, 58%)", ENROLLED: "var(--color-success)", LOST: "var(--color-danger)" };
             const color = colors[status] || "var(--text-secondary)";
             return (
               <div key={status} style={{ padding: "12px", background: `${color}08`, borderRadius: "10px", textAlign: "center" }}>

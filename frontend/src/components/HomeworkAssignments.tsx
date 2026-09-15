@@ -94,8 +94,8 @@ export function HomeworkAssignments() {
       {stats && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px", marginBottom: "20px" }}>
           {[
-            { label: "Total", value: stats.total, color: "hsl(271,91%,60%)" },
-            { label: "Active", value: stats.active, color: "hsl(328,100%,54%)" },
+            { label: "Total", value: stats.total, color: "hsl(200, 85%, 48%)" },
+            { label: "Active", value: stats.active, color: "hsl(202, 90%, 58%)" },
             { label: "Overdue", value: stats.overdue, color: "var(--color-danger)" },
             { label: "Submissions", value: stats.totalSubmissions, color: "hsl(142,70%,42%)" },
             { label: "Pending Grading", value: stats.pendingGrading, color: "hsl(38,92%,50%)" },
@@ -136,7 +136,7 @@ export function HomeworkAssignments() {
             const isOverdue = hw.status === "ACTIVE" && new Date(hw.dueDate) < new Date();
             const statusColor = hw.status === "ACTIVE" ? (isOverdue ? "var(--color-danger)" : "var(--color-success)") : "var(--text-secondary)";
             return (
-              <div key={hw.id} style={{ background: "#fff", borderRadius: "14px", padding: "16px 20px", border: `1px solid ${isOverdue ? "hsla(342,90%,48%,0.2)" : "var(--border-glass)"}`, display: "flex", alignItems: "center", gap: "16px" }}>
+              <div key={hw.id} style={{ background: "#fff", borderRadius: "14px", padding: "16px 20px", border: `1px solid ${isOverdue ? "hsla(205, 85%, 50%,0.2)" : "var(--border-glass)"}`, display: "flex", alignItems: "center", gap: "16px" }}>
                 <div style={{ width: "42px", height: "42px", borderRadius: "10px", background: `${statusColor}12`, display: "flex", alignItems: "center", justifyContent: "center", color: statusColor, flexShrink: 0 }}>
                   <FileText size={18} />
                 </div>
@@ -154,7 +154,7 @@ export function HomeworkAssignments() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
                   <div style={{ textAlign: "center" }}>
-                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "hsl(271,91%,60%)" }}>{hw.submissionCount}</p>
+                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "hsl(200, 85%, 48%)" }}>{hw.submissionCount}</p>
                     <p style={{ margin: 0, fontSize: "9px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Submitted</p>
                   </div>
                   <div style={{ textAlign: "center" }}>

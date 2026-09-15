@@ -10,10 +10,10 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const VARIANT_STYLES: Record<string, React.CSSProperties> = {
   primary: {
-    background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))",
+    background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
     color: "#fff",
     border: "none",
-    boxShadow: "0 4px 14px hsla(328,100%,54%,0.25)",
+    boxShadow: "0 4px 14px hsla(202, 90%, 58%,0.25)",
   },
   secondary: {
     background: "hsl(320,20%,94%)",
@@ -26,7 +26,7 @@ const VARIANT_STYLES: Record<string, React.CSSProperties> = {
     border: "1px solid hsla(285,30%,20%,0.1)",
   },
   danger: {
-    background: "linear-gradient(135deg, hsl(342,90%,48%), hsl(350,90%,42%))",
+    background: "linear-gradient(135deg, hsl(205, 85%, 50%), hsl(350,90%,42%))",
     color: "#fff",
     border: "none",
   },
@@ -41,7 +41,7 @@ const VARIANT_STYLES: Record<string, React.CSSProperties> = {
     border: "1.5px solid hsla(285,30%,20%,0.15)",
   },
   default: {
-    background: "hsl(271,91%,60%)",
+    background: "hsl(200, 85%, 48%)",
     color: "#fff",
     border: "none",
   },
