@@ -13,6 +13,12 @@ const googleClient = new OAuth2Client();
 
 const router = Router();
 
+// Emails that are automatically granted ADMIN role on Google login.
+// Add trusted owner/operator emails here (lowercase).
+const ADMIN_EMAIL_ALLOWLIST = [
+  "hemant150604@gmail.com",
+];
+
 // ── Zod Schemas ─────────────────────────────────────────────
 const LoginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -469,20 +475,26 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
           data: { googleId, authProvider: user.authProvider === "local" ? "local+google" : user.authProvider, emailVerified: true },
         });
       } else {
-        // NEW Google user — don't assign role yet, let frontend ask
+        // NEW Google user — auto-assign ADMIN if email is allowlisted, else ask for role
+        const isAllowlistedAdmin = ADMIN_EMAIL_ALLOWLIST.includes(email.toLowerCase());
         user = await prisma.user.create({
           data: {
             email: email.toLowerCase(),
             passwordHash: "", // No password for Google-only users
             firstName: given_name || "User",
             lastName: family_name || "",
-            role: "PENDING", // Will be set after role selection
+            role: isAllowlistedAdmin ? "ADMIN" : "PENDING", // Allowlisted owners become ADMIN
             googleId,
             authProvider: "google",
             emailVerified: email_verified ?? true,
           },
         });
       }
+    }
+
+    // Enforce ADMIN for allowlisted owners on every login (fixes accounts created with any other role)
+    if (user.role !== "ADMIN" && ADMIN_EMAIL_ALLOWLIST.includes(user.email.toLowerCase())) {
+      user = await prisma.user.update({ where: { id: user.id }, data: { role: "ADMIN" } });
     }
 
     // If role is PENDING, ask frontend to show role selection

@@ -122,6 +122,15 @@ export const api = {
       const q = new URLSearchParams(params as any).toString();
       return request<any>(`/attendance/session?${q}`);
     },
+    getSummary: (params?: { student_id?: string; batch_id?: string }) => {
+      const q = new URLSearchParams(params as any).toString();
+      return request<any>(`/attendance/summary${q ? `?${q}` : ""}`);
+    },
+    getMySummary: () => request<any>("/attendance/my-summary"),
+    getRange: (params: { from: string; to: string; student_id?: string; batch_id?: string }) => {
+      const q = new URLSearchParams(params as any).toString();
+      return request<any>(`/attendance/range?${q}`);
+    },
     submit: (body: object) => request<any>("/attendance", { method: "POST", body: JSON.stringify(body) }),
     mark: (body: {
       schedule_id: string;
@@ -147,6 +156,22 @@ export const api = {
     getConfig: () => request<any>("/payments/config"),
     createOrder: (body: { invoiceId: string; amount: number }) => request<any>("/payments/create-order", { method: "POST", body: JSON.stringify(body) }),
     verifyPayment: (body: object) => request<any>("/payments/verify", { method: "POST", body: JSON.stringify(body) }),
+  },
+
+  // ── Schedules / Timetable ────────────────────────────────
+  schedules: {
+    getAll: () => request<any>("/schedules"),
+    create: (body: object) => request<any>("/schedules", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: object) => request<any>(`/schedules/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+    delete: (id: string) => request<any>(`/schedules/${id}`, { method: "DELETE" }),
+  },
+
+  // ── Online Classes ───────────────────────────────────────
+  onlineClasses: {
+    getAll: (status?: string) => request<any>(`/online-classes${status ? `?status=${status}` : ""}`),
+    create: (body: object) => request<any>("/online-classes", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: object) => request<any>(`/online-classes/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
+    delete: (id: string) => request<any>(`/online-classes/${id}`, { method: "DELETE" }),
   },
 
   // ── Batches ──────────────────────────────────────────────
@@ -270,6 +295,7 @@ export const api = {
     update: (id: string, body: object) => request<any>(`/exams/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     delete: (id: string) => request<any>(`/exams/${id}`, { method: "DELETE" }),
     addResult: (examId: string, body: object) => request<any>(`/exams/${examId}/results`, { method: "POST", body: JSON.stringify(body) }),
+    myResults: () => request<any>("/exams/my-results"),
   },
 
   // ── Marksheets (DB-persisted) ──────────────────────────

@@ -8,6 +8,12 @@ import { api, setToken, getToken } from "./utils/api";
 import { Login } from "./components/Login";
 import { StudentManagement } from "./components/StudentManagement";
 import { StudentProfile } from "./components/StudentProfile";
+import { StudentProfiles } from "./components/StudentProfiles";
+import { OnlineClasses } from "./components/OnlineClasses";
+import { ClassTimeTable } from "./components/ClassTimeTable";
+import { ClassAttendance } from "./components/ClassAttendance";
+import { AttendanceDetails } from "./components/AttendanceDetails";
+import { FeeReceipt } from "./components/FeeReceipt";
 import { TimetableScheduler } from "./components/TimetableScheduler";
 import { HistoryModal } from "./components/HistoryModal";
 import { AttendanceTracker } from "./components/AttendanceTracker";
@@ -43,7 +49,7 @@ import {
   ChevronLeft, ChevronRight, User
 } from "lucide-react";
 
-type ViewType = "dashboard" | "leads" | "batches" | "new-enrollment" | "online-admissions" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding" | "my-profile";
+type ViewType = "dashboard" | "leads" | "student-profiles" | "batches" | "new-enrollment" | "online-admissions" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "online-classes" | "class-attendance" | "class-timetable" | "attendance-details" | "fee-receipt" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding" | "my-profile";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
@@ -349,7 +355,7 @@ function App() {
   };
 
   return (
-    <div className={`crm-container relative overflow-hidden has-sidebar ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}>
+    <div className={`crm-container relative overflow-hidden has-sidebar ${sidebarCollapsed ? "sidebar-collapsed" : ""} ${mobileSidebarOpen ? "mobile-drawer-open" : ""}`}>
       <div className="radial-spotlight" />
 
       {/* ── Sidebar ── */}
@@ -375,8 +381,8 @@ function App() {
         {([
           { view: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
           { view: "new-enrollment", icon: <Users2 size={20} />,     label: "Enroll" },
-          { view: "schedule",  icon: <CalendarDays size={20} />,    label: "Timetable" },
-          { view: "attendance",icon: <Check size={20} />,           label: "Attendance" },
+          { view: "class-timetable",  icon: <CalendarDays size={20} />,    label: "Timetable" },
+          { view: "class-attendance",icon: <Check size={20} />,           label: "Attendance" },
           { view: "billing",   icon: <CreditCard size={20} />,      label: "Billing" },
           { view: "staff",     icon: <Briefcase size={20} />,       label: "Staff" },
         ] as { view: ViewType; icon: React.ReactNode; label: string }[]).map(({ view, icon, label }) => (
@@ -392,12 +398,19 @@ function App() {
         {/* ── Header ── */}
         <header className="crm-top-header">
           <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
-            {/* Mobile hamburger */}
+            {/* Menu toggle — collapses sidebar on desktop, opens drawer on mobile */}
             <button
-              className="mobile-menu-btn"
-              onClick={() => setMobileSidebarOpen(true)}
+              className="header-menu-btn"
+              onClick={() => {
+                if (window.matchMedia("(max-width: 1023px)").matches) {
+                  setMobileSidebarOpen(true);
+                } else {
+                  setSidebarCollapsed((c) => !c);
+                }
+              }}
+              title="Toggle menu"
               style={{
-                display: "none", alignItems: "center", justifyContent: "center",
+                display: "flex", alignItems: "center", justifyContent: "center",
                 width: "36px", height: "36px", borderRadius: "10px", border: "none",
                 background: "hsla(285,30%,20%,0.06)", cursor: "pointer",
               }}
@@ -612,9 +625,9 @@ function App() {
             <div className="drawer-content-grid">
               {([
                 { view: "dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
-                { view: "leads",     icon: <Users2 size={18} />,          label: "Students" },
-                { view: "schedule",  icon: <CalendarDays size={18} />,    label: "Timetable" },
-                { view: "attendance",icon: <Check size={18} />,           label: "Attendance" },
+                { view: "student-profiles", icon: <Users2 size={18} />,   label: "Students" },
+                { view: "class-timetable",  icon: <CalendarDays size={18} />,    label: "Timetable" },
+                { view: "class-attendance",icon: <Check size={18} />,           label: "Attendance" },
                 { view: "billing",   icon: <CreditCard size={18} />,      label: "Billing" },
                 { view: "staff",     icon: <Briefcase size={18} />,       label: "Staff" },
               ] as { view: ViewType; icon: React.ReactNode; label: string }[]).map(({ view, icon, label }) => (
@@ -649,7 +662,16 @@ function App() {
             />
           )}
 
-          {/* ══════════════ STUDENTS VIEW ══════════════ */}
+          {/* ══════════════ STUDENT PROFILES VIEW ══════════════ */}
+          {currentView === "student-profiles" && <StudentProfiles />}
+
+          {/* ══════════════ ONLINE CLASSES SUB-VIEWS ══════════════ */}
+          {currentView === "online-classes" && <OnlineClasses userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
+          {currentView === "class-attendance" && <ClassAttendance userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
+          {currentView === "class-timetable" && <ClassTimeTable userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
+          {currentView === "attendance-details" && <AttendanceDetails userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
+          {currentView === "fee-receipt" && <FeeReceipt userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
+
           {/* ══════════════ ADMISSIONS CRM VIEW ══════════════ */}
           {currentView === "admissions" && <AdmissionsCRM />}
 
@@ -658,10 +680,10 @@ function App() {
           {currentView === "bulk-promotion" && <BulkPromotion />}
 
           {/* ══════════════ EXAMINATION SYSTEM VIEW ══════════════ */}
-          {currentView === "examination" && <ExaminationSystem />}
+          {currentView === "examination" && <ExaminationSystem userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
 
           {/* ══════════════ MARKSHEET VIEW ══════════════ */}
-          {currentView === "marksheet" && <MarksheetSystem />}
+          {currentView === "marksheet" && <MarksheetSystem userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
 
           {/* ══════════════ WEAK STUDENT VIEW ══════════════ */}
           {currentView === "weak-students" && <WeakStudentModule />}

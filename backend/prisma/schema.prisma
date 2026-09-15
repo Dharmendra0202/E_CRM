@@ -212,6 +212,12 @@ model Student {
   motherPhone String?
   gender      String?
   address     String?
+  bloodGroup   String?
+  schoolName   String?
+  currentClass String?
+  city         String?
+  state        String?
+  pinCode      String?
   dateOfBirth DateTime          @db.Date
   createdAt   DateTime          @default(now()) @db.Timestamptz(6)
   updatedAt   DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
@@ -598,4 +604,25 @@ model AuditLog {
   @@index([module, action])
   @@index([entityId])
   @@index([createdAt(sort: Desc)])
+}
+
+model OnlineClass {
+  id             String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  courseName     String
+  subjectName    String
+  scheduleDate   DateTime @db.Date
+  scheduleTime   String
+  theoryBatch    String?
+  practicalBatch String?
+  teacherName    String?
+  classLink      String?
+  meetingId      String?
+  status         String   @default("UPCOMING")
+  batchId        String?
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  deletedAt      DateTime? @db.Timestamptz(6)
+
+  @@index([scheduleDate])
+  @@index([status])
 }

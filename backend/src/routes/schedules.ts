@@ -6,6 +6,7 @@ import {
   sendTeacherLectureAssignmentEmail,
   sendStudentScheduleUpdateEmail,
 } from "../utils/email";
+import { notifyBatch } from "../utils/notify";
 
 const router = Router();
 
@@ -39,6 +40,15 @@ async function dispatchScheduleNotifications(scheduleId: string, isUpdate = fals
 
     const { batch } = schedule;
     const dayName = DAY_NAMES[schedule.dayOfWeek] ?? `Day ${schedule.dayOfWeek}`;
+
+    // ── In-app notifications to teacher + students ────────────
+    notifyBatch(batch.id, {
+      title: isUpdate ? "Timetable Updated" : "New Class Scheduled",
+      message: `${batch.subject} (${batch.name}) on ${dayName} at ${schedule.startTime}–${schedule.endTime}${schedule.roomOrLink ? ` · ${schedule.roomOrLink}` : ""}`,
+      type: "GENERAL",
+      priority: "NORMAL",
+      link: "/schedule",
+    });
 
     // ── 1. Notify Teacher ──────────────────────────────────────
     const teacherUser = batch.teacher?.user;

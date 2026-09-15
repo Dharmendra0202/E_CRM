@@ -30,6 +30,7 @@ import examsRoutes from "./routes/exams";
 import marksheetsRoutes from "./routes/marksheets";
 import notificationsRoutes from "./routes/notifications";
 import paymentsRoutes from "./routes/payments";
+import onlineClassesRoutes from "./routes/onlineClasses";
 
 dotenv.config();
 
@@ -136,6 +137,7 @@ app.use("/api/v1/exams",      examsRoutes);
 app.use("/api/v1/marksheets", marksheetsRoutes);
 app.use("/api/v1/notifications", notificationsRoutes);
 app.use("/api/v1/payments",      paymentsRoutes);
+app.use("/api/v1/online-classes", onlineClassesRoutes);
 
 // ── Health Check ────────────────────────────────────────────
 app.get("/api/v1/health", async (_req: Request, res: Response) => {

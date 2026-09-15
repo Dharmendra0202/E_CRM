@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   UserPlus, Users2, GraduationCap, Briefcase, ChevronRight, ChevronLeft,
-  Check, User, Phone, Mail, MapPin, Calendar, IndianRupee, Shield,
+  Check, User, Phone, Mail, MapPin, Calendar, IndianRupee, Shield, School, Hash,
 } from "lucide-react";
 import { api } from "../utils/api";
 import { toTitleCase } from "../utils/styles";
@@ -20,6 +20,12 @@ interface PersonalDetails {
   email: string;
   address: string;
   batch: string;
+  bloodGroup: string;
+  schoolName: string;
+  currentClass: string;
+  city: string;
+  state: string;
+  pinCode: string;
 }
 
 interface GuardianDetails {
@@ -44,6 +50,7 @@ export const NewEnrollment: React.FC = () => {
   const [role, setRole] = useState<RoleType>("");
   const [personal, setPersonal] = useState<PersonalDetails>({
     firstName: "", lastName: "", phone: "", gender: "Male", dob: "", email: "", address: "", batch: "",
+    bloodGroup: "", schoolName: "", currentClass: "", city: "", state: "", pinCode: "",
   });
   const [guardian, setGuardian] = useState<GuardianDetails>({
     fatherName: "", fatherPhone: "", motherName: "", motherPhone: "",
@@ -129,6 +136,12 @@ export const NewEnrollment: React.FC = () => {
           email: personal.email || `${personal.phone}@placeholder.com`,
           phone: personal.phone,
           gender: personal.gender,
+          bloodGroup: personal.bloodGroup,
+          schoolName: personal.schoolName,
+          currentClass: personal.currentClass,
+          city: personal.city,
+          state: personal.state,
+          pinCode: personal.pinCode,
           address: personal.address || "",
           parentName: guardian.fatherName,
           parentPhone: guardian.fatherPhone,
@@ -164,7 +177,7 @@ export const NewEnrollment: React.FC = () => {
   const resetForm = () => {
     setCurrentStep(1);
     setRole("");
-    setPersonal({ firstName: "", lastName: "", phone: "", gender: "Male", dob: "", email: "", address: "", batch: "" });
+    setPersonal({ firstName: "", lastName: "", phone: "", gender: "Male", dob: "", email: "", address: "", batch: "", bloodGroup: "", schoolName: "", currentClass: "", city: "", state: "", pinCode: "" });
     setGuardian({ fatherName: "", fatherPhone: "", motherName: "", motherPhone: "" });
     setFee({ totalAmount: "", paidToday: "0", paymentMethod: "CASH", paymentPlan: "single", customInstallments: "", notes: "" });
     setErrors({});
@@ -463,6 +476,26 @@ export const NewEnrollment: React.FC = () => {
                 placeholder="example@gmail.com"
                 type="email"
               />
+              <SelectField
+                label="Blood Group"
+                value={personal.bloodGroup}
+                options={["", "A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]}
+                onChange={(v) => setPersonal({ ...personal, bloodGroup: v })}
+              />
+              <InputField
+                label="School / College Name"
+                icon={<School size={14} />}
+                value={personal.schoolName}
+                onChange={(v) => setPersonal({ ...personal, schoolName: toTitleCase(v) })}
+                placeholder="Where the student currently studies"
+              />
+              <InputField
+                label="Current Class / Grade"
+                icon={<GraduationCap size={14} />}
+                value={personal.currentClass}
+                onChange={(v) => setPersonal({ ...personal, currentClass: v })}
+                placeholder="e.g. Class 10, 12th Science"
+              />
             </div>
             <div style={{ marginTop: "12px" }}>
               <InputField
@@ -472,6 +505,30 @@ export const NewEnrollment: React.FC = () => {
                 onChange={(v) => setPersonal({ ...personal, address: toTitleCase(v) })}
                 placeholder="Full residential address"
                 fullWidth
+              />
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginTop: "12px" }}>
+              <InputField
+                label="City"
+                icon={<MapPin size={14} />}
+                value={personal.city}
+                onChange={(v) => setPersonal({ ...personal, city: toTitleCase(v) })}
+                placeholder="City"
+              />
+              <InputField
+                label="State"
+                icon={<MapPin size={14} />}
+                value={personal.state}
+                onChange={(v) => setPersonal({ ...personal, state: toTitleCase(v) })}
+                placeholder="State"
+              />
+              <InputField
+                label="Pin Code"
+                icon={<Hash size={14} />}
+                value={personal.pinCode}
+                onChange={(v) => setPersonal({ ...personal, pinCode: v.replace(/\D/g, "").slice(0, 6) })}
+                placeholder="6-digit PIN"
+                type="tel"
               />
             </div>
             <div style={{ marginTop: "12px" }}>

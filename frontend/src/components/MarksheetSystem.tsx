@@ -15,7 +15,8 @@ interface MarkEntry {
   batch: string;
 }
 
-export function MarksheetSystem() {
+export function MarksheetSystem({ userRole = "ADMIN" }: { userRole?: string }) {
+  const isStudent = userRole === "STUDENT" || userRole === "PARENT";
   const [entries, setEntries] = useState<MarkEntry[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
@@ -24,8 +25,25 @@ export function MarksheetSystem() {
   const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({ studentId: "", subject: "", marks: "", totalMarks: "100", examTitle: "" });
 
-  useEffect(() => { loadData(); }, []);
-  useEffect(() => { if (selectedBatch) loadMarksheets(); }, [selectedBatch]);
+  // Student's own results (from exam system)
+  const [myResults, setMyResults] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isStudent) {
+      (async () => {
+        setIsLoading(true);
+        try {
+          const res = await api.exams2.myResults();
+          setMyResults(res.data || []);
+        } catch { setMyResults([]); }
+        setIsLoading(false);
+      })();
+    } else {
+      loadData();
+    }
+    // eslint-disable-next-line
+  }, []);
+  useEffect(() => { if (!isStudent && selectedBatch) loadMarksheets(); }, [selectedBatch]);
 
   const loadData = async () => {
     setIsLoading(true);
@@ -101,6 +119,72 @@ export function MarksheetSystem() {
   }).sort((a, b) => b.percentage - a.percentage);
 
   const batchStudents = students.filter(s => s.enrollments?.some((e: any) => e.batch?.name === selectedBatch));
+
+  // ── STUDENT / PARENT: only their own published marks ──
+  if (isStudent) {
+    const totalObtained = myResults.reduce((s, r) => s + (r.marks || 0), 0);
+    const totalMax = myResults.reduce((s, r) => s + (r.totalMarks || 0), 0);
+    const overallPct = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) : "0";
+    return (
+      <div className="animate-fade-in" style={{ fontFamily: '"Lucida Grande", Helvetica, Arial, Verdana, sans-serif' }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
+          <div>
+            <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>My Marks</h1>
+            <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Your published exam results.</p>
+          </div>
+          {myResults.length > 0 && (
+            <div style={{ padding: "10px 18px", borderRadius: "10px", background: "hsla(271,91%,60%,0.1)", color: "hsl(271,91%,50%)", fontWeight: 700, fontSize: "14px" }}>
+              Overall: {overallPct}%
+            </div>
+          )}
+        </div>
+
+        {isLoading ? (
+          <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>Loading your marks...</div>
+        ) : myResults.length === 0 ? (
+          <div style={{ padding: "48px", textAlign: "center", background: "#fff", borderRadius: "16px", border: "1px solid var(--border-glass)" }}>
+            <Award size={32} style={{ color: "var(--text-secondary)", opacity: 0.3, marginBottom: "10px" }} />
+            <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>No results published yet. Your marks will appear here once your teacher publishes them.</p>
+          </div>
+        ) : (
+          <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid var(--border-glass)", overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                <thead>
+                  <tr style={{ background: "rgba(29,10,39,0.02)", borderBottom: "1px solid var(--border-glass)" }}>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Exam</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Subject</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Type</th>
+                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Marks</th>
+                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>%</th>
+                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Grade</th>
+                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Result</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {myResults.map((r) => (
+                    <tr key={r.id} style={{ borderBottom: "1px solid var(--border-glass)" }}>
+                      <td style={{ padding: "12px 16px", fontWeight: 700 }}>{r.examTitle}</td>
+                      <td style={{ padding: "12px 16px" }}>{r.subject}</td>
+                      <td style={{ padding: "12px 16px", color: "var(--text-secondary)" }}>{r.examType}</td>
+                      <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700 }}>{r.marks}/{r.totalMarks}</td>
+                      <td style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: r.percentage >= 60 ? "var(--color-success)" : r.percentage >= 35 ? "hsl(38,92%,50%)" : "var(--color-danger)" }}>{r.percentage}%</td>
+                      <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 800, padding: "3px 10px", borderRadius: "10px", background: r.grade === "F" ? "hsla(342,90%,48%,0.1)" : "hsla(142,70%,42%,0.1)", color: r.grade === "F" ? "var(--color-danger)" : "var(--color-success)" }}>{r.grade || "—"}</span>
+                      </td>
+                      <td style={{ padding: "12px 16px", textAlign: "center" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: r.passed ? "var(--color-success)" : "var(--color-danger)" }}>{r.passed ? "PASS" : "FAIL"}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">

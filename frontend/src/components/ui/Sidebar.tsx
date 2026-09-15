@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
   Check, BookOpen, GraduationCap, Target,
   Megaphone, BarChart3, Settings, Shield, FileText,
-  ChevronLeft, ChevronRight, ChevronDown, Layers,
+  ChevronDown, Layers, Video,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -20,10 +20,10 @@ interface SidebarProps {
 const ROLE_VIEWS: Record<string, string[]> = {
   ADMIN: ["*"], // all views
   SUPER_ADMIN: ["*"],
-  TEACHER: ["dashboard", "attendance", "schedule", "homework", "exams", "examination", "marksheet", "leads", "batches", "communication"],
-  STAFF: ["dashboard", "leads", "attendance", "billing", "communication"],
-  STUDENT: ["dashboard", "schedule", "attendance", "exams", "marksheet", "homework"],
-  PARENT: ["dashboard", "attendance", "exams", "marksheet", "billing", "communication"],
+  TEACHER: ["dashboard", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "schedule", "homework", "exams", "examination", "marksheet", "leads", "student-profiles", "batches", "communication"],
+  STAFF: ["dashboard", "leads", "student-profiles", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "billing", "fee-receipt", "communication"],
+  STUDENT: ["dashboard", "schedule", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "examination", "marksheet", "fee-receipt"],
+  PARENT: ["dashboard", "attendance", "examination", "marksheet", "billing", "fee-receipt", "communication"],
   ACCOUNTANT: ["dashboard", "billing", "reports"],
   PENDING: ["dashboard"],
 };
@@ -33,26 +33,25 @@ const NAV_ITEMS = [
     { view: "dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { view: "admissions", icon: <Target size={18} />, label: "Enquiries" },
     { view: "new-enrollment", icon: <Layers size={18} />, label: "New Enrollment" },
+    { view: "batches", icon: <Layers size={18} />, label: "Batches" },
   ]},
-  { group: "People", items: [
-    { view: "leads", icon: <Users2 size={18} />, label: "Students" },
+  { group: "Profiles", items: [
+    { view: "student-profiles", icon: <Users2 size={18} />, label: "Students Profile" },
     { view: "staff", icon: <Briefcase size={18} />, label: "Staff" },
     { view: "teachers", icon: <GraduationCap size={18} />, label: "Teachers" },
   ]},
-  { group: "Academics", items: [
-    { view: "batches", icon: <Layers size={18} />, label: "Batches" },
-    { view: "schedule", icon: <CalendarDays size={18} />, label: "Timetable" },
-    { view: "attendance", icon: <Check size={18} />, label: "Attendance" },
-    { view: "homework", icon: <FileText size={18} />, label: "Homework" },
-    { view: "exams", icon: <BookOpen size={18} />, label: "Report Cards" },
+  { group: "Attendance", items: [
+    { view: "online-classes", icon: <Video size={18} />, label: "Online Classes" },
+    { view: "class-attendance", icon: <Check size={18} />, label: "Class Attendance" },
+    { view: "class-timetable", icon: <CalendarDays size={18} />, label: "Class Time Table" },
+    { view: "attendance-details", icon: <FileText size={18} />, label: "Attendance Datewise Details" },
+  ]},
+  { group: "Examination", items: [
     { view: "examination", icon: <BookOpen size={18} />, label: "Examinations" },
     { view: "marksheet", icon: <BarChart3 size={18} />, label: "Marksheet" },
-    { view: "weak-students", icon: <Users2 size={18} />, label: "Weak Students" },
-    { view: "bulk-promotion", icon: <Users2 size={18} />, label: "Bulk Promotion" },
   ]},
-  { group: "Operations", items: [
-    { view: "billing", icon: <CreditCard size={18} />, label: "Fees & Payments" },
-    { view: "communication", icon: <Megaphone size={18} />, label: "Notices" },
+  { group: "Fee Receipt", items: [
+    { view: "fee-receipt", icon: <CreditCard size={18} />, label: "Fee Receipt" },
   ]},
   { group: "Settings", items: [
     { view: "reports", icon: <BarChart3 size={18} />, label: "Reports" },
@@ -135,12 +134,19 @@ function DrawerGroup({ isOpen, children }: { isOpen: boolean; children: React.Re
 
 
 export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, mobileOpen, onMobileClose, userRole = "ADMIN" }: SidebarProps) {
-  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(["Main", "People", "Academics"]));
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(["Main"]));
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const toggleGroup = (group: string) => {
     const next = new Set(openGroups);
     if (next.has(group)) next.delete(group); else next.add(group);
     setOpenGroups(next);
+  };
+
+  const toggleItem = (view: string) => {
+    const next = new Set(expandedItems);
+    if (next.has(view)) next.delete(view); else next.add(view);
+    setExpandedItems(next);
   };
 
   // Filter NAV_ITEMS based on role
@@ -149,17 +155,38 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
   
   const filteredNavItems = NAV_ITEMS.map(group => ({
     ...group,
-    items: group.items.filter(item => isAllowed(item.view)),
+    items: group.items
+      .map(item => {
+        const children = (item as any).children as { view: string }[] | undefined;
+        if (children?.length) {
+          const allowedChildren = children.filter(c => isAllowed(c.view));
+          // Keep parent only if it has at least one allowed child
+          return allowedChildren.length ? { ...item, children: allowedChildren } : null;
+        }
+        return isAllowed(item.view) ? item : null;
+      })
+      .filter(Boolean) as typeof group.items,
   })).filter(group => group.items.length > 0);
 
-  // Auto-expand the group that contains the active view (only when navigation changes)
+  // Auto-expand the group (and parent item) that contains the active view
   const prevView = useRef(currentView);
   useEffect(() => {
     if (prevView.current !== currentView) {
       prevView.current = currentView;
-      const activeGroup = filteredNavItems.find(g => g.items.some(i => i.view === currentView))?.group;
+      const activeGroup = filteredNavItems.find(g =>
+        g.items.some(i => i.view === currentView || ((i as any).children || []).some((c: any) => c.view === currentView))
+      )?.group;
       if (activeGroup && !openGroups.has(activeGroup)) {
         setOpenGroups(prev => new Set([...prev, activeGroup]));
+      }
+      // Expand parent item if a child is active
+      for (const g of filteredNavItems) {
+        for (const it of g.items) {
+          const children = (it as any).children as any[] | undefined;
+          if (children?.some(c => c.view === currentView)) {
+            setExpandedItems(prev => new Set([...prev, it.view]));
+          }
+        }
       }
     }
   }, [currentView]);
@@ -193,7 +220,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
         <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: "linear-gradient(135deg, hsl(328,100%,54%), hsl(271,91%,60%))", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <GraduationCap size={16} color="#fff" />
         </div>
-        {!collapsed && <span style={{ fontSize: "15px", fontWeight: 800, fontFamily: "var(--font-headings)", whiteSpace: "nowrap" }} className="text-gradient-indigo">EduFlow</span>}
+        {!collapsed && <span style={{ fontSize: "16px", fontWeight: 800, fontFamily: "var(--font-headings)", whiteSpace: "nowrap" }} className="text-gradient-indigo">EduFlow</span>}
       </div>
 
       {/* Nav Groups - Scrollable */}
@@ -210,7 +237,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                   display: "flex", alignItems: "center", justifyContent: "space-between",
                   width: "100%", padding: "6px 10px", margin: "0 0 2px",
                   border: "none", background: "transparent", cursor: "pointer",
-                  fontSize: "10px", fontWeight: 700, color: hasActive ? "var(--color-accent)" : "var(--text-secondary)",
+                  fontSize: "11px", fontWeight: 700, color: hasActive ? "var(--color-accent)" : "var(--text-secondary)",
                   textTransform: "uppercase", letterSpacing: "0.8px",
                 }}
               >
@@ -229,11 +256,15 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
             {collapsed ? (
               /* When collapsed, show all items without animation */
               group.items.map((item) => {
-                const isActive = currentView === item.view;
+                const children = (item as any).children as { view: string }[] | undefined;
+                const isActive = currentView === item.view || (children || []).some(c => c.view === currentView);
                 return (
                   <button
                     key={item.view}
-                    onClick={() => { onNavigate(item.view); if (onMobileClose) onMobileClose(); }}
+                    onClick={() => {
+                      const target = children?.length ? children[0].view : item.view;
+                      onNavigate(target); if (onMobileClose) onMobileClose();
+                    }}
                     title={collapsed ? item.label : undefined}
                     style={{
                       display: "flex",
@@ -245,7 +276,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                       borderRadius: "10px",
                       border: "none",
                       cursor: "pointer",
-                      fontSize: "12px",
+                      fontSize: "14px",
                       fontWeight: isActive ? 700 : 600,
                       color: isActive ? "var(--color-accent)" : "var(--text-secondary)",
                       background: isActive ? "hsla(328,100%,54%,0.08)" : "transparent",
@@ -263,38 +294,93 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
             ) : (
               <DrawerGroup isOpen={isOpen}>
                 {group.items.map((item, idx) => {
-                  const isActive = currentView === item.view;
+                  const children = (item as any).children as { view: string; icon: React.ReactNode; label: string }[] | undefined;
+                  const hasChildren = !!children?.length;
+                  const isItemExpanded = expandedItems.has(item.view);
+                  const isActive = currentView === item.view || (hasChildren && children!.some(c => c.view === currentView));
                   return (
-                    <button
-                      key={item.view}
-                      onClick={() => { onNavigate(item.view); if (onMobileClose) onMobileClose(); }}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        width: "100%",
-                        padding: "8px 12px",
-                        margin: "2px 0",
-                        borderRadius: "10px",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        fontWeight: isActive ? 700 : 600,
-                        color: isActive ? "var(--color-accent)" : "var(--text-secondary)",
-                        background: isActive ? "hsla(328,100%,54%,0.08)" : "transparent",
-                        transition: "all 0.2s ease, opacity 0.45s ease-in-out, transform 0.45s ease-in-out",
-                        transitionDelay: isOpen ? `${idx * 0.04}s` : "0s",
-                        textAlign: "left",
-                        justifyContent: "flex-start",
-                        opacity: isOpen ? 1 : 0,
-                        transform: isOpen ? "translateY(0)" : "translateY(-8px)",
-                      }}
-                      onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
-                      onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
-                    >
-                      <span style={{ display: "flex", flexShrink: 0 }}>{item.icon}</span>
-                      <span style={{ whiteSpace: "nowrap" }}>{item.label}</span>
-                    </button>
+                    <div key={item.view}>
+                      <button
+                        onClick={() => {
+                          if (hasChildren) { toggleItem(item.view); }
+                          else { onNavigate(item.view); if (onMobileClose) onMobileClose(); }
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                          width: "100%",
+                          padding: "8px 12px",
+                          margin: "2px 0",
+                          borderRadius: "10px",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                          fontWeight: isActive ? 700 : 600,
+                          color: isActive ? "var(--color-accent)" : "var(--text-secondary)",
+                          background: isActive ? "hsla(328,100%,54%,0.08)" : "transparent",
+                          transition: "all 0.2s ease, opacity 0.45s ease-in-out, transform 0.45s ease-in-out",
+                          transitionDelay: isOpen ? `${idx * 0.04}s` : "0s",
+                          textAlign: "left",
+                          justifyContent: "flex-start",
+                          opacity: isOpen ? 1 : 0,
+                          transform: isOpen ? "translateY(0)" : "translateY(-8px)",
+                        }}
+                        onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
+                        onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+                      >
+                        <span style={{ display: "flex", flexShrink: 0 }}>{item.icon}</span>
+                        <span style={{ whiteSpace: "nowrap", flex: 1 }}>{item.label}</span>
+                        {hasChildren && (
+                          <ChevronDown
+                            size={12}
+                            style={{
+                              transform: isItemExpanded ? "rotate(180deg)" : "rotate(0)",
+                              transition: "transform 0.3s ease",
+                              flexShrink: 0,
+                            }}
+                          />
+                        )}
+                      </button>
+
+                      {/* Sub-items */}
+                      {hasChildren && (
+                        <DrawerGroup isOpen={isItemExpanded}>
+                          {children!.map((child) => {
+                            const childActive = currentView === child.view;
+                            return (
+                              <button
+                                key={child.view}
+                                onClick={() => { onNavigate(child.view); if (onMobileClose) onMobileClose(); }}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "9px",
+                                  width: "100%",
+                                  padding: "7px 12px 7px 28px",
+                                  margin: "1px 0",
+                                  borderRadius: "10px",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  fontSize: "13px",
+                                  fontWeight: childActive ? 700 : 500,
+                                  color: childActive ? "var(--color-accent)" : "var(--text-secondary)",
+                                  background: childActive ? "hsla(328,100%,54%,0.08)" : "transparent",
+                                  transition: "all 0.2s ease",
+                                  textAlign: "left",
+                                  justifyContent: "flex-start",
+                                }}
+                                onMouseEnter={(e) => { if (!childActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
+                                onMouseLeave={(e) => { if (!childActive) e.currentTarget.style.background = "transparent"; }}
+                              >
+                                <span style={{ display: "flex", flexShrink: 0, opacity: 0.7 }}>{child.icon}</span>
+                                <span style={{ whiteSpace: "nowrap" }}>{child.label}</span>
+                              </button>
+                            );
+                          })}
+                        </DrawerGroup>
+                      )}
+                    </div>
                   );
                 })}
               </DrawerGroup>
@@ -304,27 +390,6 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
         })}
       </div>
 
-      {/* Collapse Toggle */}
-      <button
-        onClick={onToggleCollapse}
-        style={{
-          padding: "12px",
-          background: "transparent",
-          border: "none",
-          borderTop: "1px solid var(--border-glass)",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "var(--text-secondary)",
-          transition: "color 0.2s",
-          flexShrink: 0,
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-accent)")}
-        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-secondary)")}
-      >
-        {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-      </button>
     </aside>
     </>
   );

@@ -39,7 +39,7 @@ router.get("/:id", authenticate, async (req: AuthRequest, res: Response): Promis
 // POST /api/v1/students
 router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { parentName, parentPhone, parentEmail, dateOfBirth, firstName, lastName, email, phone, batch, feeAmount, paidToday, paymentMethod, motherName, motherPhone, gender, address } = req.body;
+    const { parentName, parentPhone, parentEmail, dateOfBirth, firstName, lastName, email, phone, batch, feeAmount, paidToday, paymentMethod, motherName, motherPhone, gender, address, bloodGroup, schoolName, currentClass, city, state, pinCode } = req.body;
     if (!parentName || !parentPhone || !parentEmail || !dateOfBirth || !firstName || !email) {
       res.status(400).json({ status: "error", message: "Required fields missing." }); return;
     }
@@ -93,7 +93,15 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
 
     // 2. Always create a NEW student profile for this enrollment
     let student: any = await prisma.student.create({
-      data: { userId: user.id, parentName, parentPhone, parentEmail, motherName: motherName || null, motherPhone: motherPhone || null, gender: gender || null, address: address || null, dateOfBirth: new Date(dateOfBirth) },
+      data: {
+        userId: user.id, parentName, parentPhone, parentEmail,
+        motherName: motherName || null, motherPhone: motherPhone || null,
+        gender: gender || null, address: address || null,
+        bloodGroup: bloodGroup || null, schoolName: schoolName || null,
+        currentClass: currentClass || null, city: city || null,
+        state: state || null, pinCode: pinCode || null,
+        dateOfBirth: new Date(dateOfBirth),
+      },
       include: { user: true, enrollments: { include: { batch: true } }, invoices: true }
     });
 
@@ -221,10 +229,25 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
 // PATCH /api/v1/students/:id
 router.patch("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { parentName, parentPhone, parentEmail, dateOfBirth } = req.body;
+    const { parentName, parentPhone, parentEmail, dateOfBirth, motherName, motherPhone, gender, address, bloodGroup, schoolName, currentClass, city, state, pinCode } = req.body;
     const student = await prisma.student.update({
       where: { id: req.params.id },
-      data: { parentName, parentPhone, parentEmail, ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }) },
+      data: {
+        ...(parentName !== undefined && { parentName }),
+        ...(parentPhone !== undefined && { parentPhone }),
+        ...(parentEmail !== undefined && { parentEmail }),
+        ...(motherName !== undefined && { motherName }),
+        ...(motherPhone !== undefined && { motherPhone }),
+        ...(gender !== undefined && { gender }),
+        ...(address !== undefined && { address }),
+        ...(bloodGroup !== undefined && { bloodGroup }),
+        ...(schoolName !== undefined && { schoolName }),
+        ...(currentClass !== undefined && { currentClass }),
+        ...(city !== undefined && { city }),
+        ...(state !== undefined && { state }),
+        ...(pinCode !== undefined && { pinCode }),
+        ...(dateOfBirth && { dateOfBirth: new Date(dateOfBirth) }),
+      },
     });
     res.json({ status: "success", data: student });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }

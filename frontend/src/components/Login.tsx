@@ -1,38 +1,69 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { api, setToken } from "../utils/api";
 import {
-  GraduationCap, Mail, Lock, User, ArrowRight, Eye, EyeOff,
-  Brain, Lightbulb, Trophy, Puzzle, BookOpen, Sparkles, Zap,
-  CheckCircle2, RefreshCw, KeyRound
+  Mail, Lock, User, ArrowRight, Eye, EyeOff,
+  Sparkles, CheckCircle2, RefreshCw, KeyRound, Zap,
 } from "lucide-react";
 
 interface LoginProps { onLoginSuccess: (sessionUser: any) => void; }
-type Tab    = "login" | "signup" | "forgot";
+type Tab = "login" | "signup" | "forgot";
 type Screen = "form" | "verify" | "reset_sent" | "selectRole";
 
+const ACCENT = "#6777ef";
+const ACCENT_DARK = "#5a68d8";
+
 const inputBase: React.CSSProperties = {
-  width: "100%", height: "46px", borderRadius: "10px",
-  border: "1.5px solid hsla(285,30%,20%,0.1)",
-  background: "hsla(285,30%,98%,0.7)", fontSize: "14px",
-  color: "hsl(285,50%,12%)", outline: "none",
+  width: "100%", height: "44px", borderRadius: "10px",
+  border: "1.5px solid #dfe3ea",
+  background: "#fff", fontSize: "14px",
+  color: "#2b2f36", outline: "none",
   boxSizing: "border-box", fontFamily: "inherit",
-  transition: "border-color 0.2s ease",
+  transition: "border-color 0.2s ease, box-shadow 0.2s ease",
 };
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
-  const [tab, setTab]             = useState<Tab>("login");
-  const [screen, setScreen]       = useState<Screen>("form");
-  const [email, setEmail]         = useState("");
-  const [password, setPassword]   = useState("");
+  const [tab, setTab] = useState<Tab>("login");
+  const [screen, setScreen] = useState<Screen>("form");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [roleSelectionUser, setRoleSelectionUser] = useState<any>(null);
-  const [name, setName]           = useState("");
-  const [role, setRole]           = useState("ADMIN");
-  const [loading, setLoading]     = useState(false);
-  const [resendLoading, setRL]    = useState(false);
-  const [showPass, setShowPass]   = useState(false);
-  const [errorMsg, setErrorMsg]   = useState("");
-  const [pendingEmail, setPE]     = useState("");
-  const [toast, setToast]         = useState<{msg:string;type:string}|null>(null);
+  const [name, setName] = useState("");
+  const [role, setRole] = useState("ADMIN");
+  const [loading, setLoading] = useState(false);
+  const [resendLoading, setRL] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [pendingEmail, setPE] = useState("");
+  const [toast, setToast] = useState<{ msg: string; type: string } | null>(null);
+
+  // ── Cloud mascot state ──────────────────────────────────
+  const [isTyping, setIsTyping] = useState(false); // password focused → eyes shut
+  const [blink, setBlink] = useState(false);
+  const [eyePos, setEyePos] = useState({ x: 0, y: 0 });
+  const faceRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleMouse = (e: MouseEvent) => {
+      const el = faceRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = Math.max(-1, Math.min(1, (e.clientX - cx) / 300));
+      const dy = Math.max(-1, Math.min(1, (e.clientY - cy) / 300));
+      setEyePos({ x: dx * 8, y: dy * 4 });
+    };
+    window.addEventListener("mousemove", handleMouse);
+    return () => window.removeEventListener("mousemove", handleMouse);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBlink(true);
+      setTimeout(() => setBlink(false), 180);
+    }, 3200);
+    return () => clearInterval(interval);
+  }, []);
 
   const showToast = (msg: string, type = "info") => {
     setToast({ msg, type });
@@ -49,7 +80,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         id: res.user?.id || "demo-user",
         email: res.user?.email || "demo@ecrm.com",
         role: res.user?.role || "ADMIN",
-        user_metadata: { name: res.user ? `${res.user.firstName} ${res.user.lastName}` : "Dharmendra Admin", role: res.user?.role || "ADMIN" }
+        user_metadata: { name: res.user ? `${res.user.firstName} ${res.user.lastName}` : "Dharmendra Admin", role: res.user?.role || "ADMIN" },
       });
     } catch {
       setToken("demo-offline-token");
@@ -107,14 +138,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setErrorMsg("");
     try {
       const res = await api.auth.google(response.credential);
-      
-      // New user needs to select their role
       if (res.needsRoleSelection) {
         setRoleSelectionUser(res.user);
         setScreen("selectRole");
         return;
       }
-      
       setToken(res.token);
       onLoginSuccess({ ...res.user, user_metadata: { name: `${res.user.firstName} ${res.user.lastName}`, role: res.user.role } });
     } catch (err: any) {
@@ -131,7 +159,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
   useEffect(() => {
     if (!GOOGLE_CLIENT_ID) return;
-    // Load the Google Identity Services script
     const existingScript = document.getElementById("google-gsi-script");
     if (!existingScript) {
       const script = document.createElement("script");
@@ -144,7 +171,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     } else {
       initGoogleButton();
     }
-
     function initGoogleButton() {
       if (!(window as any).google) return;
       (window as any).google.accounts.id.initialize({
@@ -154,320 +180,275 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       const btnContainer = document.getElementById("google-signin-btn");
       if (btnContainer) {
         (window as any).google.accounts.id.renderButton(btnContainer, {
-          theme: "outline",
-          size: "large",
-          width: "100%",
-          text: "continue_with",
-          shape: "pill",
+          theme: "outline", size: "large", width: "320", text: "continue_with", shape: "pill",
         });
       }
     }
   }, [GOOGLE_CLIENT_ID, handleGoogleResponse, tab, screen]);
 
-  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = "hsl(328,100%,54%)"; };
-  const onBlur  = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = "hsla(285,30%,20%,0.1)"; };
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = ACCENT; e.target.style.boxShadow = `0 0 0 3px ${ACCENT}22`; };
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = "#dfe3ea"; e.target.style.boxShadow = "none"; };
+
+  // ── Cloud mascot render ─────────────────────────────────
+  const Eye_ = ({ side }: { side: "left" | "right" }) => {
+    // Eye is absolutely positioned over the watercolor cloud image.
+    const closed = isTyping;
+    const h = closed ? 3 : blink ? 5 : 30;
+    return (
+      <div style={{
+        position: "absolute", top: "44px",
+        left: side === "left" ? "58px" : "108px",
+        width: "20px", height: `${h}px`,
+        borderRadius: closed || blink ? "2px" : "50% / 60%",
+        background: closed ? "#000" : "#fff",
+        transition: "all 0.15s ease",
+        overflow: "hidden", display: "flex", alignItems: "flex-end", justifyContent: "center",
+      }}>
+        {!closed && (
+          <div style={{
+            width: "12px", height: "12px", borderRadius: "50%", background: "#000",
+            marginBottom: "3px",
+            transform: `translate(${eyePos.x}px, 0px)`,
+            transition: "transform 0.1s ease",
+          }} />
+        )}
+      </div>
+    );
+  };
+
+  const CloudMascot = () => (
+    <div ref={faceRef} style={{ position: "relative", width: "200px", height: "114px", margin: "0 auto" }}>
+      <img
+        src="/2e429af66b2ad5c13c11326bead739b6e7746470c7af7ac4fd7892d0190b4ab8.jpg"
+        alt="cloud mascot"
+        style={{ width: "100%", height: "100%", objectFit: "contain", mixBlendMode: "multiply" }}
+      />
+      <Eye_ side="left" />
+      <Eye_ side="right" />
+    </div>
+  );
 
   return (
-    <div className="login-root">
+    <div style={{
+      minHeight: "100vh", width: "100%", display: "flex", alignItems: "center", justifyContent: "center",
+      padding: "20px", fontFamily: "var(--font-family)",
+      background: "linear-gradient(135deg, #eef1fb 0%, #e7eefb 50%, #eaf4fb 100%)",
+      position: "relative", overflow: "hidden",
+    }}>
       {toast && (
-        <div className={`login-toast login-toast-${toast.type}`}>
+        <div style={{
+          position: "fixed", top: "20px", left: "50%", transform: "translateX(-50%)",
+          display: "flex", alignItems: "center", gap: "8px", zIndex: 100,
+          background: "#fff", padding: "10px 18px", borderRadius: "10px",
+          boxShadow: "0 8px 30px rgba(0,0,0,0.15)", color: ACCENT,
+        }}>
           <Sparkles size={15} />
           <span style={{ fontSize: "13px", fontWeight: 600 }}>{toast.msg}</span>
         </div>
       )}
 
-      {/* ── LEFT PANE ── */}
-      <div className="login-left-pane">
-        <div className="login-form-card">
+      {/* Card */}
+      <div style={{
+        width: "100%", maxWidth: "400px", background: "rgba(255,255,255,0.8)",
+        backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
+        borderRadius: "18px", boxShadow: "0 20px 60px -12px rgba(90,97,105,0.3)",
+        border: "1px solid rgba(255,255,255,0.6)", padding: "22px 26px 24px",
+      }}>
+        {/* Mascot */}
+        <CloudMascot />
 
-          {/* Logo */}
-          <div className="login-logo-container">
-            <div style={{ width: "42px", height: "42px", borderRadius: "12px", background: "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px hsla(328,100%,54%,0.35)" }}>
-              <GraduationCap size={22} color="#fff" />
+        <div style={{ textAlign: "center", marginBottom: "16px" }}>
+          <h1 style={{ fontSize: "20px", fontWeight: 800, margin: "0 0 3px", color: "#2b2f36" }}>
+            {screen !== "form" ? "E-CRM Portal"
+              : tab === "login" ? "Welcome back" : tab === "signup" ? "Create account" : "Reset password"}
+          </h1>
+          <p style={{ fontSize: "13px", color: "#6c757d", margin: 0 }}>
+            {screen !== "form" ? "Academy Management System"
+              : tab === "login" ? "Sign in to continue" : tab === "signup" ? "Register a new account" : "We'll email you a reset link"}
+          </p>
+        </div>
+
+        {/* ── VERIFY EMAIL ── */}
+        {screen === "verify" && (
+          <div className="animate-fade-in" style={{ textAlign: "center", padding: "8px 0" }}>
+            <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "hsla(142,70%,42%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <CheckCircle2 size={30} style={{ color: "hsl(142,70%,40%)" }} />
             </div>
-            <div>
-              <h2 style={{ fontSize: "20px", fontWeight: 800, margin: 0 }} className="text-gradient-indigo">E-CRM Portal</h2>
-              <p style={{ fontSize: "10px", margin: 0, letterSpacing: "1.5px", textTransform: "uppercase", color: "hsl(285,20%,45%)" }}>Academy Management System</p>
+            <h2 style={{ fontSize: "18px", fontWeight: 800, margin: "0 0 8px" }}>Check your email</h2>
+            <p style={{ fontSize: "13px", color: "#6c757d", margin: "0 0 4px" }}>Verification link sent to</p>
+            <p style={{ fontSize: "14px", fontWeight: 700, color: ACCENT, margin: "0 0 18px" }}>{pendingEmail || email}</p>
+            <button onClick={resend} disabled={resendLoading}
+              style={{ display: "flex", alignItems: "center", gap: "8px", margin: "0 auto 14px", background: "none", border: "1.5px solid #dfe3ea", borderRadius: "10px", padding: "9px 18px", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "#2b2f36" }}>
+              <RefreshCw size={14} style={{ animation: resendLoading ? "btnSpinnerRotate 0.8s linear infinite" : "none" }} />
+              {resendLoading ? "Sending..." : "Resend verification email"}
+            </button>
+            <button onClick={() => { setScreen("form"); switchTab("login"); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: ACCENT, fontWeight: 600 }}>← Back to Sign In</button>
+          </div>
+        )}
+
+        {/* ── RESET SENT ── */}
+        {screen === "reset_sent" && (
+          <div className="animate-fade-in" style={{ textAlign: "center", padding: "8px 0" }}>
+            <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: `${ACCENT}18`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <KeyRound size={30} style={{ color: ACCENT }} />
+            </div>
+            <h2 style={{ fontSize: "18px", fontWeight: 800, margin: "0 0 8px" }}>Reset link sent</h2>
+            <p style={{ fontSize: "13px", color: "#6c757d", margin: "0 0 18px", lineHeight: 1.6 }}>Check your inbox for a password reset link. It expires in 1 hour.</p>
+            <button onClick={() => { setScreen("form"); switchTab("login"); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: ACCENT, fontWeight: 600 }}>← Back to Sign In</button>
+          </div>
+        )}
+
+        {/* ── ROLE SELECTION (Google new users) ── */}
+        {screen === "selectRole" && roleSelectionUser && (
+          <div className="animate-fade-in" style={{ padding: "4px 0" }}>
+            <h2 style={{ fontSize: "17px", fontWeight: 800, margin: "0 0 4px", textAlign: "center", color: "#2b2f36" }}>Welcome, {roleSelectionUser.firstName}!</h2>
+            <p style={{ fontSize: "13px", color: "#6c757d", margin: "0 0 18px", textAlign: "center" }}>Select your role to continue</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {([
+                { role: "STUDENT", label: "I am a Student", icon: "🎓", desc: "View classes, attendance, results" },
+                { role: "TEACHER", label: "I am a Teacher", icon: "📚", desc: "Manage classes, mark attendance" },
+                { role: "STAFF", label: "I am Staff", icon: "💼", desc: "Administrative & support work" },
+              ] as const).map((item) => (
+                <button key={item.role}
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      const res = await api.auth.setRole(roleSelectionUser.id, item.role);
+                      setToken(res.token);
+                      onLoginSuccess({ ...res.user, user_metadata: { name: `${res.user.firstName} ${res.user.lastName}`, role: res.user.role } });
+                    } catch (err: any) { setErrorMsg(err.message || "Failed to set role."); setScreen("form"); }
+                    setLoading(false);
+                  }}
+                  disabled={loading}
+                  style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 18px", borderRadius: "12px", border: "1.5px solid #dfe3ea", background: "#fff", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.background = `${ACCENT}08`; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#dfe3ea"; e.currentTarget.style.background = "#fff"; }}>
+                  <span style={{ fontSize: "22px" }}>{item.icon}</span>
+                  <div>
+                    <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "#2b2f36" }}>{item.label}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#6c757d" }}>{item.desc}</p>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
+        )}
 
-          {/* ── VERIFY EMAIL SCREEN ── */}
-          {screen === "verify" && (
-            <div className="animate-fade-in" style={{ textAlign: "center", padding: "16px 0" }}>
-              <div style={{ width: "70px", height: "70px", borderRadius: "50%", background: "hsla(142,70%,42%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
-                <CheckCircle2 size={34} style={{ color: "hsl(142,70%,40%)" }} />
+        {/* ── MAIN FORM ── */}
+        {screen === "form" && (
+          <>
+            {errorMsg && (
+              <div className="animate-fade-in" style={{ background: "hsla(342,90%,48%,0.08)", border: "1px solid hsla(342,90%,48%,0.25)", padding: "10px 14px", borderRadius: "10px", fontSize: "13px", color: "hsl(342,90%,48%)", marginBottom: "16px" }}>
+                {errorMsg}
               </div>
-              <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 10px" }}>Check your email</h2>
-              <p style={{ fontSize: "14px", color: "hsl(285,20%,45%)", margin: "0 0 6px" }}>Verification link sent to</p>
-              <p style={{ fontSize: "14px", fontWeight: 700, color: "hsl(328,100%,54%)", margin: "0 0 20px" }}>{pendingEmail || email}</p>
-              <p style={{ fontSize: "13px", color: "hsl(285,20%,45%)", margin: "0 0 24px", lineHeight: 1.6 }}>Click the link in the email to verify, then sign in here.</p>
-              <button onClick={resend} disabled={resendLoading}
-                style={{ display: "flex", alignItems: "center", gap: "8px", margin: "0 auto 16px", background: "none", border: "1.5px solid hsla(285,30%,20%,0.1)", borderRadius: "10px", padding: "10px 20px", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "hsl(285,50%,12%)" }}>
-                <RefreshCw size={14} style={{ animation: resendLoading ? "btnSpinnerRotate 0.8s linear infinite" : "none" }} />
-                {resendLoading ? "Sending..." : "Resend verification email"}
-              </button>
-              <button onClick={() => { setScreen("form"); switchTab("login"); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "hsl(328,100%,54%)", fontWeight: 600 }}>← Back to Sign In</button>
-            </div>
-          )}
+            )}
 
-          {/* ── RESET SENT SCREEN ── */}
-          {screen === "reset_sent" && (
-            <div className="animate-fade-in" style={{ textAlign: "center", padding: "16px 0" }}>
-              <div style={{ width: "70px", height: "70px", borderRadius: "50%", background: "hsla(271,91%,60%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
-                <KeyRound size={34} style={{ color: "hsl(271,91%,60%)" }} />
-              </div>
-              <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 10px" }}>Reset link sent</h2>
-              <p style={{ fontSize: "14px", color: "hsl(285,20%,45%)", margin: "0 0 24px", lineHeight: 1.6 }}>Check your inbox for a password reset link. It expires in 1 hour.</p>
-              <button onClick={() => { setScreen("form"); switchTab("login"); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "hsl(328,100%,54%)", fontWeight: 600 }}>← Back to Sign In</button>
-            </div>
-          )}
-
-          {/* ── ROLE SELECTION SCREEN (Google Auth new users) ── */}
-          {screen === "selectRole" && roleSelectionUser && (
-            <div className="animate-fade-in" style={{ textAlign: "center", padding: "16px 0" }}>
-              <div style={{ width: "70px", height: "70px", borderRadius: "50%", background: "hsla(271,91%,60%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px" }}>
-                <span style={{ fontSize: "28px" }}>👤</span>
-              </div>
-              <h2 style={{ fontSize: "20px", fontWeight: 800, margin: "0 0 6px", color: "hsl(285,50%,12%)" }}>Welcome, {roleSelectionUser.firstName}!</h2>
-              <p style={{ fontSize: "13px", color: "hsl(285,20%,45%)", margin: "0 0 24px" }}>Select your role to continue</p>
-              
-              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {([
-                  { role: "STUDENT", label: "I am a Student", icon: "🎓", desc: "View classes, attendance, results" },
-                  { role: "TEACHER", label: "I am a Teacher", icon: "📚", desc: "Manage classes, mark attendance" },
-                  { role: "STAFF", label: "I am Staff", icon: "💼", desc: "Administrative & support work" },
-                ] as const).map((item) => (
-                  <button
-                    key={item.role}
-                    onClick={async () => {
-                      setLoading(true);
-                      try {
-                        const res = await api.auth.setRole(roleSelectionUser.id, item.role);
-                        setToken(res.token);
-                        onLoginSuccess({ ...res.user, user_metadata: { name: `${res.user.firstName} ${res.user.lastName}`, role: res.user.role } });
-                      } catch (err: any) { setErrorMsg(err.message || "Failed to set role."); setScreen("form"); }
-                      setLoading(false);
-                    }}
-                    disabled={loading}
-                    style={{
-                      display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px",
-                      borderRadius: "14px", border: "1.5px solid hsla(285,30%,20%,0.1)", background: "#fff",
-                      cursor: "pointer", textAlign: "left", transition: "all 0.2s",
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "hsl(271,91%,60%)"; e.currentTarget.style.background = "hsla(271,91%,60%,0.03)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.1)"; e.currentTarget.style.background = "#fff"; }}
-                  >
-                    <span style={{ fontSize: "24px" }}>{item.icon}</span>
-                    <div>
-                      <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "hsl(285,50%,12%)" }}>{item.label}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "hsl(285,20%,55%)" }}>{item.desc}</p>
-                    </div>
+            {tab !== "forgot" && (
+              <div style={{ display: "flex", gap: "6px", background: "#eef0f5", padding: "4px", borderRadius: "10px", marginBottom: "16px" }}>
+                {(["login", "signup"] as Tab[]).map((t) => (
+                  <button key={t} type="button" onClick={() => switchTab(t)}
+                    style={{ flex: 1, padding: "9px", borderRadius: "7px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 600,
+                      background: tab === t ? "#fff" : "transparent", color: tab === t ? ACCENT : "#6c757d",
+                      boxShadow: tab === t ? "0 1px 3px rgba(0,0,0,0.08)" : "none" }}>
+                    {t === "login" ? "Sign In" : "Create Account"}
                   </button>
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ── MAIN FORM ── */}
-          {screen === "form" && (
-            <>
-              <div style={{ marginBottom: "24px" }}>
-                <h1 style={{ fontSize: "24px", fontWeight: 800, margin: "0 0 6px", color: "hsl(285,50%,12%)" }}>
-                  {tab === "login" ? "Welcome back 👋" : tab === "signup" ? "Create account" : "Reset password"}
-                </h1>
-                <p style={{ fontSize: "14px", color: "hsl(285,20%,45%)", margin: 0 }}>
-                  {tab === "login" ? "Sign in to your academy dashboard." : tab === "signup" ? "Register a new portal account." : "Enter your email to get a reset link."}
-                </p>
+            <form onSubmit={handleSubmit} autoComplete="on" style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
+              {tab === "signup" && (
+                <div>
+                  <label style={{ fontSize: "12px", fontWeight: 700, color: "#60686f", display: "block", marginBottom: "6px" }}>Full Name</label>
+                  <div style={{ position: "relative" }}>
+                    <span style={{ position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)", color: "#98a0a8", display: "flex", pointerEvents: "none" }}><User size={16} /></span>
+                    <input type="text" autoComplete="name" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)}
+                      style={{ ...inputBase, padding: "0 14px 0 40px" }} onFocus={onFocus} onBlur={onBlur} />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 700, color: "#60686f", display: "block", marginBottom: "6px" }}>Email</label>
+                <div style={{ position: "relative" }}>
+                  <span style={{ position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)", color: "#98a0a8", display: "flex", pointerEvents: "none" }}><Mail size={16} /></span>
+                  <input type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)}
+                    style={{ ...inputBase, padding: "0 14px 0 40px" }} onFocus={onFocus} onBlur={onBlur} />
+                </div>
               </div>
 
-              {errorMsg && (
-                <div className="animate-fade-in" style={{ background: "hsla(342,90%,48%,0.08)", border: "1px solid hsla(342,90%,48%,0.25)", padding: "10px 14px", borderRadius: "10px", fontSize: "13px", color: "hsl(342,90%,48%)", marginBottom: "16px" }}>
-                  {errorMsg}
-                </div>
-              )}
-
               {tab !== "forgot" && (
-                <div className="login-tabs" style={{ marginBottom: "24px" }}>
-                  <button type="button" className={`login-tab-btn ${tab === "login" ? "is-active" : ""}`} onClick={() => switchTab("login")}>Sign In</button>
-                  <button type="button" className={`login-tab-btn ${tab === "signup" ? "is-active" : ""}`} onClick={() => switchTab("signup")}>Create Account</button>
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} autoComplete="on" style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-
-                {/* Full Name — signup only */}
-                {tab === "signup" && (
-                  <div>
-                    <label htmlFor="login-name" style={{ fontSize: "12px", fontWeight: 700, color: "hsl(285,20%,45%)", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Full Name</label>
-                    <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "hsl(285,20%,45%)", display: "flex", pointerEvents: "none" }}><User size={16} /></span>
-                      <input id="login-name" name="name" type="text" autoComplete="name" placeholder="Dharmendra Kumar"
-                        value={name} onChange={e => setName(e.target.value)}
-                        style={{ ...inputBase, padding: "0 14px 0 42px" }}
-                        onFocus={onFocus} onBlur={onBlur} />
-                    </div>
-                  </div>
-                )}
-
-                {/* Email */}
                 <div>
-                  <label htmlFor="login-email" style={{ fontSize: "12px", fontWeight: 700, color: "hsl(285,20%,45%)", display: "block", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Email Address</label>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#60686f" }}>Password</label>
+                    {tab === "login" && (
+                      <span onClick={() => switchTab("forgot")} style={{ fontSize: "12px", color: ACCENT, cursor: "pointer", fontWeight: 600 }}>Forgot?</span>
+                    )}
+                  </div>
                   <div style={{ position: "relative" }}>
-                    <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "hsl(285,20%,45%)", display: "flex", pointerEvents: "none" }}><Mail size={16} /></span>
-                    <input id="login-email" name="email" type="email" autoComplete="email" placeholder="admin@academy.com"
-                      value={email} onChange={e => setEmail(e.target.value)}
-                      style={{ ...inputBase, padding: "0 14px 0 42px" }}
-                      onFocus={onFocus} onBlur={onBlur} />
+                    <span style={{ position: "absolute", left: "13px", top: "50%", transform: "translateY(-50%)", color: "#98a0a8", display: "flex", pointerEvents: "none" }}><Lock size={16} /></span>
+                    <input type={showPass ? "text" : "password"} autoComplete={tab === "login" ? "current-password" : "new-password"} placeholder="••••••••"
+                      value={password} onChange={e => setPassword(e.target.value)}
+                      style={{ ...inputBase, padding: "0 42px 0 40px" }}
+                      onFocus={(e) => { setIsTyping(true); onFocus(e); }}
+                      onBlur={(e) => { setIsTyping(false); onBlur(e); }} />
+                    <button type="button" onClick={() => setShowPass(p => !p)}
+                      style={{ position: "absolute", right: "13px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#98a0a8", display: "flex", padding: 0 }}>
+                      {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                  {tab === "signup" && <p style={{ margin: "5px 0 0", fontSize: "11px", color: "#98a0a8" }}>Min 8 chars · one uppercase · one number</p>}
+                </div>
+              )}
+
+              {tab === "signup" && (
+                <div>
+                  <label style={{ fontSize: "12px", fontWeight: 700, color: "#60686f", display: "block", marginBottom: "7px" }}>Role</label>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "8px" }}>
+                    {["ADMIN", "TEACHER", "STUDENT"].map(r => (
+                      <button key={r} type="button" onClick={() => setRole(r)}
+                        style={{ padding: "9px", fontSize: "12px", fontWeight: 700, borderRadius: "9px", border: `1.5px solid ${role === r ? ACCENT : "#dfe3ea"}`, background: role === r ? `${ACCENT}0f` : "transparent", color: role === r ? ACCENT : "#6c757d", cursor: "pointer", transition: "all 0.2s" }}>
+                        {r}
+                      </button>
+                    ))}
                   </div>
                 </div>
-
-                {/* Password — login & signup only */}
-                {tab !== "forgot" && (
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                      <label htmlFor="login-password" style={{ fontSize: "12px", fontWeight: 700, color: "hsl(285,20%,45%)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Password</label>
-                      {tab === "login" && (
-                        <span onClick={() => switchTab("forgot")} style={{ fontSize: "12px", color: "hsl(328,100%,54%)", cursor: "pointer", fontWeight: 600 }}>Forgot password?</span>
-                      )}
-                    </div>
-                    <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: "14px", top: "50%", transform: "translateY(-50%)", color: "hsl(285,20%,45%)", display: "flex", pointerEvents: "none" }}><Lock size={16} /></span>
-                      <input id="login-password" name="password" type={showPass ? "text" : "password"} autoComplete={tab === "login" ? "current-password" : "new-password"} placeholder="••••••••••"
-                        value={password} onChange={e => setPassword(e.target.value)}
-                        style={{ ...inputBase, padding: "0 44px 0 42px" }}
-                        onFocus={onFocus} onBlur={onBlur} />
-                      <button type="button" onClick={() => setShowPass(p => !p)}
-                        style={{ position: "absolute", right: "14px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "hsl(285,20%,45%)", display: "flex", padding: 0 }}>
-                        {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                    {tab === "signup" && <p style={{ margin: "5px 0 0", fontSize: "11px", color: "hsl(285,20%,45%)" }}>Min 8 chars · one uppercase · one number</p>}
-                  </div>
-                )}
-
-                {/* Role selector — signup only */}
-                {tab === "signup" && (
-                  <div>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "hsl(285,20%,45%)", display: "block", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>Portal Role</label>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "8px" }}>
-                      {["ADMIN", "TEACHER", "STUDENT"].map(r => (
-                        <button key={r} type="button" onClick={() => setRole(r)}
-                          style={{ padding: "9px", fontSize: "12px", fontWeight: 700, borderRadius: "10px", border: `1.5px solid ${role === r ? "hsl(328,100%,54%)" : "hsla(285,30%,20%,0.1)"}`, background: role === r ? "hsla(328,100%,54%,0.08)" : "transparent", color: role === r ? "hsl(328,100%,54%)" : "hsl(285,20%,45%)", cursor: "pointer", transition: "all 0.2s" }}>
-                          {r}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Submit */}
-                <button type="submit" disabled={loading}
-                  style={{ height: "50px", borderRadius: "12px", border: "none", background: loading ? "hsl(285,20%,80%)" : "linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%))", color: "#fff", fontSize: "14px", fontWeight: 800, cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "4px", boxShadow: loading ? "none" : "0 6px 20px hsla(328,100%,54%,0.35)", width: "100%" }}>
-                  {loading
-                    ? <><span style={{ width: "18px", height: "18px", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "btnSpinnerRotate 0.6s linear infinite", display: "inline-block" }} />Processing...</>
-                    : <>{tab === "login" ? "SIGN IN" : tab === "signup" ? "CREATE ACCOUNT" : "SEND RESET LINK"} <ArrowRight size={16} /></>}
-                </button>
-
-                {tab === "forgot" && (
-                  <button type="button" onClick={() => switchTab("login")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: "hsl(328,100%,54%)", fontWeight: 600, textAlign: "center" }}>← Back to Sign In</button>
-                )}
-              </form>
-
-              {/* Demo access */}
-              {tab !== "forgot" && (
-                <>
-                  <div style={{ display: "flex", alignItems: "center", margin: "20px 0", gap: "12px" }}>
-                    <div style={{ flex: 1, height: "1px", background: "hsla(285,30%,20%,0.08)" }} />
-                    <span style={{ fontSize: "11px", color: "hsl(285,20%,45%)", fontWeight: 700, letterSpacing: "1px" }}>OR</span>
-                    <div style={{ flex: 1, height: "1px", background: "hsla(285,30%,20%,0.08)" }} />
-                  </div>
-
-                  {/* Google Sign-In Button */}
-                  {GOOGLE_CLIENT_ID && (
-                    <div id="google-signin-btn" style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }} />
-                  )}
-                  {!GOOGLE_CLIENT_ID && (
-                    <button type="button" disabled
-                      style={{ width: "100%", height: "46px", borderRadius: "12px", border: "1.5px solid hsla(285,30%,20%,0.1)", background: "hsla(285,30%,98%,0.7)", color: "hsl(285,20%,45%)", fontSize: "13px", fontWeight: 700, cursor: "not-allowed", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", marginBottom: "12px", opacity: 0.6 }}>
-                      <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-                      Continue with Google (configure Client ID)
-                    </button>
-                  )}
-
-                  <div style={{ display: "flex", alignItems: "center", margin: "12px 0", gap: "12px" }}>
-                    <div style={{ flex: 1, height: "1px", background: "hsla(285,30%,20%,0.08)" }} />
-                    <span style={{ fontSize: "11px", color: "hsl(285,20%,45%)", fontWeight: 700, letterSpacing: "1px" }}>DEMO ACCESS</span>
-                    <div style={{ flex: 1, height: "1px", background: "hsla(285,30%,20%,0.08)" }} />
-                  </div>
-                  <button type="button" onClick={demoLogin} disabled={loading}
-                    style={{ width: "100%", height: "46px", borderRadius: "12px", border: "1.5px solid hsla(285,30%,20%,0.1)", background: "hsla(285,30%,98%,0.7)", color: "hsl(285,50%,12%)", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", transition: "all 0.2s" }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "hsl(328,100%,54%)"; (e.currentTarget as HTMLElement).style.color = "hsl(328,100%,54%)"; }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "hsla(285,30%,20%,0.1)"; (e.currentTarget as HTMLElement).style.color = "hsl(285,50%,12%)"; }}>
-                    <Zap size={15} style={{ color: "hsl(328,100%,54%)" }} /> Launch with Demo Mode
-                  </button>
-                  <p style={{ marginTop: "20px", textAlign: "center", fontSize: "13px", color: "hsl(285,20%,45%)" }}>
-                    {tab === "login" ? "New here? " : "Already registered? "}
-                    <span onClick={() => switchTab(tab === "login" ? "signup" : "login")} style={{ color: "hsl(328,100%,54%)", fontWeight: 700, cursor: "pointer" }}>
-                      {tab === "login" ? "Create an account" : "Sign in"}
-                    </span>
-                  </p>
-                </>
               )}
-            </>
-          )}
-        </div>
-      </div>
 
-      {/* ── RIGHT PANEL ── */}
-      <div className="login-right-pane" style={{ overflow: "hidden" }}>
-        <svg className="cloud-divider-svg" viewBox="0 0 120 1000" preserveAspectRatio="none">
-          <path d="M0,0 L60,0 C85,90 40,180 85,270 C120,360 70,450 95,540 C110,630 65,720 90,810 C105,900 70,950 80,1000 L0,1000 Z" fill="hsla(200,95%,50%,0.1)" />
-          <path d="M0,0 L40,0 C65,80 30,170 65,260 C90,350 50,440 75,530 C90,620 50,710 70,800 C85,890 50,940 60,1000 L0,1000 Z" fill="#ffffff" />
-        </svg>
-        <div className="neon-floating-icons-layer">
-          <div className="neon-symbol-wrapper symbol-brain neon-glow-pink"><Brain size={52} /></div>
-          <div className="neon-symbol-wrapper symbol-bulb neon-glow-yellow"><Lightbulb size={38} /></div>
-          <div className="neon-symbol-wrapper symbol-trophy neon-glow-pink"><Trophy size={44} /></div>
-          <div className="neon-symbol-wrapper symbol-puzzle-1 neon-glow-purple"><Puzzle size={40} style={{ transform: "rotate(20deg)" }} /></div>
-          <div className="neon-symbol-wrapper symbol-puzzle-2 neon-glow-green"><Puzzle size={30} style={{ transform: "rotate(-15deg)" }} /></div>
-          <div className="neon-symbol-wrapper symbol-book neon-glow-purple"><BookOpen size={38} /></div>
-          <div className="neon-symbol-wrapper symbol-grad-cap neon-glow-yellow"><GraduationCap size={42} /></div>
-          <div className="neon-symbol-wrapper symbol-star-1 neon-glow-cyan"><Sparkles size={22} /></div>
-          <div className="neon-symbol-wrapper symbol-star-2 neon-glow-yellow"><Sparkles size={30} /></div>
-          <div className="neon-symbol-wrapper symbol-star-3 neon-glow-cyan"><Sparkles size={16} /></div>
-          <div className="neon-symbol-wrapper symbol-star-4 neon-glow-yellow"><Sparkles size={20} /></div>
-          <div className="neon-symbol-wrapper symbol-planet">
-            <svg width="130" height="130" viewBox="-10 -10 140 140" overflow="visible" style={{ filter: "drop-shadow(0 0 15px hsla(328,100%,54%,0.6))" }}>
-              <defs><radialGradient id="pG" cx="30%" cy="30%" r="70%"><stop offset="0%" stopColor="hsl(328,100%,75%)" /><stop offset="60%" stopColor="hsl(328,100%,45%)" /><stop offset="100%" stopColor="hsl(244,49%,14%)" /></radialGradient></defs>
-              <path d="M 5 65 A 58 18 15 0 1 115 52" fill="none" stroke="hsl(200,95%,65%)" strokeWidth="3.5" opacity="0.55" />
-              <circle cx="60" cy="60" r="28" fill="url(#pG)" />
-              <path d="M 115 52 A 58 18 15 0 1 5 65" fill="none" stroke="hsl(200,95%,65%)" strokeWidth="4" />
-            </svg>
-          </div>
-        </div>
-        <div className="rocket-universe-container">
-          <div className="rocket-wrapper">
-            <div className="exhaust-particles-emitter">{Array.from({ length: 10 }, (_, i) => <span key={i} className={`exhaust-bubble bubble-${i + 1}`} />)}</div>
-            <svg className="rocket-svg-element" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="fG" x1="100%" y1="0%" x2="0%" y2="0%"><stop offset="0%" stopColor="hsl(38,92%,50%)" stopOpacity="1" /><stop offset="50%" stopColor="hsl(342,90%,48%)" stopOpacity="0.8" /><stop offset="100%" stopColor="hsl(271,91%,60%)" stopOpacity="0" /></linearGradient>
-                <linearGradient id="ifG" x1="100%" y1="0%" x2="0%" y2="0%"><stop offset="0%" stopColor="#fff" stopOpacity="1" /><stop offset="60%" stopColor="hsl(38,92%,50%)" stopOpacity="0.8" /><stop offset="100%" stopColor="hsl(342,90%,48%)" stopOpacity="0" /></linearGradient>
-              </defs>
-              <g className="rocket-flame-path">
-                <path d="M10,75 C-12,70 -30,73 -35,75 C-30,77 -12,80 10,75 Z" fill="url(#fG)" />
-                <path d="M0,75 C-8,72 -20,74 -24,75 C-20,76 -8,78 0,75 Z" fill="url(#ifG)" />
-              </g>
-              <path d="M20,64 L30,64 L30,86 L20,86 Z" fill="#2c3e50" />
-              <path d="M32,60 L24,40 L45,55 Z" fill="hsl(328,100%,54%)" />
-              <path d="M32,90 L24,110 L45,95 Z" fill="hsl(328,100%,54%)" />
-              <path d="M28,60 C40,48 95,46 115,75 C95,104 40,102 28,90 Z" fill="#fcfcfc" stroke="#d5dbdb" strokeWidth="2" />
-              <path d="M90,56 C96,62 108,70 115,75 C108,80 96,88 90,94 C93,88 96,81 96,75 C96,69 93,62 90,56 Z" fill="hsl(200,95%,50%)" />
-              <circle cx="68" cy="75" r="14" fill="#34495e" />
-              <circle cx="68" cy="75" r="10" fill="#e8f8f5" />
-              <path d="M62,70 A8,8 0 0,1 74,70 Z" fill="#fff" opacity="0.6" />
-            </svg>
-          </div>
-        </div>
+              <button type="submit" disabled={loading}
+                style={{ height: "48px", borderRadius: "12px", border: "none", background: loading ? "#c8cdd6" : `linear-gradient(135deg, ${ACCENT}, ${ACCENT_DARK})`, color: "#fff", fontSize: "14px", fontWeight: 700, cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginTop: "4px", boxShadow: loading ? "none" : `0 6px 18px ${ACCENT}44`, width: "100%" }}>
+                {loading
+                  ? <><span style={{ width: "18px", height: "18px", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "btnSpinnerRotate 0.6s linear infinite", display: "inline-block" }} />Processing...</>
+                  : <>{tab === "login" ? "Sign In" : tab === "signup" ? "Create Account" : "Send Reset Link"} <ArrowRight size={16} /></>}
+              </button>
+
+              {tab === "forgot" && (
+                <button type="button" onClick={() => switchTab("login")} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: ACCENT, fontWeight: 600, textAlign: "center" }}>← Back to Sign In</button>
+              )}
+            </form>
+
+            {tab !== "forgot" && (
+              <>
+                <div style={{ display: "flex", alignItems: "center", margin: "14px 0", gap: "12px" }}>
+                  <div style={{ flex: 1, height: "1px", background: "#e2e6ec" }} />
+                  <span style={{ fontSize: "11px", color: "#98a0a8", fontWeight: 700, letterSpacing: "1px" }}>OR</span>
+                  <div style={{ flex: 1, height: "1px", background: "#e2e6ec" }} />
+                </div>
+
+                {GOOGLE_CLIENT_ID && (
+                  <div id="google-signin-btn" style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }} />
+                )}
+
+                <button type="button" onClick={demoLogin} disabled={loading}
+                  style={{ width: "100%", height: "44px", borderRadius: "10px", border: "1.5px solid #dfe3ea", background: "#fff", color: "#2b2f36", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", transition: "all 0.2s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = ACCENT; (e.currentTarget as HTMLElement).style.color = ACCENT; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#dfe3ea"; (e.currentTarget as HTMLElement).style.color = "#2b2f36"; }}>
+                  <Zap size={15} style={{ color: ACCENT }} /> Launch Demo Mode
+                </button>
+              </>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

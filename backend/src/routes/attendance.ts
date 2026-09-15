@@ -3,6 +3,7 @@ import { logAudit } from "../utils/auditLog";
 import { Router, Response } from "express";
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 import { io } from "../server";
+import { notifyBatch } from "../utils/notify";
 
 const router = Router();
 
@@ -203,6 +204,133 @@ router.get("/session", authenticate, authorize("ADMIN", "TEACHER"), async (req: 
   }
 });
 
+// ── GET /api/v1/attendance/my-summary ─────────────────────────────────
+// The logged-in student's own attendance breakdown (for dashboard donut)
+router.get("/my-summary", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const student = await prisma.student.findFirst({ where: { userId: req.user!.id } });
+    if (!student) {
+      res.json({ status: "success", data: { present: 0, absent: 0, late: 0, total: 0, percentage: 0 } });
+      return;
+    }
+    const records = await prisma.attendance.findMany({ where: { studentId: student.id } });
+    const present = records.filter((r) => r.status === "PRESENT").length;
+    const late = records.filter((r) => r.status === "LATE").length;
+    const absent = records.filter((r) => r.status === "ABSENT").length;
+    const total = records.length;
+    const percentage = total > 0 ? Math.round(((present + late) / total) * 10000) / 100 : 0;
+    res.json({ status: "success", data: { present, absent, late, total, percentage } });
+  } catch (err: any) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
+// ── GET /api/v1/attendance/summary?student_id=&batch_id= ──────────────
+// Subject/batch-wise attendance summary (Total / Present / Absent / %)
+router.get("/summary", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { student_id, batch_id } = req.query as any;
+
+    // Build the attendance filter
+    const where: any = {};
+    if (student_id) where.studentId = student_id;
+    if (batch_id) where.schedule = { batchId: batch_id };
+
+    const records = await prisma.attendance.findMany({
+      where,
+      include: {
+        schedule: {
+          include: {
+            batch: {
+              include: { teacher: { include: { user: { select: { firstName: true, lastName: true } } } } },
+            },
+          },
+        },
+      },
+    });
+
+    // Group by batch (each batch = one subject + one teacher in this model)
+    const map = new Map<string, {
+      batchId: string; subjectName: string; teacherName: string;
+      total: number; present: number; absent: number; late: number;
+    }>();
+
+    for (const r of records) {
+      const batch = r.schedule?.batch;
+      if (!batch) continue;
+      const key = batch.id;
+      if (!map.has(key)) {
+        const t = batch.teacher?.user;
+        map.set(key, {
+          batchId: batch.id,
+          subjectName: batch.subject,
+          teacherName: t ? `${t.firstName} ${t.lastName}`.trim() : "—",
+          total: 0, present: 0, absent: 0, late: 0,
+        });
+      }
+      const row = map.get(key)!;
+      row.total += 1;
+      if (r.status === "PRESENT") row.present += 1;
+      else if (r.status === "ABSENT") row.absent += 1;
+      else if (r.status === "LATE") row.late += 1;
+    }
+
+    const rows = Array.from(map.values()).map((r) => ({
+      ...r,
+      // count LATE as present for percentage
+      percentage: r.total > 0 ? Math.round(((r.present + r.late) / r.total) * 10000) / 100 : 0,
+    }));
+
+    const grandTotal = rows.reduce((s, r) => s + r.total, 0);
+    const grandPresent = rows.reduce((s, r) => s + r.present + r.late, 0);
+    const overallPercentage = grandTotal > 0 ? Math.round((grandPresent / grandTotal) * 10000) / 100 : 0;
+
+    res.json({ status: "success", data: { rows, overallPercentage, totalLectures: grandTotal } });
+  } catch (err: any) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
+// ── GET /api/v1/attendance/range?student_id=&batch_id=&from=&to= ──────
+// Datewise attendance details between two dates
+router.get("/range", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { student_id, batch_id, from, to } = req.query as any;
+    if (!from || !to) {
+      res.status(400).json({ status: "error", message: "from and to dates are required." });
+      return;
+    }
+    const where: any = {
+      classDate: { gte: new Date(from), lte: new Date(to) },
+    };
+    if (student_id) where.studentId = student_id;
+    if (batch_id) where.schedule = { batchId: batch_id };
+
+    const records = await prisma.attendance.findMany({
+      where,
+      include: {
+        student: { include: { user: { select: { firstName: true, lastName: true } } } },
+        schedule: { include: { batch: { select: { name: true, subject: true } } } },
+      },
+      orderBy: { classDate: "desc" },
+    });
+
+    const data = records.map((r) => ({
+      id: r.id,
+      date: r.classDate,
+      studentName: r.student?.user ? `${r.student.user.firstName} ${r.student.user.lastName}`.trim() : "—",
+      batchName: r.schedule?.batch?.name || "—",
+      subject: r.schedule?.batch?.subject || "—",
+      status: r.status,
+      remarks: r.remarks || "",
+    }));
+
+    res.json({ status: "success", data });
+  } catch (err: any) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
+
 // ── POST /api/v1/attendance — bulk submit (web dashboard) ─────────────
 router.post("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -260,6 +388,16 @@ router.post("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRe
         })),
         source: "web",
         markedById,
+      });
+
+      // In-app notification to the batch (students + teacher)
+      const dateLabel = new Date(class_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      notifyBatch(schedule.batchId, {
+        title: "Attendance Marked",
+        message: `Attendance has been recorded for ${dateLabel}.`,
+        type: "ATTENDANCE",
+        priority: "NORMAL",
+        link: "/attendance",
       });
     }
 

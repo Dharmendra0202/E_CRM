@@ -1,6 +1,7 @@
 import React from "react";
 import { Card } from "./ui/Card";
 import { Skeleton } from "./ui/Skeleton";
+import { StudentDashboard } from "./StudentDashboard";
 import {
   Users2, IndianRupee, UserCheck, Target, TrendingUp,
   ArrowUpRight, CalendarDays, BookOpen, GraduationCap,
@@ -150,230 +151,7 @@ export function Dashboard({
       {/* 🎓 STUDENT DASHBOARD VIEW (100% PRODUCTION READY & FULLY CLICKABLE)       */}
       {/* ========================================================================= */}
       {isStudent && (
-        <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-          {/* 1. Hero Welcome Banner (Clickable → opens schedule) */}
-          <div
-            onClick={() => onNavigate("schedule")}
-            style={{
-              background: "linear-gradient(135deg, hsl(200,95%,45%) 0%, hsl(271,91%,60%) 60%, hsl(328,100%,54%) 100%)",
-              borderRadius: "22px",
-              padding: "28px 32px",
-              color: "#fff",
-              position: "relative",
-              overflow: "hidden",
-              boxShadow: "0 16px 40px -10px hsla(271,91%,60%,0.35)",
-              cursor: "pointer",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "none";
-            }}
-          >
-            <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
-              <div>
-                <span style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase", background: "hsla(0,0%,100%,0.2)", padding: "4px 12px", borderRadius: "20px", display: "inline-block", marginBottom: "10px" }}>
-                  🎓 Student Portal
-                </span>
-                <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800 }}>
-                  Welcome back, {userName.split(" ")[0]}! 👋
-                </h1>
-                <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>
-                  My Assigned Batch: <strong style={{ color: "#fff" }}>{studentAssignedBatch}</strong>
-                </p>
-              </div>
-
-              <div style={{ display: "flex", gap: "10px" }}>
-                <div onClick={(e) => { e.stopPropagation(); onNavigate("attendance"); }} style={{ background: "hsla(0,0%,100%,0.15)", backdropFilter: "blur(10px)", padding: "10px 16px", borderRadius: "14px", border: "1px solid hsla(0,0%,100%,0.2)", cursor: "pointer" }}>
-                  <div style={{ fontSize: "10px", opacity: 0.8, textTransform: "uppercase", fontWeight: 700 }}>Attendance</div>
-                  <div style={{ fontSize: "18px", fontWeight: 800, marginTop: "2px" }}>{avgAttendance.toFixed(1)}%</div>
-                </div>
-                <div onClick={(e) => { e.stopPropagation(); onNavigate("billing"); }} style={{ background: "hsla(0,0%,100%,0.15)", backdropFilter: "blur(10px)", padding: "10px 16px", borderRadius: "14px", border: "1px solid hsla(0,0%,100%,0.2)", cursor: "pointer" }}>
-                  <div style={{ fontSize: "10px", opacity: 0.8, textTransform: "uppercase", fontWeight: 700 }}>Fee Record</div>
-                  <div style={{ fontSize: "18px", fontWeight: 800, marginTop: "2px" }}>{unpaidInvoices.length === 0 ? "Paid" : `${unpaidInvoices.length} Unpaid`}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* 2. Interactive KPI Row (Clickable Cards) */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
-            {/* Attendance Rate Card */}
-            <div
-              onClick={() => onNavigate("attendance")}
-              style={{
-                background: "#fff",
-                borderRadius: "16px",
-                padding: "20px",
-                border: "1px solid hsla(285,40%,60%,0.1)",
-                boxShadow: "0 4px 16px rgba(29,10,39,0.04)",
-                cursor: "pointer",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>MY ATTENDANCE</span>
-                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "hsla(142,70%,42%,0.12)", color: "hsl(142,70%,38%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <UserCheck size={18} />
-                </div>
-              </div>
-              <div style={{ fontSize: "24px", fontWeight: 800, color: "var(--text-primary)" }}>{avgAttendance.toFixed(1)}%</div>
-              <div style={{ marginTop: "8px", background: "hsla(285,30%,20%,0.06)", height: "6px", borderRadius: "10px", overflow: "hidden" }}>
-                <div style={{ width: `${Math.min(avgAttendance, 100)}%`, height: "100%", background: "linear-gradient(90deg, hsl(142,70%,42%), hsl(160,70%,35%))", borderRadius: "10px" }} />
-              </div>
-              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span>{presentCount} Present · {absentCount} Absent</span>
-                <ArrowUpRight size={12} style={{ opacity: 0.5 }} />
-              </p>
-            </div>
-
-            {/* My Batch Card */}
-            <div
-              onClick={() => onNavigate("schedule")}
-              style={{
-                background: "#fff",
-                borderRadius: "16px",
-                padding: "20px",
-                border: "1px solid hsla(285,40%,60%,0.1)",
-                boxShadow: "0 4px 16px rgba(29,10,39,0.04)",
-                cursor: "pointer",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>MY BATCH</span>
-                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "hsla(200,95%,50%,0.12)", color: "hsl(200,95%,45%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <GraduationCap size={18} />
-                </div>
-              </div>
-              <div style={{ fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {studentAssignedBatch}
-              </div>
-              <p style={{ margin: "10px 0 0", fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span>View Timetable & Schedule</span>
-                <ArrowUpRight size={12} style={{ opacity: 0.5 }} />
-              </p>
-            </div>
-
-            {/* Exams Card */}
-            <div
-              onClick={() => onNavigate("exams")}
-              style={{
-                background: "#fff",
-                borderRadius: "16px",
-                padding: "20px",
-                border: "1px solid hsla(285,40%,60%,0.1)",
-                boxShadow: "0 4px 16px rgba(29,10,39,0.04)",
-                cursor: "pointer",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>EXAMS & MARKS</span>
-                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "hsla(271,91%,60%,0.12)", color: "hsl(271,91%,60%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <BookOpen size={18} />
-                </div>
-              </div>
-              <div style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)" }}>Exam Marksheets</div>
-              <p style={{ margin: "10px 0 0", fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span>Check test scores & gradebook</span>
-                <ArrowUpRight size={12} style={{ opacity: 0.5 }} />
-              </p>
-            </div>
-
-            {/* Homework Card */}
-            <div
-              onClick={() => onNavigate("homework")}
-              style={{
-                background: "#fff",
-                borderRadius: "16px",
-                padding: "20px",
-                border: "1px solid hsla(285,40%,60%,0.1)",
-                boxShadow: "0 4px 16px rgba(29,10,39,0.04)",
-                cursor: "pointer",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>HOMEWORK HUB</span>
-                <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "hsla(328,100%,54%,0.12)", color: "hsl(328,100%,54%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Activity size={18} />
-                </div>
-              </div>
-              <div style={{ fontSize: "20px", fontWeight: 800, color: "var(--text-primary)" }}>Assignments</div>
-              <p style={{ margin: "10px 0 0", fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span>Submit & track homework</span>
-                <ArrowUpRight size={12} style={{ opacity: 0.5 }} />
-              </p>
-            </div>
-          </div>
-
-          {/* 3. Quick Navigation Modules for Student */}
-          <div>
-            <h3 style={{ margin: "0 0 14px", fontSize: "15px", fontWeight: 800, display: "flex", alignItems: "center", gap: "7px" }}>
-              <Zap size={16} style={{ color: "var(--color-accent)" }} /> Quick Navigation
-            </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
-              {visibleModuleCards.map((card) => (
-                <div
-                  key={card.label}
-                  onClick={() => onNavigate(card.view)}
-                  style={{
-                    background: "#fff",
-                    borderRadius: "14px",
-                    padding: "16px 18px",
-                    border: "none",
-                    boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)",
-                    cursor: "pointer",
-                    transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "14px",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow = `0 4px 16px rgba(29,10,39,0.06), 0 8px 24px -6px ${card.color}25`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "none";
-                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)";
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "42px",
-                      height: "42px",
-                      borderRadius: "11px",
-                      background: `${card.color}12`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: card.color,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {card.icon}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{card.label}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{card.desc}</p>
-                  </div>
-                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.4, flexShrink: 0 }} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <StudentDashboard userName={userName} onNavigate={onNavigate} />
       )}
 
       {/* ========================================================================= */}
@@ -381,31 +159,6 @@ export function Dashboard({
       {/* ========================================================================= */}
       {isTeacher && (
         <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-          <div
-            onClick={() => onNavigate("schedule")}
-            style={{
-              background: "linear-gradient(135deg, hsl(142,70%,38%) 0%, hsl(200,95%,45%) 50%, hsl(271,91%,60%) 100%)",
-              borderRadius: "22px",
-              padding: "28px 32px",
-              color: "#fff",
-              boxShadow: "0 16px 40px -10px hsla(142,70%,40%,0.35)",
-              cursor: "pointer",
-              transition: "transform 0.2s ease",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
-          >
-            <span style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase", background: "hsla(0,0%,100%,0.2)", padding: "4px 12px", borderRadius: "20px", display: "inline-block", marginBottom: "10px" }}>
-              📚 Teacher Workbench
-            </span>
-            <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800 }}>
-              Welcome back, {userName.split(" ")[0]}! 👨‍🏫
-            </h1>
-            <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>
-              Active Batches: <strong>{totalBatches}</strong> · Total Students Taught: <strong>{totalStudents}</strong>
-            </p>
-          </div>
-
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
             <div onClick={() => onNavigate("schedule")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
               <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>MY TIMETABLE</div>
@@ -488,31 +241,6 @@ export function Dashboard({
       {/* ========================================================================= */}
       {isStaff && (
         <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-          <div
-            onClick={() => onNavigate("billing")}
-            style={{
-              background: "linear-gradient(135deg, hsl(38,92%,48%) 0%, hsl(328,100%,54%) 60%, hsl(271,91%,60%) 100%)",
-              borderRadius: "22px",
-              padding: "28px 32px",
-              color: "#fff",
-              boxShadow: "0 16px 40px -10px hsla(38,92%,48%,0.35)",
-              cursor: "pointer",
-              transition: "transform 0.2s ease",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
-          >
-            <span style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "1px", textTransform: "uppercase", background: "hsla(0,0%,100%,0.2)", padding: "4px 12px", borderRadius: "20px", display: "inline-block", marginBottom: "10px" }}>
-              💼 Staff Operations Desk
-            </span>
-            <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800 }}>
-              Welcome back, {userName.split(" ")[0]}! 💼
-            </h1>
-            <p style={{ margin: 0, fontSize: "13px", opacity: 0.9 }}>
-              Total Fees Collected: <strong>₹{totalFeesCollected.toLocaleString("en-IN")}</strong> · Unpaid Invoices: <strong>{unpaidInvoices.length}</strong>
-            </p>
-          </div>
-
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
             <div onClick={() => onNavigate("billing")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
               <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>COLLECT FEES</div>
@@ -588,31 +316,6 @@ export function Dashboard({
       {/* ========================================================================= */}
       {isAdmin && (
         <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
-          {/* Admin Hero Welcome Banner */}
-          <div
-            style={{
-              background: "linear-gradient(135deg, hsl(328,100%,54%) 0%, hsl(271,91%,60%) 55%, hsl(240,80%,65%) 100%)",
-              borderRadius: "22px",
-              padding: "28px 32px",
-              color: "#fff",
-              position: "relative",
-              overflow: "hidden",
-              boxShadow: "0 16px 48px -8px hsla(328,100%,54%,0.35)",
-            }}
-          >
-            <div style={{ position: "relative", zIndex: 1 }}>
-              <p style={{ fontSize: "11px", color: "hsla(0,0%,100%,0.75)", fontWeight: 700, margin: "0 0 6px", letterSpacing: "1px", textTransform: "uppercase" }}>
-                {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-              </p>
-              <h1 style={{ margin: "0 0 6px", fontSize: "26px", fontWeight: 800 }}>
-                Welcome back, {userName.split(" ")[0]} 👋
-              </h1>
-              <p style={{ margin: 0, fontSize: "14px", color: "hsla(0,0%,100%,0.8)" }}>
-                Here is the complete operational overview for your academy today.
-              </p>
-            </div>
-          </div>
-
           {/* KPI Cards Grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
             {kpiCards.map((m, i) => (
