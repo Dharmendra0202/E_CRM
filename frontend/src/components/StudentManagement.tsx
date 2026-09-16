@@ -4,6 +4,7 @@ import { Card } from "./ui/Card";
 import { api } from "../utils/api";
 import { addHistoryItem } from "../utils/history";
 import { exportStudents } from "../utils/exportExcel";
+import { DownloadButton } from "./ui/DownloadButton";
 import { WhatsAppStatusWidget } from "./ui/WhatsAppStatusWidget";
 import { StudentProfile } from "./StudentProfile";
 import {
@@ -141,7 +142,7 @@ const getStatusColor = (status: string) => {
   switch (status) {
     case "Active":    return { bg: "hsla(142,70%,40%,0.08)", color: "var(--color-success)", dot: "var(--color-success)" };
     case "Inactive":  return { bg: "hsla(0,0%,50%,0.08)",    color: "var(--text-secondary)", dot: "var(--text-secondary)" };
-    case "Graduated": return { bg: "hsla(200, 85%, 48%,0.08)", color: "var(--color-warning)", dot: "var(--color-warning)" };
+    case "Graduated": return { bg: "rgba(0,123,255,0.08)", color: "var(--color-warning)", dot: "var(--color-warning)" };
     default:          return { bg: "hsla(0,0%,50%,0.08)",    color: "var(--text-secondary)", dot: "var(--text-secondary)" };
   }
 };
@@ -407,7 +408,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
       action: "Created",
       title: `Student registered: ${optimisticStudent.name}`,
       details: `Batch: ${optimisticStudent.batch} Â· Email: ${optimisticStudent.email} Â· Fee: â‚¹${optimisticStudent.feeAmount}`,
-      badgeColor: "hsl(202, 90%, 58%)",
+      badgeColor: "#007bff",
     });
     showToast(`ðŸŽ‰ ${optimisticStudent.name} registered successfully!`, "success");
     setActiveTab("all");
@@ -576,7 +577,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
   const renderStatCards = () => (
     <div className="stu-stats-row">
       <div className="stu-stat-card">
-        <div className="stu-stat-icon" style={{ background: "hsla(202, 90%, 58%, 0.08)" }}>
+        <div className="stu-stat-icon" style={{ background: "rgba(0,123,255,0.08)" }}>
           <Users2 size={20} style={{ color: "var(--color-accent)" }} />
         </div>
         <div>
@@ -594,7 +595,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
         </div>
       </div>
       <div className="stu-stat-card">
-        <div className="stu-stat-icon" style={{ background: "hsla(200, 95%, 50%, 0.08)" }}>
+        <div className="stu-stat-icon" style={{ background: "rgba(23,162,184,0.08)" }}>
           <Activity size={20} style={{ color: "var(--color-info)" }} />
         </div>
         <div>
@@ -850,18 +851,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
           {/* Results Count */}
           <div className="stu-results-bar">
             <span>{filteredStudents.length} student{filteredStudents.length !== 1 ? "s" : ""} found</span>
-            <button
-              onClick={() => exportStudents(filteredStudents)}
-              style={{
-                display: "flex", alignItems: "center", gap: "8px",
-                padding: "8px 16px", borderRadius: "10px", border: "none",
-                background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                color: "#fff", fontSize: "12px", fontWeight: 800, cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(16,185,129,0.3)"
-              }}
-            >
-              <Download size={14} /> Download Excel Sheet (.xlsx)
-            </button>
+            <DownloadButton onClick={() => exportStudents(filteredStudents)} label="Download Excel (.xlsx)" width={200} height={38} />
           </div>
 
           {/* Students Table */}
@@ -1013,7 +1003,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
             <>
               {/* Hero Banner */}
               <div style={{
-                background: "linear-gradient(135deg, hsl(200, 85%, 46%) 0%, hsl(202, 90%, 52%) 100%)",
+                background: "linear-gradient(135deg, #0062cc 0%, #007bff 100%)",
                 borderRadius: "24px", padding: "48px 36px", textAlign: "center",
                 marginBottom: "28px", position: "relative", overflow: "hidden"
               }}>
@@ -1032,7 +1022,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                   <div style={{ position: "relative", maxWidth: "580px", margin: "0 auto" }}>
                     <div style={{ display: "flex", gap: "10px" }}>
                       <div style={{ flex: 1, position: "relative" }}>
-                        <Search size={18} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "hsl(285,20%,55%)", pointerEvents: "none", zIndex: 1 }} />
+                        <Search size={18} style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", color: "#6c757d", pointerEvents: "none", zIndex: 1 }} />
                         <input
                           type="text"
                           placeholder="Type student name, email, phone or batch..."
@@ -1048,7 +1038,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                             width: "100%", height: "54px", padding: "0 16px 0 48px",
                             borderRadius: "16px", border: "none", background: "#fff",
                             fontSize: "14px", outline: "none", boxSizing: "border-box",
-                            color: "hsl(285,50%,12%)", fontFamily: "inherit",
+                            color: "#343a40", fontFamily: "inherit",
                             boxShadow: "0 8px 32px rgba(0,0,0,0.18)", position: "relative"
                           }}
                         />
@@ -1059,7 +1049,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                             background: "#fff", borderRadius: "18px",
                             boxShadow: "0 20px 60px rgba(0,0,0,0.22)",
                             zIndex: 9999, overflow: "hidden",
-                            border: "none" }}><div style={{ padding: "10px 16px 6px", fontSize: "10px", fontWeight: 800, color: "hsl(285,20%,55%)", textTransform: "uppercase", letterSpacing: "0.6px", borderBottom: "1px solid hsla(285,30%,20%,0.06)" }}>
+                            border: "none" }}><div style={{ padding: "10px 16px 6px", fontSize: "10px", fontWeight: 800, color: "#6c757d", textTransform: "uppercase", letterSpacing: "0.6px", borderBottom: "1px solid hsla(285,30%,20%,0.06)" }}>
                               {searchSuggestions.length} result{searchSuggestions.length !== 1 ? "s" : ""} found
                             </div>
                             {searchSuggestions.map((s) => {
@@ -1073,15 +1063,15 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                                     padding: "11px 16px", cursor: "pointer",
                                     transition: "background 0.15s", borderBottom: "1px solid hsla(285,30%,20%,0.04)"
                                   }}
-                                  onMouseEnter={e => (e.currentTarget.style.background = "hsla(200, 85%, 48%,0.05)")}
+                                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,123,255,0.05)")}
                                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                                 >
                                   <div className="avatar-initials-gradient avatar-admin" style={{ width: "38px", height: "38px", fontSize: "12px", flexShrink: 0 }}>
                                     {getInitials(s.name)}
                                   </div>
                                   <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: "13px", fontWeight: 700, color: "hsl(285,50%,12%)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</div>
-                                    <div style={{ fontSize: "11px", color: "hsl(285,20%,55%)", display: "flex", gap: "8px" }}>
+                                    <div style={{ fontSize: "13px", fontWeight: 700, color: "#343a40", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</div>
+                                    <div style={{ fontSize: "11px", color: "#6c757d", display: "flex", gap: "8px" }}>
                                       <span>{s.email}</span>
                                       <span>Â·</span>
                                       <span>{s.batch}</span>
@@ -1127,8 +1117,8 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
               {profileSearchPerformed && !profileResult && (
                 <div style={{ background: "#fff", borderRadius: "20px", padding: "56px 24px", textAlign: "center", boxShadow: "0 4px 20px -4px rgba(29,10,39,0.08)", marginBottom: "28px" }}>
                   <XCircle size={52} style={{ color: "hsl(342,90%,60%)", margin: "0 auto 16px", opacity: 0.6 }} />
-                  <h3 style={{ color: "hsl(285,50%,12%)", fontWeight: 700, marginBottom: "8px" }}>No student found</h3>
-                  <p style={{ fontSize: "13px", color: "hsl(285,20%,55%)", maxWidth: "340px", margin: "0 auto" }}>
+                  <h3 style={{ color: "#343a40", fontWeight: 700, marginBottom: "8px" }}>No student found</h3>
+                  <p style={{ fontSize: "13px", color: "#6c757d", maxWidth: "340px", margin: "0 auto" }}>
                     No match for <strong>"{profileSearchQuery}"</strong>. Try a different name, email, phone or batch.
                   </p>
                 </div>
@@ -1137,7 +1127,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
               {/* Recently Enrolled Quick-Select */}
               {students.length > 0 && (
                 <div>
-                  <h3 style={{ fontSize: "13px", fontWeight: 800, color: "hsl(285,50%,12%)", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px", textTransform: "uppercase", letterSpacing: "0.4px" }}>
+                  <h3 style={{ fontSize: "13px", fontWeight: 800, color: "#343a40", marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px", textTransform: "uppercase", letterSpacing: "0.4px" }}>
                     <Users2 size={15} style={{ color: "var(--color-accent)" }} /> Recently Enrolled
                   </h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(270px, 1fr))", gap: "12px" }}>
@@ -1159,8 +1149,8 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                             {getInitials(s.name)}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: "14px", fontWeight: 700, color: "hsl(285,50%,12%)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</div>
-                            <div style={{ fontSize: "12px", color: "hsl(285,20%,55%)", marginTop: "2px" }}>{s.batch} Â· {s.email}</div>
+                            <div style={{ fontSize: "14px", fontWeight: 700, color: "#343a40", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.name}</div>
+                            <div style={{ fontSize: "12px", color: "#6c757d", marginTop: "2px" }}>{s.batch} Â· {s.email}</div>
                           </div>
                           <span style={{ fontSize: "10px", fontWeight: 700, padding: "3px 8px", borderRadius: "8px", background: sc.bg, color: sc.color, flexShrink: 0 }}>{s.status}</span>
                         </div>
@@ -1196,15 +1186,15 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
           >
             {/* â”€â”€ Loading spinner inside modal â”€â”€ */}
             {isLoadingProfile && (
-              <div style={{ position: "absolute", top: "16px", left: "50%", transform: "translateX(-50%)", zIndex: 10, background: "rgba(255,255,255,0.9)", borderRadius: "20px", padding: "6px 14px", display: "flex", alignItems: "center", gap: "8px", fontSize: "11px", fontWeight: 700, color: "hsl(285,50%,12%)", boxShadow: "0 2px 12px rgba(0,0,0,0.1)" }}>
-                <div style={{ width: "14px", height: "14px", border: "2px solid hsla(202, 90%, 58%,0.3)", borderTopColor: "hsl(202, 90%, 58%)", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+              <div style={{ position: "absolute", top: "16px", left: "50%", transform: "translateX(-50%)", zIndex: 10, background: "rgba(255,255,255,0.9)", borderRadius: "20px", padding: "6px 14px", display: "flex", alignItems: "center", gap: "8px", fontSize: "11px", fontWeight: 700, color: "#343a40", boxShadow: "0 2px 12px rgba(0,0,0,0.1)" }}>
+                <div style={{ width: "14px", height: "14px", border: "2px solid rgba(0,123,255,0.3)", borderTopColor: "#007bff", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
                 Refreshing from serverâ€¦
               </div>
             )}
 
             {/* â”€â”€ Header Banner â”€â”€ */}
             <div style={{
-              background: "linear-gradient(135deg, hsl(200, 85%, 42%) 0%, hsl(202, 90%, 48%) 100%)",
+              background: "linear-gradient(135deg, #0062cc 0%, #007bff 100%)",
               padding: "32px 28px 76px", position: "relative", overflow: "hidden", borderRadius: "24px 24px 0 0"
             }}>
               <div style={{ position: "absolute", top: "-50px", right: "-50px", width: "240px", height: "240px", borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
@@ -1260,7 +1250,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
             <div style={{ margin: "-32px 24px 0", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", position: "relative", zIndex: 2 }}>
               {[
                 { icon: <Activity size={15} style={{ color: "var(--color-info)" }} />, label: "Attendance", val: `${profileResult.attendanceRate}%`, color: profileResult.attendanceRate >= 85 ? "var(--color-success)" : profileResult.attendanceRate >= 60 ? "hsl(38,92%,45%)" : "var(--color-danger)" },
-                { icon: <IndianRupee size={15} style={{ color: "hsl(38,92%,45%)" }} />, label: "Fee Amount", val: `₹${profileResult.feeAmount.toLocaleString("en-IN")}`, color: "hsl(285,50%,12%)" },
+                { icon: <IndianRupee size={15} style={{ color: "hsl(38,92%,45%)" }} />, label: "Fee Amount", val: `₹${profileResult.feeAmount.toLocaleString("en-IN")}`, color: "#343a40" },
                 { icon: <CheckCircle2 size={15} style={{ color: getFeeColor(profileResult.feeStatus).color }} />, label: "Fee Status", val: profileResult.feeStatus, color: getFeeColor(profileResult.feeStatus).color },
               ].map((item, i) => (
                 <div key={i} style={{
@@ -1270,7 +1260,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
                     {item.icon}
-                    <span style={{ fontSize: "9px", fontWeight: 800, color: "hsl(285,20%,55%)", textTransform: "uppercase", letterSpacing: "0.4px" }}>{item.label}</span>
+                    <span style={{ fontSize: "9px", fontWeight: 800, color: "#6c757d", textTransform: "uppercase", letterSpacing: "0.4px" }}>{item.label}</span>
                   </div>
                   <span style={{ fontSize: "18px", fontWeight: 900, color: item.color }}>{item.val}</span>
                 </div>
@@ -1283,7 +1273,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
               {/* Attendance Progress Bar */}
               <div style={{ marginBottom: "24px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 800, color: "hsl(285,20%,45%)", textTransform: "uppercase", letterSpacing: "0.4px" }}>Attendance Rate</span>
+                  <span style={{ fontSize: "11px", fontWeight: 800, color: "#6c757d", textTransform: "uppercase", letterSpacing: "0.4px" }}>Attendance Rate</span>
                   <span style={{ fontSize: "13px", fontWeight: 900, color: profileResult.attendanceRate >= 85 ? "var(--color-success)" : profileResult.attendanceRate >= 60 ? "hsl(38,92%,45%)" : "var(--color-danger)" }}>{profileResult.attendanceRate}%</span>
                 </div>
                 <div style={{ height: "9px", background: "hsla(285,30%,20%,0.08)", borderRadius: "9px", overflow: "hidden" }}>
@@ -1312,12 +1302,12 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                     background: "hsl(285,30%,98.5%)", borderRadius: "12px",
                     padding: "12px 14px", border: "none"
                   }}>
-                    <div style={{ width: "30px", height: "30px", borderRadius: "9px", background: "hsla(200, 85%, 48%,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "hsl(200, 85%, 42%)", flexShrink: 0 }}>
+                    <div style={{ width: "30px", height: "30px", borderRadius: "9px", background: "rgba(0,123,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#0062cc", flexShrink: 0 }}>
                       {item.icon}
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: "9px", fontWeight: 800, color: "hsl(285,20%,55%)", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "3px" }}>{item.label}</div>
-                      <div style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", wordBreak: "break-word" }}>{item.val}</div>
+                      <div style={{ fontSize: "9px", fontWeight: 800, color: "#6c757d", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "3px" }}>{item.label}</div>
+                      <div style={{ fontSize: "12px", fontWeight: 600, color: "#343a40", wordBreak: "break-word" }}>{item.val}</div>
                     </div>
                   </div>
                 ))}
@@ -1326,18 +1316,18 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
               {/* Subject Performance */}
               {profileResult.subjects.length > 0 && (
                 <div style={{ marginBottom: "20px" }}>
-                  <h4 style={{ margin: "0 0 12px", fontSize: "11px", fontWeight: 800, color: "hsl(285,50%,12%)", display: "flex", alignItems: "center", gap: "7px", textTransform: "uppercase", letterSpacing: "0.4px" }}>
+                  <h4 style={{ margin: "0 0 12px", fontSize: "11px", fontWeight: 800, color: "#343a40", display: "flex", alignItems: "center", gap: "7px", textTransform: "uppercase", letterSpacing: "0.4px" }}>
                     <BookOpen size={13} style={{ color: "var(--color-accent)" }} /> Subject Performance
                   </h4>
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {profileResult.subjects.map((sub, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", width: "120px", flexShrink: 0 }}>{sub.name}</span>
+                        <span style={{ fontSize: "12px", fontWeight: 600, color: "#343a40", width: "120px", flexShrink: 0 }}>{sub.name}</span>
                         <div style={{ flex: 1, height: "7px", background: "hsla(285,30%,20%,0.08)", borderRadius: "7px", overflow: "hidden" }}>
                           <div style={{ height: "100%", borderRadius: "7px", width: `${sub.score}%`, background: sub.score >= 85 ? "linear-gradient(90deg,var(--color-success),hsl(142,70%,55%))" : sub.score >= 60 ? "linear-gradient(90deg,hsl(38,92%,45%),hsl(38,92%,60%))" : "linear-gradient(90deg,var(--color-danger),hsl(342,90%,60%))" }} />
                         </div>
-                        <span style={{ fontSize: "12px", fontWeight: 800, width: "34px", textAlign: "right", color: "hsl(285,50%,12%)" }}>{sub.score}%</span>
-                        <span style={{ fontSize: "10px", fontWeight: 700, background: "hsla(285,30%,20%,0.06)", padding: "2px 7px", borderRadius: "6px", color: "hsl(285,20%,45%)", minWidth: "24px", textAlign: "center" }}>{sub.grade}</span>
+                        <span style={{ fontSize: "12px", fontWeight: 800, width: "34px", textAlign: "right", color: "#343a40" }}>{sub.score}%</span>
+                        <span style={{ fontSize: "10px", fontWeight: 700, background: "hsla(285,30%,20%,0.06)", padding: "2px 7px", borderRadius: "6px", color: "#6c757d", minWidth: "24px", textAlign: "center" }}>{sub.grade}</span>
                         {sub.trend === "up" ? <TrendingUp size={13} style={{ color: "var(--color-success)", flexShrink: 0 }} /> : sub.trend === "down" ? <TrendingDown size={13} style={{ color: "var(--color-danger)", flexShrink: 0 }} /> : <span style={{ width: "13px", flexShrink: 0 }} />}
                       </div>
                     ))}
@@ -1351,7 +1341,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                   <h4 style={{ margin: "0 0 6px", fontSize: "10px", fontWeight: 800, color: "hsl(38,92%,38%)", display: "flex", alignItems: "center", gap: "5px", textTransform: "uppercase", letterSpacing: "0.4px" }}>
                     <FileText size={12} /> Notes & Remarks
                   </h4>
-                  <p style={{ margin: 0, fontSize: "13px", color: "hsl(285,50%,12%)", lineHeight: 1.6 }}>{profileResult.notes}</p>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#343a40", lineHeight: 1.6 }}>{profileResult.notes}</p>
                 </div>
               )}
 
@@ -1361,10 +1351,10 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                   onClick={() => { setSelectedStudent(profileResult); setActiveTab("all"); setProfileResult(null); }}
                   style={{
                     flex: 1, height: "44px", borderRadius: "12px", border: "none",
-                    background: "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
+                    background: "linear-gradient(135deg, #0069d9, #007bff)",
                     color: "#fff", fontSize: "13px", fontWeight: 800, cursor: "pointer",
                     display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-                    boxShadow: "0 6px 18px -2px hsla(202, 90%, 58%,0.35)", transition: "all 0.2s"
+                    boxShadow: "0 6px 18px -2px rgba(0,123,255,0.35)", transition: "all 0.2s"
                   }}
                   onMouseEnter={e => (e.currentTarget.style.transform = "translateY(-1px)")}
                   onMouseLeave={e => (e.currentTarget.style.transform = "none")}
@@ -1376,9 +1366,9 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                   style={{
                     height: "44px", padding: "0 20px", borderRadius: "12px",
                     border: "1.5px solid hsla(285,30%,20%,0.14)", background: "#fff",
-                    fontSize: "13px", fontWeight: 700, cursor: "pointer", color: "hsl(285,50%,12%)", transition: "all 0.2s"
+                    fontSize: "13px", fontWeight: 700, cursor: "pointer", color: "#343a40", transition: "all 0.2s"
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = "hsl(285,50%,12%)")}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = "#343a40")}
                   onMouseLeave={e => (e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.14)")}
                 >
                   Close
@@ -1505,7 +1495,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                   <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>Assigned Batch:</span>
-                  <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(202, 90%, 58%,0.1)", padding: "2px 10px", borderRadius: "12px" }}>{successModalData.student.batch}</span>
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--color-accent)", background: "rgba(0,123,255,0.1)", padding: "2px 10px", borderRadius: "12px" }}>{successModalData.student.batch}</span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>Login Email:</span>

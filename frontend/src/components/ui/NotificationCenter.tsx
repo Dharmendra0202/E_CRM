@@ -35,7 +35,7 @@ const TYPE_ICON: Record<string, { icon: React.ReactNode; color: string }> = {
   EXAM: { icon: <BookOpen size={14} />, color: "hsl(38,92%,50%)" },
   HOMEWORK: { icon: <BookOpen size={14} />, color: "hsl(38,92%,50%)" },
   FEE: { icon: <IndianRupee size={14} />, color: "var(--color-danger)" },
-  GENERAL: { icon: <CalendarDays size={14} />, color: "hsl(200, 85%, 48%)" },
+  GENERAL: { icon: <CalendarDays size={14} />, color: "#0069d9" },
   SYSTEM: { icon: <Clock size={14} />, color: "var(--text-secondary)" },
 };
 
@@ -81,7 +81,7 @@ export function NotificationCenter({ invoiceCount, studentCount, homeworkCount }
 
   const derivedItems = [
     ...(invoiceCount > 0 ? [{ id: "inv", icon: <IndianRupee size={14} />, color: "var(--color-danger)", title: `${invoiceCount} unpaid invoice${invoiceCount > 1 ? "s" : ""}`, desc: "Fee reminders pending", time: "Now", isRead: true }] : []),
-    ...(studentCount > 0 ? [{ id: "stu", icon: <Users2 size={14} />, color: "hsl(200, 85%, 48%)", title: `${studentCount} new student${studentCount > 1 ? "s" : ""} this month`, desc: "Review enrollments", time: "Today", isRead: true }] : []),
+    ...(studentCount > 0 ? [{ id: "stu", icon: <Users2 size={14} />, color: "#0069d9", title: `${studentCount} new student${studentCount > 1 ? "s" : ""} this month`, desc: "Review enrollments", time: "Today", isRead: true }] : []),
     ...(homeworkCount > 0 ? [{ id: "hw", icon: <BookOpen size={14} />, color: "hsl(38,92%,50%)", title: `${homeworkCount} active assignment${homeworkCount > 1 ? "s" : ""}`, desc: "Check submissions", time: "Ongoing", isRead: true }] : []),
   ];
 
@@ -105,7 +105,7 @@ export function NotificationCenter({ invoiceCount, studentCount, homeworkCount }
         onClick={() => setIsOpen(!isOpen)}
         style={{
           width: "36px", height: "36px", borderRadius: "10px",
-          border: "1px solid var(--border-glass)", background: isOpen ? "hsla(202, 90%, 58%,0.08)" : "transparent",
+          border: "1px solid var(--border-glass)", background: isOpen ? "rgba(0,123,255,0.08)" : "transparent",
           display: "flex", alignItems: "center", justifyContent: "center",
           cursor: "pointer", position: "relative", transition: "all 0.2s",
           color: isOpen ? "var(--color-accent)" : "var(--text-secondary)",
@@ -142,7 +142,7 @@ export function NotificationCenter({ invoiceCount, studentCount, homeworkCount }
           <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border-glass)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Notifications</h4>
             {totalBadge > 0 && (
-              <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(202, 90%, 58%,0.08)", padding: "2px 8px", borderRadius: "10px" }}>{totalBadge} new</span>
+              <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "rgba(0,123,255,0.08)", padding: "2px 8px", borderRadius: "10px" }}>{totalBadge} new</span>
             )}
           </div>
 
@@ -153,9 +153,9 @@ export function NotificationCenter({ invoiceCount, studentCount, homeworkCount }
                 You're all caught up.
               </div>
             ) : notifications.map((notif) => (
-              <div key={notif.id} style={{ display: "flex", gap: "12px", padding: "12px 18px", borderBottom: "1px solid var(--border-glass)", transition: "background 0.15s", cursor: "pointer", background: notif.isRead ? "transparent" : "hsla(202, 90%, 58%,0.03)" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "hsla(202, 90%, 58%,0.06)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = notif.isRead ? "transparent" : "hsla(202, 90%, 58%,0.03)")}>
+              <div key={notif.id} style={{ display: "flex", gap: "12px", padding: "12px 18px", borderBottom: "1px solid var(--border-glass)", transition: "background 0.15s", cursor: "pointer", background: notif.isRead ? "transparent" : "rgba(0,123,255,0.03)" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,123,255,0.06)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = notif.isRead ? "transparent" : "rgba(0,123,255,0.03)")}>
                 <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: `${notif.color}12`, display: "flex", alignItems: "center", justifyContent: "center", color: notif.color, flexShrink: 0 }}>
                   {notif.icon}
                 </div>

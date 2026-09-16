@@ -84,7 +84,7 @@ export function Dashboard({
   const kpiCards = [
     {
       icon: <Users2 size={20} />,
-      gradient: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
+      gradient: "linear-gradient(135deg, #007bff, #0069d9)",
       label: "TOTAL STUDENTS",
       value: totalStudents,
       badge: `+${studentsThisMonth} this month`,
@@ -102,7 +102,7 @@ export function Dashboard({
     },
     {
       icon: <UserCheck size={20} />,
-      gradient: "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(240,80%,65%))",
+      gradient: "linear-gradient(135deg, #0069d9, hsl(240,80%,65%))",
       label: "AVG ATTENDANCE",
       value: `${avgAttendance.toFixed(1)}%`,
       badge: `${totalAttendanceRecords} records`,
@@ -122,9 +122,9 @@ export function Dashboard({
 
   // Bento Navigation Cards Config (All Clickable)
   const moduleCards = [
-    { icon: <Users2 size={22} />, label: "Students", desc: `${totalStudents} registered`, color: "hsl(202, 90%, 58%)", view: "leads" },
-    { icon: <Target size={22} />, label: "Admissions", desc: "CRM pipeline", color: "hsl(200, 85%, 48%)", view: "admissions" },
-    { icon: <GraduationCap size={22} />, label: "Batches", desc: `${totalBatches} active`, color: "hsl(200,95%,50%)", view: "batches" },
+    { icon: <Users2 size={22} />, label: "Students", desc: `${totalStudents} registered`, color: "#007bff", view: "leads" },
+    { icon: <Target size={22} />, label: "Admissions", desc: "CRM pipeline", color: "#0069d9", view: "admissions" },
+    { icon: <GraduationCap size={22} />, label: "Batches", desc: `${totalBatches} active`, color: "#17a2b8", view: "batches" },
     { icon: <CheckCircle2 size={22} />, label: "Attendance", desc: `${avgAttendance.toFixed(0)}% avg rate`, color: "hsl(142,70%,42%)", view: "attendance" },
     { icon: <IndianRupee size={22} />, label: "Billing", desc: `₹${totalFeesCollected.toLocaleString("en-IN")} collected`, color: "hsl(38,92%,50%)", view: "billing" },
     { icon: <CalendarDays size={22} />, label: "Timetable", desc: "Manage schedules", color: "hsl(200,70%,45%)", view: "schedule" },
@@ -174,7 +174,7 @@ export function Dashboard({
 
             <div onClick={() => onNavigate("homework")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
               <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>HOMEWORK & EXAMS</div>
-              <div style={{ fontSize: "22px", fontWeight: 800, color: "hsl(202, 90%, 58%)", marginTop: "4px" }}>Manage Assignments →</div>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "#007bff", marginTop: "4px" }}>Manage Assignments →</div>
               <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Review homework & exam marks</p>
             </div>
           </div>
@@ -249,7 +249,7 @@ export function Dashboard({
             </div>
             <div onClick={() => onNavigate("leads")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
               <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>STUDENT DIRECTORY</div>
-              <div style={{ fontSize: "22px", fontWeight: 800, color: "hsl(200,95%,45%)", marginTop: "4px" }}>{totalStudents} Students</div>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "#17a2b8", marginTop: "4px" }}>{totalStudents} Students</div>
               <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Manage registrations & records</p>
             </div>
           </div>
@@ -455,7 +455,7 @@ export function Dashboard({
                 <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
                   <AlertCircle size={16} style={{ color: "var(--color-danger)" }} /> Pending Student Fees
                 </h3>
-                <button onClick={() => onNavigate("billing")} style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "hsla(202, 90%, 58%,0.07)", border: "1px solid hsla(202, 90%, 58%,0.18)", borderRadius: "8px", padding: "5px 11px", cursor: "pointer" }}>
+                <button onClick={() => onNavigate("billing")} style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "rgba(0,123,255,0.07)", border: "1px solid rgba(0,123,255,0.18)", borderRadius: "8px", padding: "5px 11px", cursor: "pointer" }}>
                   View All <ArrowUpRight size={11} />
                 </button>
               </div>

@@ -55,7 +55,7 @@ function getInitialDefaultHistory(): HistoryItem[] {
       details: "Monday 08:00 AM – 09:30 AM in Room 101",
       timestamp: new Date(now.getTime() - 1000 * 60 * 30).toISOString(),
       user: "Admin",
-      badgeColor: "hsl(200, 85%, 48%)",
+      badgeColor: "#0069d9",
     },
     {
       id: "hist-init-2",
@@ -65,7 +65,7 @@ function getInitialDefaultHistory(): HistoryItem[] {
       details: "Enrolled in Grade 10 Algebra – Contact: aconnor@gmail.com",
       timestamp: new Date(now.getTime() - 1000 * 60 * 120).toISOString(),
       user: "Admin",
-      badgeColor: "hsl(202, 90%, 58%)",
+      badgeColor: "#007bff",
     },
   ];
 }

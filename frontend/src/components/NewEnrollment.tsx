@@ -258,17 +258,17 @@ export const NewEnrollment: React.FC = () => {
           }}>
             <Check size={36} color="#fff" />
           </div>
-          <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 8px", color: "hsl(285,50%,12%)" }}>
+          <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 8px", color: "#343a40" }}>
             Enrollment Successful!
           </h2>
-          <p style={{ fontSize: "14px", color: "hsl(285,20%,50%)", margin: "0 0 24px" }}>
+          <p style={{ fontSize: "14px", color: "#6c757d", margin: "0 0 24px" }}>
             {personal.firstName} {personal.lastName} has been enrolled as a <strong>{role}</strong>.
           </p>
           <button
             onClick={resetForm}
             style={{
               padding: "12px 28px", borderRadius: "12px", border: "none", cursor: "pointer",
-              background: "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
+              background: "linear-gradient(135deg, #0069d9, #007bff)",
               color: "#fff", fontSize: "14px", fontWeight: 700, transition: "transform 0.2s",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
@@ -294,10 +294,10 @@ export const NewEnrollment: React.FC = () => {
       {/* Header — Only shown on initial Role selection step */}
       {currentStep === 1 && (
         <div style={{ marginBottom: "20px" }}>
-          <h1 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px", color: "hsl(285,50%,12%)" }}>
+          <h1 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px", color: "#343a40" }}>
             New Enrollment
           </h1>
-          <p style={{ fontSize: "13px", color: "hsl(285,20%,50%)", margin: 0 }}>
+          <p style={{ fontSize: "13px", color: "#6c757d", margin: 0 }}>
             Add a new student, staff member, or teacher to the system
           </p>
         </div>
@@ -319,16 +319,16 @@ export const NewEnrollment: React.FC = () => {
                 width: "28px", height: "28px", borderRadius: "50%", display: "flex",
                 alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700,
                 background: currentStep >= step.num
-                  ? "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))"
+                  ? "linear-gradient(135deg, #0069d9, #007bff)"
                   : "hsla(285,30%,20%,0.06)",
-                color: currentStep >= step.num ? "#fff" : "hsl(285,20%,50%)",
+                color: currentStep >= step.num ? "#fff" : "#6c757d",
                 transition: "all 0.3s ease",
               }}>
                 {currentStep > step.num ? <Check size={13} /> : step.num}
               </div>
               <span style={{
                 fontSize: "11px", fontWeight: 600,
-                color: currentStep >= step.num ? "hsl(285,50%,12%)" : "hsl(285,20%,55%)",
+                color: currentStep >= step.num ? "#343a40" : "#6c757d",
               }}>
                 {step.label}
               </span>
@@ -346,7 +346,7 @@ export const NewEnrollment: React.FC = () => {
                 <div style={{
                   height: "100%",
                   width: `${getConnectorProgress(step.num)}%`,
-                  background: "linear-gradient(90deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
+                  background: "linear-gradient(90deg, #0069d9, #007bff)",
                   borderRadius: "3px",
                   transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
                 }} />
@@ -367,10 +367,10 @@ export const NewEnrollment: React.FC = () => {
         {/* ═══════════ STEP 1: Role Selection ═══════════ */}
         {currentStep === 1 && (
           <div>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 6px", color: "hsl(285,50%,12%)" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 6px", color: "#343a40" }}>
               I am enrolling a...
             </h3>
-            <p style={{ fontSize: "13px", color: "hsl(285,20%,50%)", margin: "0 0 24px" }}>
+            <p style={{ fontSize: "13px", color: "#6c757d", margin: "0 0 24px" }}>
               Select the type of person you are adding
             </p>
 
@@ -385,25 +385,25 @@ export const NewEnrollment: React.FC = () => {
                   onClick={() => { setRole(item.key); setErrors({}); setCurrentStep(2); }}
                   style={{
                     padding: "24px 16px", borderRadius: "16px", border: "2px solid",
-                    borderColor: role === item.key ? "hsl(200, 85%, 48%)" : "hsla(285,30%,20%,0.08)",
-                    background: role === item.key ? "hsla(200, 85%, 48%,0.04)" : "#fff",
+                    borderColor: role === item.key ? "#0069d9" : "hsla(285,30%,20%,0.08)",
+                    background: role === item.key ? "rgba(0,123,255,0.04)" : "#fff",
                     cursor: "pointer", textAlign: "center", transition: "all 0.2s",
                     display: "flex", flexDirection: "column", alignItems: "center", gap: "10px",
                   }}
                   onMouseEnter={(e) => {
-                    if (role !== item.key) e.currentTarget.style.borderColor = "hsla(200, 85%, 48%,0.3)";
+                    if (role !== item.key) e.currentTarget.style.borderColor = "rgba(0,123,255,0.3)";
                   }}
                   onMouseLeave={(e) => {
                     if (role !== item.key) e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.08)";
                   }}
                 >
-                  <div style={{ color: role === item.key ? "hsl(200, 85%, 48%)" : "hsl(285,20%,50%)", transition: "color 0.2s" }}>
+                  <div style={{ color: role === item.key ? "#0069d9" : "#6c757d", transition: "color 0.2s" }}>
                     {item.icon}
                   </div>
-                  <span style={{ fontSize: "14px", fontWeight: 700, color: "hsl(285,50%,12%)" }}>
+                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#343a40" }}>
                     {item.label}
                   </span>
-                  <span style={{ fontSize: "11px", color: "hsl(285,20%,55%)" }}>
+                  <span style={{ fontSize: "11px", color: "#6c757d" }}>
                     {item.desc}
                   </span>
                 </button>
@@ -418,10 +418,10 @@ export const NewEnrollment: React.FC = () => {
         {/* ═══════════ STEP 2: Personal Details ═══════════ */}
         {currentStep === 2 && (
           <div>
-            <h3 style={{ fontSize: "15px", fontWeight: 700, margin: "0 0 2px", color: "hsl(285,50%,12%)" }}>
+            <h3 style={{ fontSize: "15px", fontWeight: 700, margin: "0 0 2px", color: "#343a40" }}>
               Personal Information
             </h3>
-            <p style={{ fontSize: "12px", color: "hsl(285,20%,50%)", margin: "0 0 16px" }}>
+            <p style={{ fontSize: "12px", color: "#6c757d", margin: "0 0 16px" }}>
               Enter the {role}'s basic details
             </p>
 
@@ -461,10 +461,14 @@ export const NewEnrollment: React.FC = () => {
                 label="Date of Birth *"
                 icon={<Calendar size={14} />}
                 value={personal.dob}
-                onChange={(v) => setPersonal({ ...personal, dob: v })}
+                onChange={(v) => {
+                  // Reject future dates — clamp to today
+                  const today = new Date().toISOString().split("T")[0];
+                  setPersonal({ ...personal, dob: v && v > today ? today : v });
+                }}
                 error={errors.dob}
                 type="date"
-                min="1990-01-01"
+                min="2000-01-01"
                 max={new Date().toISOString().split("T")[0]}
               />
               <InputField
@@ -546,10 +550,10 @@ export const NewEnrollment: React.FC = () => {
         {/* ═══════════ STEP 3: Guardian Details (Students only) ═══════════ */}
         {currentStep === 3 && role === "student" && (
           <div>
-            <h3 style={{ fontSize: "15px", fontWeight: 700, margin: "0 0 2px", color: "hsl(285,50%,12%)" }}>
+            <h3 style={{ fontSize: "15px", fontWeight: 700, margin: "0 0 2px", color: "#343a40" }}>
               Guardian Information
             </h3>
-            <p style={{ fontSize: "12px", color: "hsl(285,20%,50%)", margin: "0 0 16px" }}>
+            <p style={{ fontSize: "12px", color: "#6c757d", margin: "0 0 16px" }}>
               Enter the student's parent / guardian details
             </p>
 
@@ -593,10 +597,10 @@ export const NewEnrollment: React.FC = () => {
         {/* ═══════════ STEP 4: Fee Structure ═══════════ */}
         {currentStep === 4 && (
           <div>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 6px", color: "hsl(285,50%,12%)" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 6px", color: "#343a40" }}>
               Fee Structure
             </h3>
-            <p style={{ fontSize: "13px", color: "hsl(285,20%,50%)", margin: "0 0 24px" }}>
+            <p style={{ fontSize: "13px", color: "#6c757d", margin: "0 0 24px" }}>
               Define the payment plan for this enrollment
             </p>
 
@@ -625,7 +629,7 @@ export const NewEnrollment: React.FC = () => {
                 type="text"
               />
               <div>
-                <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "#343a40", marginBottom: "6px", display: "block" }}>
                   Payment Method Today
                 </label>
                 <select
@@ -646,7 +650,7 @@ export const NewEnrollment: React.FC = () => {
               </div>
             </div>
 
-            <label style={{ fontSize: "13px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "10px", display: "block" }}>
+            <label style={{ fontSize: "13px", fontWeight: 600, color: "#343a40", marginBottom: "10px", display: "block" }}>
               Payment Plan for Remaining Amount *
             </label>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px", marginBottom: "20px" }}>
@@ -661,21 +665,21 @@ export const NewEnrollment: React.FC = () => {
                   onClick={() => setFee({ ...fee, paymentPlan: plan.key })}
                   style={{
                     padding: "14px 16px", borderRadius: "12px", border: "2px solid",
-                    borderColor: fee.paymentPlan === plan.key ? "hsl(200, 85%, 48%)" : "hsla(285,30%,20%,0.08)",
-                    background: fee.paymentPlan === plan.key ? "hsla(200, 85%, 48%,0.04)" : "#fff",
+                    borderColor: fee.paymentPlan === plan.key ? "#0069d9" : "hsla(285,30%,20%,0.08)",
+                    background: fee.paymentPlan === plan.key ? "rgba(0,123,255,0.04)" : "#fff",
                     cursor: "pointer", textAlign: "left", transition: "all 0.2s",
                   }}
                   onMouseEnter={(e) => {
-                    if (fee.paymentPlan !== plan.key) e.currentTarget.style.borderColor = "hsla(200, 85%, 48%,0.3)";
+                    if (fee.paymentPlan !== plan.key) e.currentTarget.style.borderColor = "rgba(0,123,255,0.3)";
                   }}
                   onMouseLeave={(e) => {
                     if (fee.paymentPlan !== plan.key) e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.08)";
                   }}
                 >
-                  <span style={{ fontSize: "13px", fontWeight: 700, color: "hsl(285,50%,12%)", display: "block" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#343a40", display: "block" }}>
                     {plan.label}
                   </span>
-                  <span style={{ fontSize: "11px", color: "hsl(285,20%,55%)" }}>
+                  <span style={{ fontSize: "11px", color: "#6c757d" }}>
                     {plan.desc}
                   </span>
                 </button>
@@ -698,10 +702,10 @@ export const NewEnrollment: React.FC = () => {
             {fee.totalAmount && (
               <div style={{
                 marginTop: "20px", padding: "18px", borderRadius: "14px",
-                background: "hsla(200, 85%, 48%,0.05)", border: "1px solid hsla(200, 85%, 48%,0.15)",
+                background: "rgba(0,123,255,0.05)", border: "1px solid rgba(0,123,255,0.15)",
                 display: "flex", flexDirection: "column", gap: "10px"
               }}>
-                <p style={{ fontSize: "12px", fontWeight: 800, color: "hsl(200, 85%, 42%)", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <p style={{ fontSize: "12px", fontWeight: 800, color: "#0062cc", margin: 0, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                   📊 Auto-Calculated Fee & Installment Breakdown
                 </p>
 
@@ -715,20 +719,20 @@ export const NewEnrollment: React.FC = () => {
                   return (
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", background: "#fff", padding: "14px", borderRadius: "12px", border: "1px solid hsla(285,30%,20%,0.06)" }}>
                       <div>
-                        <span style={{ fontSize: "11px", color: "hsl(285,20%,50%)", fontWeight: 600 }}>Total Fee Billed</span>
-                        <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: "hsl(200, 85%, 48%)" }}>₹{total.toLocaleString("en-IN")}</p>
+                        <span style={{ fontSize: "11px", color: "#6c757d", fontWeight: 600 }}>Total Fee Billed</span>
+                        <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: "#0069d9" }}>₹{total.toLocaleString("en-IN")}</p>
                       </div>
                       <div>
-                        <span style={{ fontSize: "11px", color: "hsl(285,20%,50%)", fontWeight: 600 }}>Paid Today ({fee.paymentMethod})</span>
+                        <span style={{ fontSize: "11px", color: "#6c757d", fontWeight: 600 }}>Paid Today ({fee.paymentMethod})</span>
                         <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: "hsl(142,70%,40%)" }}>₹{paid.toLocaleString("en-IN")}</p>
                       </div>
                       <div>
-                        <span style={{ fontSize: "11px", color: "hsl(285,20%,50%)", fontWeight: 600 }}>Remaining Dues</span>
+                        <span style={{ fontSize: "11px", color: "#6c757d", fontWeight: 600 }}>Remaining Dues</span>
                         <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: remaining > 0 ? "hsl(205, 85%, 50%)" : "hsl(142,70%,40%)" }}>₹{remaining.toLocaleString("en-IN")}</p>
                       </div>
                       {remaining > 0 ? (
                         <div style={{ gridColumn: "1 / -1", borderTop: "1px solid hsla(285,30%,20%,0.08)", paddingTop: "10px", marginTop: "4px" }}>
-                          <span style={{ fontSize: "12px", fontWeight: 700, color: "hsl(285,50%,12%)" }}>
+                          <span style={{ fontSize: "12px", fontWeight: 700, color: "#343a40" }}>
                             🗓️ Auto Installments: {instCount} installment{instCount > 1 ? "s" : ""} of <strong>₹{instAmount.toLocaleString("en-IN")}</strong> each for remaining ₹{remaining.toLocaleString("en-IN")} dues
                           </span>
                         </div>
@@ -746,7 +750,7 @@ export const NewEnrollment: React.FC = () => {
             )}
 
             <div style={{ marginTop: "20px" }}>
-              <label style={{ fontSize: "13px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>
+              <label style={{ fontSize: "13px", fontWeight: 600, color: "#343a40", marginBottom: "6px", display: "block" }}>
                 Additional Notes
               </label>
               <textarea
@@ -759,7 +763,7 @@ export const NewEnrollment: React.FC = () => {
                   outline: "none", resize: "vertical", fontFamily: "inherit",
                   transition: "border-color 0.2s",
                 }}
-                onFocus={(e) => (e.currentTarget.style.borderColor = "hsl(200, 85%, 48%)")}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "#0069d9")}
                 onBlur={(e) => (e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.12)")}
               />
             </div>
@@ -779,9 +783,9 @@ export const NewEnrollment: React.FC = () => {
               display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px",
               borderRadius: "8px", border: "1.5px solid hsla(285,30%,20%,0.12)",
               background: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: 600,
-              color: "hsl(285,20%,40%)", transition: "all 0.2s",
+              color: "#6c757d", transition: "all 0.2s",
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "hsl(200, 85%, 48%)")}
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#0069d9")}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.12)")}
           >
             <ChevronLeft size={15} /> Back
@@ -795,7 +799,7 @@ export const NewEnrollment: React.FC = () => {
                 display: "flex", alignItems: "center", gap: "6px", padding: "8px 20px",
                 borderRadius: "8px", border: "none", cursor: isSubmitting ? "not-allowed" : "pointer",
                 fontSize: "12.5px", fontWeight: 700,
-                background: isSubmitting ? "hsl(0,0%,75%)" : "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
+                background: isSubmitting ? "hsl(0,0%,75%)" : "linear-gradient(135deg, #0069d9, #007bff)",
                 color: "#fff", opacity: isSubmitting ? 0.7 : 1, transition: "transform 0.2s",
               }}
               onMouseEnter={(e) => { if (!isSubmitting) e.currentTarget.style.transform = "scale(1.03)"; }}
@@ -849,14 +853,14 @@ interface InputFieldProps {
 
 const InputField: React.FC<InputFieldProps> = ({ label, icon, value, onChange, error, placeholder, type = "text", fullWidth, min, max }) => (
   <div style={{ gridColumn: fullWidth ? "1 / -1" : undefined }}>
-    <label style={{ fontSize: "11.5px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "4px", display: "block" }}>
+    <label style={{ fontSize: "11.5px", fontWeight: 600, color: "#343a40", marginBottom: "4px", display: "block" }}>
       {label}
     </label>
     <div style={{ position: "relative" }}>
       {icon && (
         <span style={{
           position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)",
-          color: "hsl(285,20%,55%)", display: "flex",
+          color: "#6c757d", display: "flex",
         }}>
           {icon}
         </span>
@@ -876,7 +880,7 @@ const InputField: React.FC<InputFieldProps> = ({ label, icon, value, onChange, e
           transition: "border-color 0.2s",
           textTransform: type === "text" ? "capitalize" : "none",
         }}
-        onFocus={(e) => (e.currentTarget.style.borderColor = error ? "hsl(0,70%,55%)" : "hsl(200, 85%, 48%)")}
+        onFocus={(e) => (e.currentTarget.style.borderColor = error ? "hsl(0,70%,55%)" : "#0069d9")}
         onBlur={(e) => (e.currentTarget.style.borderColor = error ? "hsl(0,70%,55%)" : "hsla(285,30%,20%,0.12)")}
       />
     </div>
@@ -895,7 +899,7 @@ interface SelectFieldProps {
 
 const SelectField: React.FC<SelectFieldProps> = ({ label, value, options, onChange, error }) => (
   <div>
-    <label style={{ fontSize: "11.5px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "4px", display: "block" }}>
+    <label style={{ fontSize: "11.5px", fontWeight: 600, color: "#343a40", marginBottom: "4px", display: "block" }}>
       {label}
     </label>
     <select
@@ -907,7 +911,7 @@ const SelectField: React.FC<SelectFieldProps> = ({ label, value, options, onChan
         fontSize: "12.5px", outline: "none", background: "#fff", fontFamily: "inherit",
         cursor: "pointer", boxSizing: "border-box", transition: "border-color 0.2s",
       }}
-      onFocus={(e) => (e.currentTarget.style.borderColor = "hsl(200, 85%, 48%)")}
+      onFocus={(e) => (e.currentTarget.style.borderColor = "#0069d9")}
       onBlur={(e) => (e.currentTarget.style.borderColor = "hsla(285,30%,20%,0.12)")}
     >
       {options.map((opt) => (

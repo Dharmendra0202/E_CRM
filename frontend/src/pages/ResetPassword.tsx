@@ -37,11 +37,11 @@ export const ResetPassword: React.FC = () => {
       <div style={{ background: "#fff", borderRadius: "20px", padding: "48px 40px", maxWidth: "440px", width: "100%", boxShadow: "0 8px 40px -8px rgba(29,10,39,0.12)" }}>
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "32px" }}>
-          <div style={{ width: "42px", height: "42px", borderRadius: "12px", background: "linear-gradient(135deg,hsl(202, 90%, 58%),hsl(200, 85%, 48%))", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: "42px", height: "42px", borderRadius: "12px", background: "linear-gradient(135deg,#007bff,#0069d9)", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <GraduationCap size={22} color="#fff" />
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: "18px", fontWeight: 800, background: "linear-gradient(135deg,hsl(202, 90%, 58%),hsl(200, 85%, 48%))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>E-CRM Portal</p>
+            <p style={{ margin: 0, fontSize: "18px", fontWeight: 800, background: "linear-gradient(135deg,#007bff,#0069d9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>E-CRM Portal</p>
             <p style={{ margin: 0, fontSize: "10px", color: "var(--text-secondary)", letterSpacing: "1px", textTransform: "uppercase" }}>Academy Management</p>
           </div>
         </div>
@@ -51,7 +51,7 @@ export const ResetPassword: React.FC = () => {
             <CheckCircle2 size={56} style={{ color: "var(--color-success)", marginBottom: "20px" }} />
             <h2 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 12px" }}>Password Reset!</h2>
             <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "32px" }}>Your password has been updated. You can now sign in.</p>
-            <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "linear-gradient(135deg,hsl(202, 90%, 58%),hsl(200, 85%, 48%))", color: "#fff", textDecoration: "none", padding: "13px 32px", borderRadius: "12px", fontSize: "14px", fontWeight: 700, boxShadow: "0 6px 20px hsla(202, 90%, 58%,0.35)" }}>
+            <a href="/" style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "linear-gradient(135deg,#007bff,#0069d9)", color: "#fff", textDecoration: "none", padding: "13px 32px", borderRadius: "12px", fontSize: "14px", fontWeight: 700, boxShadow: "0 6px 20px rgba(0,123,255,0.35)" }}>
               Sign In →
             </a>
           </div>
@@ -93,7 +93,7 @@ export const ResetPassword: React.FC = () => {
                     onFocus={e => (e.target.style.borderColor = "var(--color-accent)")} onBlur={e => (e.target.style.borderColor = "var(--border-glass)")} />
                 </div>
               </div>
-              <button type="submit" disabled={loading} style={{ height: "50px", borderRadius: "12px", border: "none", background: loading ? "hsl(285,20%,80%)" : "linear-gradient(135deg,hsl(202, 90%, 58%),hsl(200, 85%, 48%))", color: "#fff", fontSize: "14px", fontWeight: 800, cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", boxShadow: loading ? "none" : "0 6px 20px hsla(202, 90%, 58%,0.35)", marginTop: "4px" }}>
+              <button type="submit" disabled={loading} style={{ height: "50px", borderRadius: "12px", border: "none", background: loading ? "hsl(285,20%,80%)" : "linear-gradient(135deg,#007bff,#0069d9)", color: "#fff", fontSize: "14px", fontWeight: 800, cursor: loading ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", boxShadow: loading ? "none" : "0 6px 20px rgba(0,123,255,0.35)", marginTop: "4px" }}>
                 {loading ? <><span style={{ width: "18px", height: "18px", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "btnSpinnerRotate 0.6s linear infinite", display: "inline-block" }} />Updating...</> : "Reset Password"}
               </button>
             </form>

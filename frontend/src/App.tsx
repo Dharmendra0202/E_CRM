@@ -344,9 +344,9 @@ function App() {
   const ROLE_META: Record<string, { color: string; bg: string }> = {
     ADMIN:   { color: "hsl(38,92%,50%)",    bg: "hsla(38,92%,50%,0.1)" },
     TEACHER: { color: "var(--color-success)", bg: "hsla(142,70%,45%,0.1)" },
-    SALES:   { color: "var(--color-accent)",  bg: "hsla(202, 90%, 58%,0.1)" },
+    SALES:   { color: "var(--color-accent)",  bg: "rgba(0,123,255,0.1)" },
     BILLING: { color: "hsl(38,92%,45%)",    bg: "hsla(38,92%,45%,0.1)" },
-    SUPPORT: { color: "var(--color-info)",    bg: "hsla(200,95%,50%,0.1)" },
+    SUPPORT: { color: "var(--color-info)",    bg: "rgba(23,162,184,0.1)" },
   };
 
   const STATUS_ONLINE: Record<string, string> = {
@@ -506,7 +506,7 @@ function App() {
                   boxShadow: "0 12px 40px rgba(0,0,0,0.18)", zIndex: 99999,
                   border: "1px solid hsla(285,30%,20%,0.08)", overflow: "hidden"
                 }}>
-                  <div style={{ padding: "14px 16px", fontSize: "12px", color: "hsl(285,20%,55%)", textAlign: "center" }}>
+                  <div style={{ padding: "14px 16px", fontSize: "12px", color: "#6c757d", textAlign: "center" }}>
                     No results found for <strong>"{globalSearch}"</strong>
                   </div>
                 </div>
@@ -518,7 +518,7 @@ function App() {
                   boxShadow: "0 12px 40px rgba(0,0,0,0.18)", zIndex: 99999,
                   border: "1px solid hsla(285,30%,20%,0.08)", overflow: "hidden"
                 }}>
-                  <div style={{ padding: "8px 14px 5px", fontSize: "9px", fontWeight: 800, color: "hsl(285,20%,55%)", textTransform: "uppercase", letterSpacing: "0.6px", borderBottom: "1px solid hsla(285,30%,20%,0.06)" }}>
+                  <div style={{ padding: "8px 14px 5px", fontSize: "9px", fontWeight: 800, color: "#6c757d", textTransform: "uppercase", letterSpacing: "0.6px", borderBottom: "1px solid hsla(285,30%,20%,0.06)" }}>
                     Global Search ({hits.length} matches)
                   </div>
                   {hits.slice(0, 10).map(s => {
@@ -542,25 +542,25 @@ function App() {
                           borderBottom: "1px solid hsla(285,30%,20%,0.04)",
                           transition: "background 0.15s"
                         }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "hsla(200, 85%, 48%,0.05)")}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(0,123,255,0.05)")}
                         onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                       >
                         <div style={{
                           width: "34px", height: "34px", borderRadius: "10px", flexShrink: 0,
-                          background: s.type === "NAV" ? "linear-gradient(135deg, #0284c7, #2563eb)" : "linear-gradient(135deg,hsl(200, 85%, 48%),hsl(202, 90%, 58%))",
+                          background: s.type === "NAV" ? "linear-gradient(135deg, #0284c7, #2563eb)" : "linear-gradient(135deg,#0069d9,#007bff)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                           fontSize: "11px", fontWeight: 900, color: "#fff"
                         }}>{initials}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: "13px", fontWeight: 700, color: "hsl(285,50%,12%)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <div style={{ fontSize: "13px", fontWeight: 700, color: "#343a40", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                             {s.name}
                           </div>
-                          <div style={{ fontSize: "11px", color: "hsl(285,20%,55%)", marginTop: "1px" }}>{s.source || "Not Enrolled"} · {s.phone || (s as any).email || ""}</div>
+                          <div style={{ fontSize: "11px", color: "#6c757d", marginTop: "1px" }}>{s.source || "Not Enrolled"} · {s.phone || (s as any).email || ""}</div>
                         </div>
                         <span style={{
                           fontSize: "9px", fontWeight: 800, padding: "3px 8px", borderRadius: "8px",
                           background: s.status === "ENROLLED" ? "hsla(142,70%,40%,0.1)" : "hsla(285,30%,20%,0.07)",
-                          color: s.status === "ENROLLED" ? "hsl(142,70%,35%)" : "hsl(285,20%,45%)", flexShrink: 0
+                          color: s.status === "ENROLLED" ? "hsl(142,70%,35%)" : "#6c757d", flexShrink: 0
                         }}>{s.status}</span>
                       </div>
                     );
@@ -770,7 +770,7 @@ function App() {
                       <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "12px", color: "var(--text-secondary)" }}>
                         {staff.phone && <span>📞 {staff.phone}</span>}
                       </div>
-                      <p style={{ margin: "10px 0 0", fontSize: "10px", color: "hsl(200, 85%, 48%)", fontWeight: 600 }}>Click to edit details & salary</p>
+                      <p style={{ margin: "10px 0 0", fontSize: "10px", color: "#0069d9", fontWeight: 600 }}>Click to edit details & salary</p>
                     </div>
                   );
                 })}
@@ -817,7 +817,7 @@ function App() {
                       {teacher.phone && <span>📞 {teacher.phone}</span>}
                       <span>📚 {teacher.title || "General"}</span>
                     </div>
-                    <p style={{ margin: "10px 0 0", fontSize: "10px", color: "hsl(200, 85%, 48%)", fontWeight: 600 }}>Click to edit details & salary</p>
+                    <p style={{ margin: "10px 0 0", fontSize: "10px", color: "#0069d9", fontWeight: 600 }}>Click to edit details & salary</p>
                   </div>
                 ))}
               </div>

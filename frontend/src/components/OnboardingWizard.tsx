@@ -121,7 +121,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
     <div className="animate-fade-in" style={{ maxWidth: "720px", margin: "0 auto" }}>
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
-        <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: "16px", boxShadow: "0 8px 24px hsla(202, 90%, 58%,0.3)" }}>
+        <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "linear-gradient(135deg, #007bff, #0069d9)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: "16px", boxShadow: "0 8px 24px rgba(0,123,255,0.3)" }}>
           <Sparkles size={24} color="#fff" />
         </div>
         <h1 className="text-gradient-indigo" style={{ margin: "0 0 8px", fontSize: "28px" }}>Setup Your Organization</h1>
@@ -134,8 +134,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
           <React.Fragment key={step.id}>
             <div style={{
               display: "flex", alignItems: "center", gap: "6px", padding: "6px 12px", borderRadius: "20px",
-              background: currentStep === step.id ? "hsla(202, 90%, 58%,0.1)" : currentStep > step.id ? "hsla(142,70%,42%,0.08)" : "transparent",
-              border: `1px solid ${currentStep === step.id ? "hsla(202, 90%, 58%,0.3)" : currentStep > step.id ? "hsla(142,70%,42%,0.2)" : "var(--border-glass)"}`,
+              background: currentStep === step.id ? "rgba(0,123,255,0.1)" : currentStep > step.id ? "hsla(142,70%,42%,0.08)" : "transparent",
+              border: `1px solid ${currentStep === step.id ? "rgba(0,123,255,0.3)" : currentStep > step.id ? "hsla(142,70%,42%,0.2)" : "var(--border-glass)"}`,
               transition: "all 0.3s",
             }}>
               <span style={{ color: currentStep > step.id ? "var(--color-success)" : currentStep === step.id ? "var(--color-accent)" : "var(--text-secondary)", display: "flex" }}>
@@ -256,8 +256,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             {/* Department List */}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
               {departments.map((dept, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", background: "hsla(200, 85%, 48%,0.05)", borderRadius: "10px", border: "1px solid hsla(200, 85%, 48%,0.12)" }}>
-                  <Layers size={14} style={{ color: "hsl(200, 85%, 48%)" }} />
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", background: "rgba(0,123,255,0.05)", borderRadius: "10px", border: "1px solid rgba(0,123,255,0.12)" }}>
+                  <Layers size={14} style={{ color: "#0069d9" }} />
                   <span style={{ flex: 1, fontSize: "13px", fontWeight: 600 }}>{dept.name}</span>
                   <span style={{ fontSize: "11px", color: "var(--text-secondary)", background: "var(--bg-secondary)", padding: "2px 8px", borderRadius: "6px" }}>{dept.code}</span>
                   <button onClick={() => removeDepartment(idx)} style={{ background: "none", border: "none", color: "var(--color-danger)", cursor: "pointer", fontSize: "16px", lineHeight: 1 }}>×</button>
@@ -292,8 +292,8 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center" }}>
               {[
-                { label: `Organization: ${orgName}`, color: "hsl(202, 90%, 58%)" },
-                { label: `Campus: ${campusName}`, color: "hsl(200, 85%, 48%)" },
+                { label: `Organization: ${orgName}`, color: "#007bff" },
+                { label: `Campus: ${campusName}`, color: "#0069d9" },
                 { label: `Session: ${ayName}`, color: "hsl(142,70%,42%)" },
                 { label: `${departments.length} Departments`, color: "hsl(38,92%,50%)" },
               ].map((item, i) => (

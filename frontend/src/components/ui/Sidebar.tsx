@@ -217,7 +217,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
     >
       {/* Logo */}
       <div style={{ height: "65px", minHeight: "65px", maxHeight: "65px", boxSizing: "border-box", padding: collapsed ? "0 16px" : "0 18px", display: "flex", alignItems: "center", gap: "10px", borderBottom: "1px solid var(--border-glass)", flexShrink: 0, overflow: "hidden" }}>
-        <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: "linear-gradient(135deg, #6777ef, #5a68d8)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: "linear-gradient(135deg, #007bff, #0069d9)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <GraduationCap size={16} color="#fff" />
         </div>
         {!collapsed && <span style={{ fontSize: "16px", fontWeight: 800, fontFamily: "var(--font-headings)", whiteSpace: "nowrap" }} className="text-gradient-indigo">EduFlow</span>}
@@ -287,7 +287,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                     onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
                     onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
                   >
-                    <span style={{ display: "flex", flexShrink: 0, color: "hsl(202,90%,58%)" }}>{item.icon}</span>
+                    <span style={{ display: "flex", flexShrink: 0, color: "#007bff" }}>{item.icon}</span>
                   </button>
                 );
               })
@@ -329,7 +329,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                         onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
                         onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
                       >
-                        <span style={{ display: "flex", flexShrink: 0, color: "hsl(202,90%,58%)" }}>{item.icon}</span>
+                        <span style={{ display: "flex", flexShrink: 0, color: "#007bff" }}>{item.icon}</span>
                         <span style={{ whiteSpace: "nowrap", flex: 1 }}>{item.label}</span>
                         {hasChildren && (
                           <ChevronDown
@@ -373,7 +373,7 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                                 onMouseEnter={(e) => { if (!childActive) e.currentTarget.style.background = "hsla(285,30%,20%,0.04)"; }}
                                 onMouseLeave={(e) => { if (!childActive) e.currentTarget.style.background = "transparent"; }}
                               >
-                                <span style={{ display: "flex", flexShrink: 0, color: "hsl(202,90%,58%)", opacity: 0.85 }}>{child.icon}</span>
+                                <span style={{ display: "flex", flexShrink: 0, color: "#007bff", opacity: 0.85 }}>{child.icon}</span>
                                 <span style={{ whiteSpace: "nowrap" }}>{child.label}</span>
                               </button>
                             );

@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 /* ==========================================================================
@@ -57,29 +58,29 @@
    1. GLOBAL DESIGN VARIABLES & TOKENS
    ========================================================================== */
 :root {
-  /* MasterSoft purple-blue palette (Light Mode) */
-  --bg-primary: hsl(230, 30%, 98%); /* Soft blue-white background */
-  --bg-secondary: hsl(230, 25%, 95%); /* Light blue-gray secondary */
-  --surface-glass: hsla(0, 0%, 100%, 0.7); /* Frosted glass white */
-  --border-glass: hsla(232, 40%, 60%, 0.12); /* Soft blue-tinted border */
-  --border-accent: hsla(232, 82%, 67%, 0.25); /* MasterSoft accent border */
-  --border-purple: hsla(232, 82%, 67%, 0.18); /* Accent border */
+  /* MasterSoft exact palette (Light Mode) */
+  --bg-primary: #f6f6f6;            /* MasterSoft body background */
+  --bg-secondary: #eef0f3;          /* Light gray secondary */
+  --surface-glass: hsla(0, 0%, 100%, 0.85);
+  --border-glass: rgba(0, 0, 0, 0.08);   /* Neutral soft border */
+  --border-accent: rgba(0, 123, 255, 0.25);
+  --border-purple: rgba(0, 123, 255, 0.18);
   
-  --text-primary: hsl(222, 20%, 20%); /* Dark slate text */
-  --text-secondary: hsl(215, 12%, 45%); /* Muted gray text */
+  --text-primary: #343a40;          /* MasterSoft dark (--gray-dark) */
+  --text-secondary: #6c757d;        /* MasterSoft gray (--secondary) */
   
-  --color-accent: hsl(232, 82%, 67%); /* MasterSoft #6777ef purple-blue */
-  --color-accent-glow: hsla(232, 82%, 67%, 0.08);
-  --color-success: hsl(142, 70%, 40%);
-  --color-warning: hsl(38, 92%, 50%);
-  --color-danger: hsl(354, 70%, 54%);
-  --color-info: hsl(200, 95%, 50%);
+  --color-accent: #007bff;          /* MasterSoft primary blue */
+  --color-accent-glow: rgba(0, 123, 255, 0.08);
+  --color-success: #28a745;         /* MasterSoft green */
+  --color-warning: #ffc107;         /* MasterSoft yellow */
+  --color-danger: #dc3545;          /* MasterSoft red */
+  --color-info: #17a2b8;            /* MasterSoft cyan */
   
   /* Fonts */
-  /* MasterSoft font system */
-  --font-body: 'Lucida Grande', Helvetica, Arial, Verdana, sans-serif;
-  --font-headings: 'Lucida Grande', Helvetica, Arial, Verdana, sans-serif;
-  --font-family: 'Lucida Grande', Helvetica, Arial, Verdana, sans-serif;
+  /* MasterSoft font system — Nunito */
+  --font-body: 'Nunito', 'Segoe UI', Arial, sans-serif;
+  --font-headings: 'Nunito', 'Segoe UI', Arial, sans-serif;
+  --font-family: 'Nunito', 'Segoe UI', Arial, sans-serif;
 
   /* Font size scale (MasterSoft standard) */
   --fs-xs: 11px;
@@ -386,7 +387,7 @@ p {
 
 /* Linear text gradients inspired by GradientDeck */
 .text-gradient-indigo {
-  background: linear-gradient(135deg, hsl(222, 20%, 20%) 0%, hsl(215, 12%, 45%) 100%);
+  background: linear-gradient(135deg, #343a40 0%, #6c757d 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -482,18 +483,18 @@ p {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, hsl(232, 82%, 67%) 0%, hsl(245, 60%, 60%) 50%, hsl(232, 82%, 67%) 100%);
+  background: linear-gradient(135deg, #007bff 0%, #0069d9 50%, #007bff 100%);
   background-size: 200% auto;
   color: #ffffff;
   border: none;
-  box-shadow: 0 4px 14px -3px hsla(232, 82%, 67%, 0.4);
+  box-shadow: 0 4px 14px -3px hsla(211, 100%, 50%, 0.4);
   border-radius: 12px;
 }
 
 .btn-primary:hover:not(:disabled) {
   background-position: right center;
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px -3px hsla(232, 82%, 67%, 0.5);
+  box-shadow: 0 6px 20px -3px hsla(211, 100%, 50%, 0.5);
 }
 
 .btn-secondary {
@@ -1254,7 +1255,7 @@ p {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, hsl(232, 82%, 67%) 0%, hsl(245, 60%, 62%) 100%);
+  background: linear-gradient(135deg, hsl(211, 100%, 50%) 0%, hsl(245, 60%, 62%) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3613,10 +3614,10 @@ p {
 /* -- Primary Button: clean glow -- */
 .btn-primary {
   border: none !important;
-  box-shadow: 0 4px 14px -3px hsla(232,82%,67%,0.4) !important;
+  box-shadow: 0 4px 14px -3px hsla(211, 100%, 50%,0.4) !important;
 }
 .btn-primary:hover:not(:disabled) {
-  box-shadow: 0 8px 24px -3px hsla(232,82%,67%,0.5) !important;
+  box-shadow: 0 8px 24px -3px hsla(211, 100%, 50%,0.5) !important;
 }
 
 /* -- Secondary/Ghost Buttons -- */

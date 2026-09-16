@@ -55,7 +55,7 @@ export function CommunicationCenter() {
   };
 
   const priorityColors: Record<string, string> = {
-    LOW: "var(--text-secondary)", NORMAL: "hsl(200,95%,50%)",
+    LOW: "var(--text-secondary)", NORMAL: "#17a2b8",
     HIGH: "hsl(38,92%,50%)", URGENT: "var(--color-danger)",
   };
 
@@ -84,7 +84,7 @@ export function CommunicationCenter() {
       {/* Quick Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", marginBottom: "20px" }}>
         {[
-          { label: "Total", value: announcements.length, color: "hsl(200, 85%, 48%)" },
+          { label: "Total", value: announcements.length, color: "#0069d9" },
           { label: "Active", value: announcements.filter((a) => a.isActive).length, color: "var(--color-success)" },
           { label: "Urgent", value: announcements.filter((a) => a.priority === "URGENT").length, color: "var(--color-danger)" },
         ].map((s, i) => (
@@ -117,7 +117,7 @@ export function CommunicationCenter() {
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
                       <p style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>{ann.title}</p>
                       <span style={{ fontSize: "9px", fontWeight: 700, color: pColor, background: `${pColor}12`, padding: "2px 7px", borderRadius: "8px", textTransform: "uppercase" }}>{ann.priority}</span>
-                      <span style={{ fontSize: "9px", fontWeight: 700, color: "hsl(200,95%,50%)", background: "hsla(200,95%,50%,0.08)", padding: "2px 7px", borderRadius: "8px" }}>{ann.audience}</span>
+                      <span style={{ fontSize: "9px", fontWeight: 700, color: "#17a2b8", background: "rgba(23,162,184,0.08)", padding: "2px 7px", borderRadius: "8px" }}>{ann.audience}</span>
                     </div>
                     <p style={{ margin: "0 0 6px", fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.5 }}>{ann.content.substring(0, 150)}{ann.content.length > 150 ? "..." : ""}</p>
                     <p style={{ margin: 0, fontSize: "10px", color: "var(--text-secondary)" }}>

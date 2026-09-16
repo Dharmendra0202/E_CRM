@@ -9,8 +9,8 @@ interface LoginProps { onLoginSuccess: (sessionUser: any) => void; }
 type Tab = "login" | "signup" | "forgot";
 type Screen = "form" | "verify" | "reset_sent" | "selectRole";
 
-const ACCENT = "#6777ef";
-const ACCENT_DARK = "#5a68d8";
+const ACCENT = "#007bff";
+const ACCENT_DARK = "#0069d9";
 
 const inputBase: React.CSSProperties = {
   width: "100%", height: "44px", borderRadius: "10px",

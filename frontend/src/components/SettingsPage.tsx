@@ -106,7 +106,7 @@ export function SettingsPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           {tabs.map((tab) => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-              style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", borderRadius: "10px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, textAlign: "left", transition: "all 0.2s", background: activeTab === tab.key ? "hsla(202, 90%, 58%,0.08)" : "transparent", color: activeTab === tab.key ? "var(--color-accent)" : "var(--text-secondary)" }}>
+              style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", borderRadius: "10px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, textAlign: "left", transition: "all 0.2s", background: activeTab === tab.key ? "rgba(0,123,255,0.08)" : "transparent", color: activeTab === tab.key ? "var(--color-accent)" : "var(--text-secondary)" }}>
               {tab.icon} {tab.label}
             </button>
           ))}
@@ -175,7 +175,7 @@ export function SettingsPage() {
                       <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No departments configured.</p>
                     ) : departments.map((dept) => (
                       <div key={dept.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", background: "var(--bg-secondary)", borderRadius: "10px" }}>
-                        <Layers size={14} style={{ color: "hsl(200, 85%, 48%)" }} />
+                        <Layers size={14} style={{ color: "#0069d9" }} />
                         <span style={{ flex: 1, fontSize: "13px", fontWeight: 600 }}>{dept.name}</span>
                         <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{dept.code || "—"}</span>
                         <button onClick={() => handleDeleteDepartment(dept.id)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-danger)", opacity: 0.5 }}><Trash2 size={13} /></button>

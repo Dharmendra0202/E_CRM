@@ -134,7 +134,7 @@ export function CommandPalette({ isOpen, onClose, onNavigate }: CommandPalettePr
                   fontSize: "13px",
                   fontWeight: 600,
                   color: "var(--text-primary)",
-                  background: i === selectedIndex ? "hsla(202, 90%, 58%,0.06)" : "transparent",
+                  background: i === selectedIndex ? "rgba(0,123,255,0.06)" : "transparent",
                   transition: "background 0.1s",
                   textAlign: "left",
                 }}

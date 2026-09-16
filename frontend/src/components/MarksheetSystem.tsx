@@ -126,14 +126,14 @@ export function MarksheetSystem({ userRole = "ADMIN" }: { userRole?: string }) {
     const totalMax = myResults.reduce((s, r) => s + (r.totalMarks || 0), 0);
     const overallPct = totalMax > 0 ? ((totalObtained / totalMax) * 100).toFixed(1) : "0";
     return (
-      <div className="animate-fade-in" style={{ fontFamily: '"Lucida Grande", Helvetica, Arial, Verdana, sans-serif' }}>
+      <div className="animate-fade-in" style={{ fontFamily: "'Nunito', 'Segoe UI', Arial, sans-serif" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
           <div>
             <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>My Marks</h1>
             <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Your published exam results.</p>
           </div>
           {myResults.length > 0 && (
-            <div style={{ padding: "10px 18px", borderRadius: "10px", background: "hsla(200, 85%, 48%,0.1)", color: "hsl(200, 85%, 42%)", fontWeight: 700, fontSize: "14px" }}>
+            <div style={{ padding: "10px 18px", borderRadius: "10px", background: "rgba(0,123,255,0.1)", color: "#0062cc", fontWeight: 700, fontSize: "14px" }}>
               Overall: {overallPct}%
             </div>
           )}

@@ -94,8 +94,8 @@ export function HomeworkAssignments() {
       {stats && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px", marginBottom: "20px" }}>
           {[
-            { label: "Total", value: stats.total, color: "hsl(200, 85%, 48%)" },
-            { label: "Active", value: stats.active, color: "hsl(202, 90%, 58%)" },
+            { label: "Total", value: stats.total, color: "#0069d9" },
+            { label: "Active", value: stats.active, color: "#007bff" },
             { label: "Overdue", value: stats.overdue, color: "var(--color-danger)" },
             { label: "Submissions", value: stats.totalSubmissions, color: "hsl(142,70%,42%)" },
             { label: "Pending Grading", value: stats.pendingGrading, color: "hsl(38,92%,50%)" },
@@ -154,7 +154,7 @@ export function HomeworkAssignments() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
                   <div style={{ textAlign: "center" }}>
-                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "hsl(200, 85%, 48%)" }}>{hw.submissionCount}</p>
+                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#0069d9" }}>{hw.submissionCount}</p>
                     <p style={{ margin: 0, fontSize: "9px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Submitted</p>
                   </div>
                   <div style={{ textAlign: "center" }}>

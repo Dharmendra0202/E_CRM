@@ -4,6 +4,7 @@ import { Card } from "./ui/Card";
 import { Skeleton } from "./ui/Skeleton";
 import { api } from "../utils/api";
 import { exportAttendance } from "../utils/exportExcel";
+import { DownloadButton } from "./ui/DownloadButton";
 import { useAttendanceRealtime } from "../utils/useAttendanceRealtime";
 import { Activity, Check, CheckCircle2, Wifi, WifiOff, Users, Clock, TrendingUp, Download } from "lucide-react";
 
@@ -233,18 +234,7 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
         
         {/* Live Connection & Export Excel */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <button
-            onClick={() => exportAttendance(session?.students || [])}
-            style={{
-              display: "flex", alignItems: "center", gap: "8px",
-              padding: "8px 16px", borderRadius: "10px", border: "none",
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-              color: "#fff", fontSize: "12px", fontWeight: 800, cursor: "pointer",
-              boxShadow: "0 2px 8px rgba(16,185,129,0.3)"
-            }}
-          >
-            <Download size={14} /> Download Excel Sheet (.xlsx)
-          </button>
+          <DownloadButton onClick={() => exportAttendance(session?.students || [])} label="Download Excel (.xlsx)" width={200} height={38} />
           
           {/* Connection status (Admin only) */}
           {(userRole === "ADMIN" || userRole === "SUPER_ADMIN") && (
@@ -320,11 +310,11 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
       {/* Summary Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px", marginBottom: "24px" }}>
         {[
-          { label: "Total Students", value: summary.total, icon: <Users size={18} />, color: "hsl(200,95%,50%)" },
+          { label: "Total Students", value: summary.total, icon: <Users size={18} />, color: "#17a2b8" },
           { label: "Present", value: summary.present, icon: <CheckCircle2 size={18} />, color: "var(--color-success)" },
           { label: "Absent", value: summary.absent, icon: <Activity size={18} />, color: "var(--color-danger)" },
           { label: "Late", value: summary.late, icon: <Clock size={18} />, color: "hsl(38,92%,50%)" },
-          { label: "Completion", value: `${completionRate}%`, icon: <TrendingUp size={18} />, color: "hsl(200, 85%, 48%)" },
+          { label: "Completion", value: `${completionRate}%`, icon: <TrendingUp size={18} />, color: "#0069d9" },
         ].map((stat, i) => (
           <div
             key={i}
@@ -532,14 +522,14 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
                         width: "40px",
                         height: "40px",
                         borderRadius: "50%",
-                        background: "hsla(200, 85%, 48%,0.12)",
-                        border: "2px solid hsla(200, 85%, 48%,0.2)",
+                        background: "rgba(0,123,255,0.12)",
+                        border: "2px solid rgba(0,123,255,0.2)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         fontSize: "12px",
                         fontWeight: 700,
-                        color: "hsl(200, 85%, 48%)",
+                        color: "#0069d9",
                         flexShrink: 0,
                         position: "relative",
                       }}
@@ -554,7 +544,7 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
                             width: "12px",
                             height: "12px",
                             borderRadius: "50%",
-                            background: "hsl(200,95%,50%)",
+                            background: "#17a2b8",
                             border: "2px solid #fff",
                             display: "flex",
                             alignItems: "center",
@@ -580,8 +570,8 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
                             style={{
                               marginLeft: "8px",
                               padding: "1px 6px",
-                              background: "hsla(200,95%,50%,0.1)",
-                              color: "hsl(200,95%,40%)",
+                              background: "rgba(23,162,184,0.1)",
+                              color: "#17a2b8",
                               borderRadius: "4px",
                               fontSize: "10px",
                               fontWeight: 700,
@@ -720,8 +710,8 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
           marginTop: "20px",
           padding: "16px 20px",
           borderRadius: "12px",
-          background: "hsla(200,95%,50%,0.05)",
-          border: "1px solid hsla(200,95%,50%,0.15)",
+          background: "rgba(23,162,184,0.05)",
+          border: "1px solid rgba(23,162,184,0.15)",
           display: "flex",
           alignItems: "flex-start",
           gap: "14px",
@@ -732,7 +722,7 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
             width: "36px",
             height: "36px",
             borderRadius: "10px",
-            background: "hsla(200,95%,50%,0.12)",
+            background: "rgba(23,162,184,0.12)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -754,11 +744,11 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
             style={{
               fontSize: "11px",
               fontFamily: "monospace",
-              background: "hsla(200,95%,50%,0.08)",
+              background: "rgba(23,162,184,0.08)",
               padding: "8px 12px",
               borderRadius: "6px",
               display: "block",
-              color: "hsl(200,95%,35%)",
+              color: "#127d8e",
               wordBreak: "break-all",
             }}
           >

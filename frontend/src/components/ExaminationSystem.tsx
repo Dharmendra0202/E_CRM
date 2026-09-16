@@ -24,10 +24,10 @@ interface Exam {
 const EXAM_TYPES = ["Test", "Preliminary", "Extra Test", "Activity", "Unit Test", "Final Exam", "Quiz", "Assignment"];
 const STATUS_FLOW: ExamStatus[] = ["DRAFT", "SCHEDULED", "CONDUCTED", "EVALUATED", "PUBLISHED"];
 const STATUS_COLORS: Record<ExamStatus, string> = {
-  DRAFT: "hsl(200,95%,50%)",
-  SCHEDULED: "hsl(200, 85%, 48%)",
+  DRAFT: "#17a2b8",
+  SCHEDULED: "#0069d9",
   CONDUCTED: "hsl(38,92%,50%)",
-  EVALUATED: "hsl(202, 90%, 58%)",
+  EVALUATED: "#007bff",
   PUBLISHED: "hsl(142,70%,42%)",
 };
 
@@ -135,7 +135,7 @@ export function ExaminationSystem({ userRole = "ADMIN" }: { userRole?: string })
   if (isStudent) {
     const upcoming = [...exams].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     return (
-      <div className="animate-fade-in" style={{ fontFamily: '"Lucida Grande", Helvetica, Arial, Verdana, sans-serif' }}>
+      <div className="animate-fade-in" style={{ fontFamily: "'Nunito', 'Segoe UI', Arial, sans-serif" }}>
         <div style={{ marginBottom: "18px" }}>
           <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>My Examinations</h1>
           <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Your scheduled exams and tests.</p>
@@ -213,7 +213,7 @@ export function ExaminationSystem({ userRole = "ADMIN" }: { userRole?: string })
             </div>
             <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
               <button onClick={() => setMarksExam(exam)} title="Enter marks"
-                style={{ padding: "6px 12px", borderRadius: "8px", border: "none", background: "hsla(200, 85%, 48%,0.1)", color: "hsl(200, 85%, 42%)", fontSize: "10px", fontWeight: 700, cursor: "pointer" }}>
+                style={{ padding: "6px 12px", borderRadius: "8px", border: "none", background: "rgba(0,123,255,0.1)", color: "#0062cc", fontSize: "10px", fontWeight: 700, cursor: "pointer" }}>
                 Enter Marks
               </button>
               {exam.status !== "PUBLISHED" && (

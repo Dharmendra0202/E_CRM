@@ -69,10 +69,10 @@ export function WeakStudentModule() {
           </div>
         </div>
         <div style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "hsla(200, 85%, 48%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "hsl(200, 85%, 48%)" }}><Target size={20} /></div>
+          <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(0,123,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#0069d9" }}><Target size={20} /></div>
           <div>
             <p style={{ margin: 0, fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Total in Batch</p>
-            <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "hsl(200, 85%, 48%)" }}>{batchStudents.length}</p>
+            <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "#0069d9" }}>{batchStudents.length}</p>
           </div>
         </div>
         <div style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -118,15 +118,15 @@ export function WeakStudentModule() {
       )}
 
       {/* Improvement Resources (Placeholder) */}
-      <div style={{ marginTop: "24px", background: "hsla(200, 85%, 48%,0.04)", borderRadius: "14px", padding: "20px", border: "1px solid hsla(200, 85%, 48%,0.1)" }}>
+      <div style={{ marginTop: "24px", background: "rgba(0,123,255,0.04)", borderRadius: "14px", padding: "20px", border: "1px solid rgba(0,123,255,0.1)" }}>
         <h3 style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
-          <BookOpen size={16} style={{ color: "hsl(200, 85%, 48%)" }} /> Improvement Resources
+          <BookOpen size={16} style={{ color: "#0069d9" }} /> Improvement Resources
         </h3>
         <p style={{ margin: "0 0 12px", fontSize: "12px", color: "var(--text-secondary)" }}>Coming soon: MCQs, practice tests, one-word answers, and match-the-column exercises for weak students.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "10px" }}>
           {["MCQ Practice", "One-Word Answers", "Match the Columns", "Practice Tests"].map(item => (
-            <div key={item} style={{ padding: "12px", borderRadius: "10px", background: "#fff", border: "1px solid hsla(200, 85%, 48%,0.12)", textAlign: "center" }}>
-              <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "hsl(200, 85%, 48%)" }}>{item}</p>
+            <div key={item} style={{ padding: "12px", borderRadius: "10px", background: "#fff", border: "1px solid rgba(0,123,255,0.12)", textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#0069d9" }}>{item}</p>
               <p style={{ margin: "4px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>Coming Soon</p>
             </div>
           ))}

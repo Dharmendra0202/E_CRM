@@ -90,7 +90,7 @@ export function BulkPromotion() {
       {/* From/To Batch Selection */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", gap: "16px", alignItems: "end", marginBottom: "24px", background: "#fff", padding: "20px", borderRadius: "16px", border: "1px solid var(--border-glass)" }}>
         <div>
-          <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>From Class / Batch</label>
+          <label style={{ fontSize: "12px", fontWeight: 600, color: "#343a40", marginBottom: "6px", display: "block" }}>From Class / Batch</label>
           <select value={fromBatch} onChange={(e) => { setFromBatch(e.target.value); setSelectedStudents(new Set()); }}
             style={{ width: "100%", padding: "11px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", fontWeight: 600, outline: "none", background: "#fff", cursor: "pointer" }}>
             <option value="">Select source batch...</option>
@@ -98,10 +98,10 @@ export function BulkPromotion() {
           </select>
         </div>
         <div style={{ display: "flex", alignItems: "center", paddingBottom: "8px" }}>
-          <ArrowUpRight size={24} style={{ color: "hsl(200, 85%, 48%)" }} />
+          <ArrowUpRight size={24} style={{ color: "#0069d9" }} />
         </div>
         <div>
-          <label style={{ fontSize: "12px", fontWeight: 600, color: "hsl(285,50%,12%)", marginBottom: "6px", display: "block" }}>To Class / Batch (Promote To)</label>
+          <label style={{ fontSize: "12px", fontWeight: 600, color: "#343a40", marginBottom: "6px", display: "block" }}>To Class / Batch (Promote To)</label>
           <select value={toBatch} onChange={(e) => setToBatch(e.target.value)}
             style={{ width: "100%", padding: "11px 14px", borderRadius: "10px", border: "1.5px solid hsla(285,30%,20%,0.12)", fontSize: "13px", fontWeight: 600, outline: "none", background: "#fff", cursor: "pointer" }}>
             <option value="">Select target batch...</option>
@@ -119,7 +119,7 @@ export function BulkPromotion() {
               {filteredStudents.length} student{filteredStudents.length !== 1 ? "s" : ""} in {fromBatch}
             </span>
             <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-              <button onClick={selectAll} style={{ fontSize: "11px", fontWeight: 700, color: "hsl(200, 85%, 48%)", background: "hsla(200, 85%, 48%,0.08)", border: "1px solid hsla(200, 85%, 48%,0.2)", padding: "5px 12px", borderRadius: "8px", cursor: "pointer" }}>
+              <button onClick={selectAll} style={{ fontSize: "11px", fontWeight: 700, color: "#0069d9", background: "rgba(0,123,255,0.08)", border: "1px solid rgba(0,123,255,0.2)", padding: "5px 12px", borderRadius: "8px", cursor: "pointer" }}>
                 {selectedStudents.size === filteredStudents.length ? "Deselect All" : "Select All"}
               </button>
               <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>{selectedStudents.size} selected</span>
@@ -137,8 +137,8 @@ export function BulkPromotion() {
               const checked = selectedStudents.has(s.id);
               return (
                 <div key={s.id} onClick={() => toggleStudent(s.id)}
-                  style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 20px", borderBottom: "1px solid var(--border-glass)", cursor: "pointer", background: checked ? "hsla(200, 85%, 48%,0.04)" : "transparent" }}>
-                  <input type="checkbox" checked={checked} onChange={() => {}} style={{ width: "16px", height: "16px", accentColor: "hsl(200, 85%, 48%)" }} />
+                  style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 20px", borderBottom: "1px solid var(--border-glass)", cursor: "pointer", background: checked ? "rgba(0,123,255,0.04)" : "transparent" }}>
+                  <input type="checkbox" checked={checked} onChange={() => {}} style={{ width: "16px", height: "16px", accentColor: "#0069d9" }} />
                   <div>
                     <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{name}</p>
                     <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{s.user?.email || s.parentEmail}</p>

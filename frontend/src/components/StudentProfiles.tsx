@@ -6,8 +6,8 @@ import {
 } from "lucide-react";
 
 // ── MasterSoft theme tokens ──────────────────────────────
-const ACCENT = "#6777ef";
-const ACCENT_DARK = "#5a68d8";
+const ACCENT = "#007bff";
+const ACCENT_DARK = "#0069d9";
 const FIELD_BG = "#e9ecf3";
 const LABEL = "#60686f";
 const VALUE = "#6c757d";
@@ -375,7 +375,7 @@ export function StudentProfiles() {
   };
 
   return (
-    <div style={{ fontFamily: '"Lucida Grande", Helvetica, Arial, Verdana, sans-serif' }}>
+    <div style={{ fontFamily: "'Nunito', 'Segoe UI', Arial, sans-serif" }}>
       {level === "batches" && renderBatches()}
       {level === "students" && renderStudents()}
       {level === "profile" && renderProfile()}

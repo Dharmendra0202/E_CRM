@@ -12,6 +12,14 @@ interface BatchesManagementProps {
   onNavigate?: (view: string) => void;
 }
 
+const thStyle: React.CSSProperties = {
+  padding: "12px 16px", fontSize: "12px", fontWeight: 700, whiteSpace: "nowrap",
+  borderBottom: "2px solid #eef0f4",
+};
+const tdStyle: React.CSSProperties = {
+  padding: "12px 16px", whiteSpace: "nowrap", verticalAlign: "middle",
+};
+
 export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
   const [batches, setBatches] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
@@ -271,7 +279,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
             <h1 style={{ fontSize: "26px", fontWeight: 800, margin: 0, color: "var(--text-primary)" }}>Batches & Student Groups</h1>
-            <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-accent)", background: "hsla(202, 90%, 58%,0.08)", padding: "4px 12px", borderRadius: "20px", border: "1px solid hsla(202, 90%, 58%,0.15)" }}>
+            <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-accent)", background: "rgba(0,123,255,0.08)", padding: "4px 12px", borderRadius: "20px", border: "1px solid rgba(0,123,255,0.15)" }}>
               {totalBatches} Active Cohorts
             </span>
           </div>
@@ -285,9 +293,9 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
             onClick={() => setIsCreateModalOpen(true)}
             style={{
               padding: "11px 22px", borderRadius: "14px", border: "none", cursor: "pointer",
-              background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
+              background: "linear-gradient(135deg, #007bff, #0069d9)",
               color: "#fff", fontSize: "13.5px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px",
-              boxShadow: "0 6px 20px -4px hsla(202, 90%, 58%,0.35)", transition: "all 0.25s ease"
+              boxShadow: "0 6px 20px -4px rgba(0,123,255,0.35)", transition: "all 0.25s ease"
             }}
             onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
             onMouseLeave={e => e.currentTarget.style.transform = "none"}
@@ -300,10 +308,10 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
       {/* ══════════════ KPI METRICS SUMMARY ══════════════ */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px", marginBottom: "28px" }}>
         {[
-          { label: "Active Batches", value: totalBatches, icon: <BookOpen size={20} />, color: "hsl(200, 85%, 48%)", bg: "hsla(200, 85%, 48%,0.08)", sub: "Configured cohorts" },
-          { label: "Total Enrolled Students", value: totalEnrolledStudents, icon: <Users2 size={20} />, color: "hsl(202, 90%, 58%)", bg: "hsla(202, 90%, 58%,0.08)", sub: "Across all batches" },
+          { label: "Active Batches", value: totalBatches, icon: <BookOpen size={20} />, color: "#0069d9", bg: "rgba(0,123,255,0.08)", sub: "Configured cohorts" },
+          { label: "Total Enrolled Students", value: totalEnrolledStudents, icon: <Users2 size={20} />, color: "#007bff", bg: "rgba(0,123,255,0.08)", sub: "Across all batches" },
           { label: "Avg Capacity Fill Rate", value: `${avgFillRate}%`, icon: <BarChart2 size={20} />, color: "hsl(142,70%,40%)", bg: "hsla(142,70%,40%,0.08)", sub: `${totalEnrolledStudents} of ${totalCapacity} seats filled` },
-          { label: "Course Revenue Potential", value: `₹${totalRevenue.toLocaleString("en-IN")}`, icon: <IndianRupee size={20} />, color: "hsl(200,95%,45%)", bg: "hsla(200,95%,45%,0.08)", sub: "Active batch fees" },
+          { label: "Course Revenue Potential", value: `₹${totalRevenue.toLocaleString("en-IN")}`, icon: <IndianRupee size={20} />, color: "#17a2b8", bg: "rgba(23,162,184,0.08)", sub: "Active batch fees" },
         ].map((stat, i) => (
           <div key={i} style={{
             background: "#fff", borderRadius: "20px", padding: "20px",
@@ -358,10 +366,10 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
               style={{
                 padding: "8px 16px", borderRadius: "12px", fontSize: "12.5px", fontWeight: 700,
                 cursor: "pointer", border: "1px solid", transition: "all 0.2s ease",
-                background: selectedSubjectFilter === tab.key ? "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))" : "transparent",
+                background: selectedSubjectFilter === tab.key ? "linear-gradient(135deg, #007bff, #0069d9)" : "transparent",
                 borderColor: selectedSubjectFilter === tab.key ? "transparent" : "var(--border-glass)",
                 color: selectedSubjectFilter === tab.key ? "#fff" : "var(--text-secondary)",
-                boxShadow: selectedSubjectFilter === tab.key ? "0 4px 14px hsla(202, 90%, 58%,0.25)" : "none",
+                boxShadow: selectedSubjectFilter === tab.key ? "0 4px 14px rgba(0,123,255,0.25)" : "none",
               }}
             >
               {tab.label}
@@ -385,169 +393,88 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
           </p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: "24px" }}>
-          {filteredBatches.map(batch => {
-            const enrolledList = batch.enrollments || [];
-            const studentCount = enrolledList.length;
-            const cap = Number(batch.capacity) || 30;
-            const fillPct = Math.min(100, Math.round((studentCount / cap) * 100));
-            const isFull = studentCount >= cap;
-            const isAlmostFull = fillPct >= 80 && !isFull;
-
-            return (
-              <div
-                key={batch.id}
-                onClick={() => setSelectedBatchForStudents(batch)}
-                style={{
-                  background: "#ffffff", borderRadius: "24px", overflow: "hidden",
-                  border: "1px solid var(--border-glass)", boxShadow: "var(--shadow-card)",
-                  cursor: "pointer", transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
-                  display: "flex", flexDirection: "column", position: "relative"
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = "translateY(-6px)";
-                  e.currentTarget.style.boxShadow = "0 20px 40px -12px rgba(202, 90%, 58%, 0.18)";
-                  e.currentTarget.style.borderColor = "hsla(202, 90%, 58%, 0.3)";
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = "none";
-                  e.currentTarget.style.boxShadow = "var(--shadow-card)";
-                  e.currentTarget.style.borderColor = "var(--border-glass)";
-                }}
-              >
-                {/* Stunning Top Header Bar */}
-                <div style={{
-                  padding: "16px 20px",
-                  background: "linear-gradient(135deg, hsla(202, 90%, 58%,0.05), hsla(200, 85%, 48%,0.08))",
-                  borderBottom: "1px solid var(--border-glass)",
-                  display: "flex", alignItems: "center", justifyContent: "space-between"
-                }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: "38px", height: "38px", borderRadius: "12px", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Layers size={18} />
-                    </div>
-                    <span style={{ fontSize: "11px", fontWeight: 800, color: "hsl(200, 85%, 46%)", textTransform: "uppercase", letterSpacing: "0.6px", background: "#fff", padding: "4px 10px", borderRadius: "20px", border: "1px solid hsla(200, 85%, 48%,0.2)" }}>
-                      {batch.subject}
-                    </span>
-                  </div>
-
-                  <button
-                    title="Delete Batch"
-                    onClick={(e) => handleDeleteBatch(batch.id, batch.name, e)}
-                    style={{ background: "#fff", border: "1px solid var(--border-glass)", borderRadius: "10px", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--text-secondary)", opacity: 0.7 }}
-                    onMouseEnter={e => { e.currentTarget.style.opacity = "1"; e.currentTarget.style.color = "var(--color-danger)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.opacity = "0.7"; e.currentTarget.style.color = "var(--text-secondary)"; }}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-
-                <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column" }}>
-                  {/* Batch Title */}
-                  <h3 style={{ margin: "0 0 10px", fontSize: "18px", fontWeight: 800, color: "var(--text-primary)", wordBreak: "break-word" }}>
-                    {batch.name}
-                  </h3>
-
-                  {/* Teacher Chip */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", background: "var(--bg-secondary)", borderRadius: "14px", marginBottom: "16px" }}>
-                    <div style={{ width: "30px", height: "30px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", fontWeight: 800, flexShrink: 0 }}>
-                      {batch.teacher?.avatar || "T"}
-                    </div>
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "var(--text-primary)", wordBreak: "break-word" }}>
-                        {batch.teacher?.name || "Assigned Teacher"}
-                      </p>
-                      <p style={{ margin: 0, fontSize: "10px", color: "var(--text-secondary)" }}>
-                        {batch.teacher?.title || "Course Instructor"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Schedule & Timing Pills */}
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "16px" }}>
-                    <div style={{ padding: "8px 10px", background: "hsla(200, 85%, 48%,0.04)", borderRadius: "10px", border: "1px solid hsla(200, 85%, 48%,0.1)", display: "flex", alignItems: "center", gap: "6px" }}>
-                      <Clock size={13} style={{ color: "hsl(200, 85%, 48%)", flexShrink: 0 }} />
-                      <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-primary)", wordBreak: "break-word" }}>
-                        {batch.timings || "Mon, Wed, Fri"}
-                      </span>
-                    </div>
-
-                    <div style={{ padding: "8px 10px", background: "hsla(142,70%,42%,0.04)", borderRadius: "10px", border: "1px solid hsla(142,70%,42%,0.1)", display: "flex", alignItems: "center", gap: "6px" }}>
-                      <IndianRupee size={13} style={{ color: "var(--color-success)", flexShrink: 0 }} />
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-success)" }}>
-                        ₹{Number(batch.feeAmount || 0).toLocaleString("en-IN")} <span style={{ fontSize: "9px", color: "var(--text-secondary)", fontWeight: 500 }}>/ mo</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Capacity Progress Bar */}
-                  <div style={{ marginTop: "auto", paddingTop: "14px", borderTop: "1px solid var(--border-glass)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>
-                        Enrolled Students
-                      </span>
-                      <span style={{ fontSize: "12px", fontWeight: 800, color: isFull ? "var(--color-danger)" : "var(--text-primary)" }}>
-                        {studentCount} / {cap} ({fillPct}%)
-                      </span>
-                    </div>
-
-                    <div style={{ width: "100%", height: "8px", background: "var(--bg-secondary)", borderRadius: "4px", overflow: "hidden", marginBottom: "16px" }}>
-                      <div style={{
-                        width: `${fillPct}%`, height: "100%", borderRadius: "4px", transition: "width 0.5s ease",
-                        background: isFull ? "var(--color-danger)" : isAlmostFull ? "hsl(38,92%,50%)" : "linear-gradient(90deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))"
-                      }} />
-                    </div>
-
-                    {/* Footer Row: Student Overlapping Avatars & Action Button */}
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        {enrolledList.slice(0, 4).map((stu: any, idx: number) => {
-                          const sName = stu.name || (stu.student?.user ? `${stu.student.user.firstName} ${stu.student.user.lastName}` : "Student");
-                          const initial = sName.charAt(0)?.toUpperCase() || "S";
-                          return (
-                            <div
-                              key={stu.id || idx}
-                              title={sName}
-                              style={{
-                                width: "30px", height: "30px", borderRadius: "50%",
-                                background: "linear-gradient(135deg, hsl(200, 85%, 48%), hsl(202, 90%, 58%))",
-                                color: "#fff", fontSize: "11px", fontWeight: 800,
-                                display: "flex", alignItems: "center", justifyContent: "center",
-                                border: "2px solid #fff", marginLeft: idx === 0 ? 0 : "-8px",
-                                zIndex: 5 - idx
-                              }}
-                            >
-                              {initial}
-                            </div>
-                          );
-                        })}
-                        {studentCount > 4 && (
-                          <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", marginLeft: "8px" }}>
-                            +{studentCount - 4} more
+        <div style={{ background: "#fff", borderRadius: "12px", border: "1px solid var(--border-glass)", boxShadow: "var(--shadow-card)", overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", minWidth: "820px" }}>
+              <thead>
+                <tr style={{ background: "#fafbfe", color: "var(--text-secondary)", textAlign: "left" }}>
+                  <th style={thStyle}>Batch</th>
+                  <th style={thStyle}>Subject</th>
+                  <th style={thStyle}>Teacher</th>
+                  <th style={thStyle}>Schedule</th>
+                  <th style={{ ...thStyle, textAlign: "right" }}>Fee</th>
+                  <th style={{ ...thStyle, textAlign: "center" }}>Students</th>
+                  <th style={{ ...thStyle, textAlign: "center" }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredBatches.map(batch => {
+                  const enrolledList = batch.enrollments || [];
+                  const studentCount = enrolledList.length;
+                  const cap = Number(batch.capacity) || 30;
+                  const fillPct = Math.min(100, Math.round((studentCount / cap) * 100));
+                  const isFull = studentCount >= cap;
+                  const isAlmostFull = fillPct >= 80 && !isFull;
+                  return (
+                    <tr
+                      key={batch.id}
+                      onClick={() => setSelectedBatchForStudents(batch)}
+                      style={{ borderBottom: "1px solid #f0f1f4", cursor: "pointer", transition: "background 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "#f7f9fc")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <td style={tdStyle}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                          <div style={{ width: "34px", height: "34px", borderRadius: "9px", background: "linear-gradient(135deg, #007bff, #0069d9)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <Layers size={16} />
+                          </div>
+                          <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>{batch.name}</span>
+                        </div>
+                      </td>
+                      <td style={tdStyle}>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#0062cc", background: "rgba(0,123,255,0.08)", padding: "3px 10px", borderRadius: "20px" }}>
+                          {batch.subject || "General"}
+                        </span>
+                      </td>
+                      <td style={{ ...tdStyle, color: "var(--text-secondary)" }}>{batch.teacher?.name || "—"}</td>
+                      <td style={{ ...tdStyle, color: "var(--text-secondary)" }}>{batch.timings || "—"}</td>
+                      <td style={{ ...tdStyle, textAlign: "right", fontWeight: 700, color: "var(--color-success)" }}>
+                        ₹{Number(batch.feeAmount || 0).toLocaleString("en-IN")}
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: "center" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", minWidth: "90px", margin: "0 auto" }}>
+                          <span style={{ fontSize: "12px", fontWeight: 700, color: isFull ? "var(--color-danger)" : "var(--text-primary)" }}>
+                            {studentCount} / {cap}
                           </span>
-                        )}
-                      </div>
-
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setSelectedBatchForStudents(batch); }}
-                        style={{
-                          padding: "8px 18px", borderRadius: "12px", border: "none", cursor: "pointer",
-                          background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff",
-                          fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px",
-                          boxShadow: "0 4px 14px hsla(202, 90%, 58%,0.25)", transition: "all 0.2s"
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.03)"}
-                        onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-                      >
-                        View Students <ChevronRight size={14} />
-                      </button>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            );
-          })}
+                          <div style={{ width: "80px", height: "5px", background: "var(--bg-secondary)", borderRadius: "3px", overflow: "hidden" }}>
+                            <div style={{ width: `${fillPct}%`, height: "100%", background: isFull ? "var(--color-danger)" : isAlmostFull ? "hsl(38,92%,50%)" : "linear-gradient(90deg, #007bff, #0069d9)" }} />
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: "center" }}>
+                        <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSelectedBatchForStudents(batch); }}
+                            title="View students"
+                            style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "6px 12px", borderRadius: "6px", border: "none", cursor: "pointer", background: "rgba(0,123,255,0.1)", color: "#0062cc", fontSize: "12px", fontWeight: 600 }}
+                          >
+                            View <ChevronRight size={13} />
+                          </button>
+                          <button
+                            title="Delete batch"
+                            onClick={(e) => handleDeleteBatch(batch.id, batch.name, e)}
+                            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "30px", height: "30px", borderRadius: "6px", border: "none", cursor: "pointer", background: "rgba(220,53,69,0.08)", color: "var(--color-danger)" }}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -571,11 +498,11 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
           >
             {/* Modal Top Header */}
             <div style={{
-              padding: "20px 24px", background: "linear-gradient(135deg, hsl(285,50%,12%), hsl(285,50%,18%))",
+              padding: "20px 24px", background: "linear-gradient(135deg, #343a40, #1e2226)",
               color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0
             }}>
               <div>
-                <span style={{ fontSize: "10px", fontWeight: 800, color: "hsl(202, 90%, 65%)", textTransform: "uppercase", letterSpacing: "0.8px" }}>
+                <span style={{ fontSize: "10px", fontWeight: 800, color: "#3395ff", textTransform: "uppercase", letterSpacing: "0.8px" }}>
                   {selectedBatchForStudents.subject}
                 </span>
                 <h2 style={{ margin: "2px 0 0", fontSize: "20px", fontWeight: 800, color: "#fff", wordBreak: "break-word" }}>
@@ -591,7 +518,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                   onClick={() => setEnrollStudentModalOpen(true)}
                   style={{
                     padding: "8px 16px", borderRadius: "10px", border: "none", cursor: "pointer",
-                    background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))",
+                    background: "linear-gradient(135deg, #007bff, #0069d9)",
                     color: "#fff", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px"
                   }}
                 >
@@ -662,7 +589,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                           }}
                         >
                           <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flex: 1 }}>
-                            <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff", fontSize: "14px", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, #007bff, #0069d9)", color: "#fff", fontSize: "14px", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               {initial}
                             </div>
                             <div style={{ minWidth: 0, flex: 1 }}>
@@ -746,7 +673,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
               <button
                 onClick={handleEnrollStudent}
                 disabled={!selectedStudentToEnroll}
-                style={{ padding: "9px 22px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff", cursor: selectedStudentToEnroll ? "pointer" : "not-allowed", opacity: selectedStudentToEnroll ? 1 : 0.6, fontSize: "12px", fontWeight: 700 }}
+                style={{ padding: "9px 22px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #007bff, #0069d9)", color: "#fff", cursor: selectedStudentToEnroll ? "pointer" : "not-allowed", opacity: selectedStudentToEnroll ? 1 : 0.6, fontSize: "12px", fontWeight: 700 }}
               >
                 Confirm Enrollment
               </button>
@@ -856,7 +783,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                 <button type="button" onClick={() => setIsCreateModalOpen(false)} style={{ padding: "10px 20px", borderRadius: "10px", border: "1px solid var(--border-glass)", background: "none", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
                   Cancel
                 </button>
-                <button type="submit" style={{ padding: "10px 24px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, hsl(202, 90%, 58%), hsl(200, 85%, 48%))", color: "#fff", cursor: "pointer", fontSize: "13px", fontWeight: 700 }}>
+                <button type="submit" style={{ padding: "10px 24px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #007bff, #0069d9)", color: "#fff", cursor: "pointer", fontSize: "13px", fontWeight: 700 }}>
                   Create Batch
                 </button>
               </div>

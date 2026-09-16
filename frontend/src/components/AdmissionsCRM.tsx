@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/Button";
+import { DownloadButton } from "./ui/DownloadButton";
 import { Card } from "./ui/Card";
 import { Skeleton } from "./ui/Skeleton";
 import { api } from "../utils/api";
@@ -12,10 +13,10 @@ import {
 } from "lucide-react";
 
 const PIPELINE_STAGES = [
-  { key: "NEW", label: "New", color: "hsl(200,95%,50%)" },
-  { key: "CONTACTED", label: "Contacted", color: "hsl(200, 85%, 48%)" },
+  { key: "NEW", label: "New", color: "#17a2b8" },
+  { key: "CONTACTED", label: "Contacted", color: "#0069d9" },
   { key: "COUNSELLING", label: "Counselling", color: "hsl(38,92%,50%)" },
-  { key: "FOLLOW_UP", label: "Follow-up", color: "hsl(202, 90%, 58%)" },
+  { key: "FOLLOW_UP", label: "Follow-up", color: "#007bff" },
   { key: "APPLICATION", label: "Application", color: "hsl(200,70%,45%)" },
   { key: "ADMITTED", label: "Admitted", color: "hsl(160,70%,40%)" },
   { key: "FEE_PAID", label: "Fee Paid", color: "hsl(142,70%,42%)" },
@@ -110,18 +111,7 @@ export function AdmissionsCRM() {
           <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Manage enquiries from first contact to enrollment.</p>
         </div>
         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          <button
-            onClick={() => exportAdmissions(leads)}
-            style={{
-              display: "flex", alignItems: "center", gap: "8px",
-              padding: "10px 18px", borderRadius: "12px", border: "none",
-              background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-              color: "#fff", fontSize: "13px", fontWeight: 800, cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(16,185,129,0.35)", transition: "all 0.2s"
-            }}
-          >
-            <Download size={16} /> Download Excel Sheet (.xlsx)
-          </button>
+          <DownloadButton onClick={() => exportAdmissions(leads)} label="Download Excel (.xlsx)" width={210} />
           <Button variant="primary" onClick={() => setShowAddLead(true)} leftIcon={<UserPlus size={14} />}>New Enquiry</Button>
         </div>
       </div>
@@ -130,10 +120,10 @@ export function AdmissionsCRM() {
       {stats && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "12px", marginBottom: "20px" }}>
           {[
-            { label: "Total Leads", value: stats.total, color: "hsl(200, 85%, 48%)", badge: `+${stats.thisMonth} this month` },
+            { label: "Total Leads", value: stats.total, color: "#0069d9", badge: `+${stats.thisMonth} this month` },
             { label: "Pending Follow-ups", value: stats.pendingFollowUps, color: "hsl(38,92%,50%)", badge: "overdue" },
             { label: "Conversion Rate", value: `${stats.conversionRate}%`, color: "var(--color-success)", badge: "enrolled" },
-            { label: "Pipeline Active", value: stats.total - (stats.pipeline?.ENROLLED || 0) - (stats.pipeline?.LOST || 0), color: "hsl(202, 90%, 58%)", badge: "in progress" },
+            { label: "Pipeline Active", value: stats.total - (stats.pipeline?.ENROLLED || 0) - (stats.pipeline?.LOST || 0), color: "#007bff", badge: "in progress" },
           ].map((s, i) => (
             <div key={i} style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)", boxShadow: "0 2px 8px rgba(29,10,39,0.04)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
@@ -194,7 +184,7 @@ export function AdmissionsCRM() {
             return (
               <div key={lead.id} onClick={() => loadLeadDetail(lead.id)}
                 style={{ display: "grid", gridTemplateColumns: "1fr 140px 130px 120px 80px", padding: "14px 20px", borderBottom: "1px solid var(--border-glass)", alignItems: "center", cursor: "pointer", transition: "background 0.15s" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "hsla(202, 90%, 58%,0.02)")}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(0,123,255,0.02)")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
                 <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
@@ -313,8 +303,8 @@ export function AdmissionsCRM() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                   {activities.map((act) => {
                     const typeColors: Record<string, string> = {
-                      NOTE: "hsl(200,95%,50%)", STATUS_CHANGE: "hsl(200, 85%, 48%)", FOLLOW_UP: "hsl(38,92%,50%)",
-                      CALL: "hsl(142,70%,42%)", EMAIL: "hsl(202, 90%, 58%)", MEETING: "hsl(205, 85%, 50%)",
+                      NOTE: "#17a2b8", STATUS_CHANGE: "#0069d9", FOLLOW_UP: "hsl(38,92%,50%)",
+                      CALL: "hsl(142,70%,42%)", EMAIL: "#007bff", MEETING: "hsl(205, 85%, 50%)",
                     };
                     const color = typeColors[act.type] || "var(--text-secondary)";
                     return (

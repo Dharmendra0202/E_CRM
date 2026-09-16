@@ -110,12 +110,12 @@ export function ProfilePage() {
 
   const getRoleBadge = (role: string) => {
     const map: Record<string, { bg: string; color: string; label: string }> = {
-      ADMIN: { bg: "hsla(200, 85%, 48%,0.1)", color: "hsl(200, 85%, 48%)", label: "Administrator" },
-      SUPER_ADMIN: { bg: "hsla(200, 85%, 48%,0.1)", color: "hsl(200, 85%, 48%)", label: "Super Admin" },
+      ADMIN: { bg: "rgba(0,123,255,0.1)", color: "#0069d9", label: "Administrator" },
+      SUPER_ADMIN: { bg: "rgba(0,123,255,0.1)", color: "#0069d9", label: "Super Admin" },
       TEACHER: { bg: "hsla(199,89%,48%,0.1)", color: "hsl(199,89%,48%)", label: "Teacher" },
       STUDENT: { bg: "hsla(142,70%,42%,0.1)", color: "hsl(142,70%,42%)", label: "Student" },
       PARENT: { bg: "hsla(39,100%,50%,0.1)", color: "hsl(39,100%,50%)", label: "Parent" },
-      STAFF: { bg: "hsla(202, 90%, 58%,0.1)", color: "hsl(202, 90%, 58%)", label: "Staff" },
+      STAFF: { bg: "rgba(0,123,255,0.1)", color: "#007bff", label: "Staff" },
       ACCOUNTANT: { bg: "hsla(199,89%,48%,0.1)", color: "hsl(199,89%,48%)", label: "Accountant" },
     };
     return map[role] || { bg: "hsla(0,0%,50%,0.1)", color: "hsl(0,0%,50%)", label: role };
@@ -199,7 +199,7 @@ export function ProfilePage() {
 
       {/* ═══════ PROFILE HEADER CARD ═══════ */}
       <div style={{
-        background: "linear-gradient(135deg, hsl(200, 85%, 48%) 0%, hsl(202, 90%, 58%) 50%, hsl(205, 90%, 66%) 100%)",
+        background: "linear-gradient(135deg, #0069d9 0%, #007bff 50%, hsl(205, 90%, 66%) 100%)",
         borderRadius: "20px", padding: "32px", marginBottom: "20px",
         position: "relative", overflow: "hidden",
       }}>
@@ -312,8 +312,8 @@ export function ProfilePage() {
       {/* ═══════ PERSONAL INFORMATION ═══════ */}
       <div style={sectionStyle}>
         <div style={sectionTitleStyle}>
-          <div style={iconBadgeStyle("hsla(200, 85%, 48%,0.1)")}>
-            <User size={16} style={{ color: "hsl(200, 85%, 48%)" }} />
+          <div style={iconBadgeStyle("rgba(0,123,255,0.1)")}>
+            <User size={16} style={{ color: "#0069d9" }} />
           </div>
           Personal Information
         </div>
@@ -367,8 +367,8 @@ export function ProfilePage() {
         <>
           <div style={sectionStyle}>
             <div style={sectionTitleStyle}>
-              <div style={iconBadgeStyle("hsla(202, 90%, 58%,0.1)")}>
-                <Users2 size={16} style={{ color: "hsl(202, 90%, 58%)" }} />
+              <div style={iconBadgeStyle("rgba(0,123,255,0.1)")}>
+                <Users2 size={16} style={{ color: "#007bff" }} />
               </div>
               Father / Guardian Details
             </div>

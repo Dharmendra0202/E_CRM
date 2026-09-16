@@ -5,13 +5,13 @@ import {
   ExternalLink, Loader2,
 } from "lucide-react";
 
-const ACCENT = "#6777ef";
-const ACCENT_DARK = "#5a68d8";
+const ACCENT = "#007bff";
+const ACCENT_DARK = "#0069d9";
 const LABEL = "#60686f";
 const VALUE = "#6c757d";
 const FIELD_BG = "#f4f5f9";
 const CARD_SHADOW = "rgba(90, 97, 105, 0.1) 0px 7.5px 35px 0px, rgba(90, 97, 105, 0.1) 0px 2px 3px 0px";
-const FONT = '"Lucida Grande", Helvetica, Arial, Verdana, sans-serif';
+const FONT = "'Nunito', 'Segoe UI', Arial, sans-serif";
 
 interface OnlineClass {
   id: string;
