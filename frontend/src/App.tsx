@@ -44,7 +44,7 @@ import { NotificationCenter } from "./components/ui/NotificationCenter";
 import {
   Search, Plus, Check, GraduationCap, TrendingUp,
   Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
-  Filter, Settings, LogOut, ShieldCheck, Sparkles,
+  Filter, LogOut, ShieldCheck, Sparkles,
   Activity, BookOpen, IndianRupee, History, Sun, Moon, Download,
   ChevronLeft, ChevronRight, User
 } from "lucide-react";
@@ -322,6 +322,7 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [settingsInitialTab, setSettingsInitialTab] = useState<string | undefined>(undefined);
   const [editStaffMember, setEditStaffMember] = useState<any>(null);
   const [editStaffForm, setEditStaffForm] = useState({ name: "", phone: "", email: "", role: "", salary: "" });
   const [savingStaff, setSavingStaff] = useState(false);
@@ -361,7 +362,7 @@ function App() {
       {/* ── Sidebar ── */}
       <Sidebar
         currentView={currentView}
-        onNavigate={(view) => { setCurrentView(view as ViewType); if (view === "leads") setStudentTab("all"); }}
+        onNavigate={(view) => { setCurrentView(view as ViewType); if (view === "leads") setStudentTab("all"); if (view === "settings") setSettingsInitialTab(undefined); }}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         mobileOpen={mobileSidebarOpen}
@@ -589,7 +590,6 @@ function App() {
                     <div className="dropdown-user-role">{userRole}</div>
                   </div>
                   <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); setCurrentView("my-profile" as ViewType); }}><User size={14} /><span>My Profile</span></button>
-                  <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); setCurrentView("settings" as ViewType); }}><Settings size={14} /><span>Settings</span></button>
                   <button className="dropdown-item" onClick={() => { setIsProfileOpen(false); setCurrentView("roles" as ViewType); }}><ShieldCheck size={14} /><span>Security</span></button>
                   <button className="dropdown-item" onClick={() => setDarkMode(!darkMode)}>
                     {darkMode ? <Sun size={14} /> : <Moon size={14} />}
@@ -780,7 +780,7 @@ function App() {
 
           {/* ══════════════ SETTINGS VIEW ══════════════ */}
           {currentView === "my-profile" && <ProfilePage />}
-          {currentView === "settings" && <SettingsPage />}
+          {currentView === "settings" && <SettingsPage initialTab={settingsInitialTab as any} />}
 
           {/* ══════════════ TEACHERS VIEW ══════════════ */}
           {currentView === "teachers" && (

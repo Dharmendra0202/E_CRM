@@ -78,29 +78,8 @@ const COLOR_PALETTE = [
   { color: "#84cc16", bg: "rgba(132,204,22,0.09)" },
 ];
 
-// Static fallback batches 1st – 12th Standard
-const STATIC_BATCHES: ApiBatch[] = [
-  { id: "sb-1", name: "1st Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-2", name: "2nd Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-3", name: "3rd Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-4", name: "4th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-5", name: "5th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-6", name: "6th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-7", name: "7th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-8", name: "8th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-9", name: "9th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-10", name: "10th Standard", subject: "General", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-11s", name: "11th Science (PCM)", subject: "Physics, Chemistry, Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-11b", name: "11th Science (PCB)", subject: "Physics, Chemistry, Biology", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-11mb", name: "11th Science (PCMB)", subject: "Physics, Chemistry, Maths, Biology", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-11sp", name: "11th Commerce (SP)", subject: "Commerce, Accounts, SP", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-11cm", name: "11th Commerce (Maths)", subject: "Commerce, Accounts, Maths", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-12s", name: "12th Science (PCM)", subject: "Physics, Chemistry, Maths", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-12b", name: "12th Science (PCB)", subject: "Physics, Chemistry, Biology", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-12mb", name: "12th Science (PCMB)", subject: "Physics, Chemistry, Maths, Biology", capacity: 40, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-12sp", name: "12th Commerce (SP)", subject: "Commerce, Accounts, SP", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-  { id: "sb-12cm", name: "12th Commerce (Maths)", subject: "Commerce, Accounts, Maths", capacity: 35, teacher: { id: "t0", user: { firstName: "Admin", lastName: "Teacher" } }, enrollments: [] },
-];
+// No static/dummy batches — batches must come from the real database only.
+const STATIC_BATCHES: ApiBatch[] = [];
 
 // Room number options
 const ROOM_OPTIONS = [

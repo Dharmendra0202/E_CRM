@@ -2,32 +2,19 @@ import React, { useState } from "react";
 import {
   GraduationCap, Users2, BarChart3, Shield, Zap,
   CheckCircle2, ArrowRight, Star, Globe, IndianRupee,
-  Mail, Phone, MapPin, Download, Send, Sparkles,
+  Mail, Phone, MapPin, Send,
   BookOpen, Calendar, Award, MessageSquare, Clock, Building2,
   FileSpreadsheet, HelpCircle, ChevronRight, Check
 } from "lucide-react";
-import * as XLSX from "xlsx";
-import { DownloadButton } from "./ui/DownloadButton";
+import { api } from "../utils/api";
 
 interface LandingPageProps {
   onLogin: () => void;
 }
 
-interface Inquiry {
-  srNo: number;
-  name: string;
-  gmail: string;
-  contact: string;
-  personalInfo: string;
-  date: string;
-}
-
 export function LandingPage({ onLogin }: LandingPageProps) {
   // Page view state: "all" or specific page tab ("home" | "about" | "modules" | "pricing" | "inquiry")
   const [activePage, setActivePage] = useState<"all" | "home" | "about" | "modules" | "pricing" | "inquiry">("all");
-
-  // Inquiry form state - starting clean without dummy lead data
-  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -37,65 +24,39 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   });
 
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
     if (!formData.name || !formData.gmail || !formData.contact) {
-      alert("Please fill in Name, Gmail/Email, and Contact Number.");
+      setSubmitError("Please fill in Name, Gmail/Email, and Contact Number.");
       return;
     }
 
-    const newInquiry: Inquiry = {
-      srNo: inquiries.length + 1,
-      name: formData.name,
-      gmail: formData.gmail,
-      contact: formData.contact,
-      personalInfo: formData.personalInfo || "N/A",
-      date: new Date().toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }),
-    };
-
-    setInquiries((prev) => [...prev, newInquiry]);
-    setFormData({ name: "", gmail: "", contact: "", personalInfo: "" });
-    setSubmittedSuccess(true);
-    setTimeout(() => setSubmittedSuccess(false), 5000);
-  };
-
-  const handleExportExcel = () => {
-    if (inquiries.length === 0) {
-      alert("No inquiries recorded yet. Please submit an inquiry first to download.");
-      return;
+    setSubmitting(true);
+    try {
+      // Send the inquiry to the backend → creates a Lead + notifies all admins in real time.
+      await api.leads.submitInquiry({
+        name: formData.name,
+        email: formData.gmail,
+        phone: formData.contact,
+        message: formData.personalInfo || undefined,
+      });
+      setFormData({ name: "", gmail: "", contact: "", personalInfo: "" });
+      setSubmittedSuccess(true);
+      setTimeout(() => setSubmittedSuccess(false), 6000);
+    } catch (err: any) {
+      setSubmitError(err?.message || "Could not submit your inquiry. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-
-    const excelData = inquiries.map((item) => ({
-      "Sr. No": item.srNo,
-      "Name": item.name,
-      "Contact": item.contact,
-      "Gmail": item.gmail,
-      "Personal Info": item.personalInfo,
-      "Date & Time": item.date,
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    
-    // Set column widths
-    worksheet["!cols"] = [
-      { wch: 8 },  // Sr. No
-      { wch: 22 }, // Name
-      { wch: 18 }, // Contact
-      { wch: 28 }, // Gmail
-      { wch: 45 }, // Personal Info
-      { wch: 22 }, // Date & Time
-    ];
-
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "ECRM Inquiries");
-
-    XLSX.writeFile(workbook, `ECRM_Inquiries_Leads_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const features = [
@@ -128,7 +89,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", position: "relative", overflowX: "hidden", color: "#1e1b4b", fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" }}>
+    <div className="landing-page" style={{ minHeight: "100vh", position: "relative", overflowX: "hidden", color: "#1e1b4b", fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" }}>
       {/* Blurred Wallpaper Background Overlay */}
       <div style={{
         position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
@@ -151,7 +112,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
       <div style={{ position: "relative", zIndex: 2 }}>
         
         {/* FIXED Header Navigation Bar with sleek height */}
-        <nav style={{
+        <nav className="landing-nav" style={{
           display: "flex", justifyContent: "space-between", alignItems: "center",
           padding: "10px 40px", position: "fixed", top: 0, left: 0, right: 0,
           width: "100%", background: "rgba(255, 255, 255, 0.85)", backdropFilter: "blur(12px)",
@@ -180,7 +141,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           </div>
 
           {/* Text-Only Navigations */}
-          <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+          <div className="landing-nav-links" style={{ display: "flex", alignItems: "center", gap: "28px" }}>
             {[
               { id: "all", label: "Overview" },
               { id: "about", label: "About ECRM" },
@@ -213,12 +174,12 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             })}
           </div>
 
-          <button onClick={onLogin} style={{
+          <button className="landing-login-btn" onClick={onLogin} style={{
             padding: "8px 22px", borderRadius: "10px",
             background: "linear-gradient(135deg, #007bff, #0069d9)",
             color: "#fff", border: "none", fontSize: "13.5px", fontWeight: 800,
             cursor: "pointer", boxShadow: "0 4px 16px rgba(0,123,255,0.4)", letterSpacing: "0.3px",
-            transition: "transform 0.2s"
+            transition: "transform 0.2s", flexShrink: 0
           }}>
             Login to ECRM
           </button>
@@ -239,14 +200,6 @@ export function LandingPage({ onLogin }: LandingPageProps) {
           {/* Hero Section (Visible in 'all' or 'home') */}
           {(activePage === "all" || activePage === "home") && (
             <section id="home" style={{ padding: "40px 24px 30px", textAlign: "center", maxWidth: "900px", width: "100%", margin: "0 auto" }}>
-              <div style={{
-                display: "inline-flex", alignItems: "center", gap: "8px", padding: "5px 14px",
-                borderRadius: "20px", background: "rgba(255,255,255,0.9)", backdropFilter: "blur(10px)",
-                border: "1px solid rgba(0,123,255,0.3)", marginBottom: "16px", fontSize: "12px",
-                fontWeight: 800, color: "var(--color-accent)", boxShadow: "0 4px 14px rgba(0,0,0,0.04)"
-              }}>
-                <Sparkles size={13} /> Complete Enterprise Education Management Software
-              </div>
               <h1 style={{ fontSize: "38px", fontWeight: 900, lineHeight: 1.2, margin: "0 0 14px", letterSpacing: "-0.5px" }}>
                 Transform Your Educational Institution with <span className="text-gradient-indigo">Smart E-CRM</span>
               </h1>
@@ -541,9 +494,9 @@ export function LandingPage({ onLogin }: LandingPageProps) {
             borderRadius: "24px", padding: "24px 28px", border: "1px solid hsla(285,40%,60%,0.22)",
             boxShadow: "0 10px 32px rgba(0,0,0,0.05)"
           }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "24px" }}>
-              
-              {/* Left Column: Form */}
+            <div style={{ maxWidth: "620px", margin: "0 auto" }}>
+
+              {/* Inquiry Form — submits straight to your admin (creates a lead + notifies you) */}
               <div>
                 <span style={{ fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: "var(--color-accent)" }}>
                   Connect With Us
@@ -552,7 +505,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                   Request Demo & Inquire Details
                 </h2>
                 <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 16px", lineHeight: 1.5 }}>
-                  Fill in your personal and institution details below. All submitted inquiries are logged in real time and can be exported directly into a formatted Excel sheet.
+                  Share your details and our team will reach out to you. Your inquiry is sent to us instantly.
                 </p>
 
                 {submittedSuccess && (
@@ -561,7 +514,17 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     border: "1px solid var(--color-success)", color: "var(--color-success)",
                     fontSize: "13px", fontWeight: 700, marginBottom: "14px", display: "flex", alignItems: "center", gap: "8px"
                   }}>
-                    <CheckCircle2 size={16} /> Inquiry submitted successfully! Excel sheet updated.
+                    <CheckCircle2 size={16} /> Inquiry submitted! Our team will reach out to you shortly.
+                  </div>
+                )}
+
+                {submitError && (
+                  <div style={{
+                    padding: "10px 14px", borderRadius: "10px", background: "hsla(0,80%,60%,0.12)",
+                    border: "1px solid #ef4444", color: "#dc2626",
+                    fontSize: "13px", fontWeight: 700, marginBottom: "14px"
+                  }}>
+                    {submitError}
                   </div>
                 )}
 
@@ -585,7 +548,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     />
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div className="inquiry-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                     <div>
                       <label style={{ display: "block", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
                         Gmail / Email *
@@ -643,83 +606,16 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                     />
                   </div>
 
-                  <button type="submit" style={{
+                  <button type="submit" disabled={submitting} style={{
                     padding: "10px 20px", borderRadius: "10px",
                     background: "linear-gradient(135deg, #007bff, #0069d9)",
                     color: "#fff", border: "none", fontSize: "14px", fontWeight: 800,
-                    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                    gap: "8px", boxShadow: "0 4px 16px rgba(0,123,255,0.35)", marginTop: "4px"
+                    cursor: submitting ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                    gap: "8px", boxShadow: "0 4px 16px rgba(0,123,255,0.35)", marginTop: "4px", opacity: submitting ? 0.7 : 1
                   }}>
-                    <Send size={15} /> Submit Inquiry
+                    <Send size={15} /> {submitting ? "Submitting..." : "Submit Inquiry"}
                   </button>
                 </form>
-              </div>
-
-              {/* Right Column: Excel Sheet Lead Store & Download */}
-              <div style={{
-                background: "rgba(248, 250, 252, 0.95)", borderRadius: "18px",
-                padding: "20px", border: "1px solid #e2e8f0", display: "flex",
-                flexDirection: "column", justifyContent: "space-between"
-              }}>
-                <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <FileSpreadsheet size={20} color="var(--color-success)" />
-                      <h3 style={{ fontSize: "16px", fontWeight: 800, margin: 0 }}>
-                        Live Lead Registry Excel Sheet
-                      </h3>
-                    </div>
-                    <span style={{
-                      fontSize: "10px", fontWeight: 800, padding: "3px 8px",
-                      borderRadius: "8px", background: "hsla(142,70%,45%,0.15)", color: "var(--color-success)"
-                    }}>
-                      {inquiries.length} Inquiries Stored
-                    </span>
-                  </div>
-
-                  <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 12px", lineHeight: 1.5 }}>
-                    All details entered in the inquiry form are captured with Sr. No, Name, Contact, Gmail, and Personal Info. Download the full Excel sheet anytime below:
-                  </p>
-
-                  {/* Inquiry Table Preview */}
-                  <div style={{
-                    maxHeight: "135px", overflowY: "auto", border: "1px solid #e2e8f0",
-                    borderRadius: "10px", background: "#fff", marginBottom: "12px"
-                  }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "11.5px", textAlign: "left" }}>
-                      <thead>
-                        <tr style={{ background: "#f1f5f9", borderBottom: "1px solid #e2e8f0", color: "#475569" }}>
-                          <th style={{ padding: "6px 10px" }}>Sr.No</th>
-                          <th style={{ padding: "6px 10px" }}>Name</th>
-                          <th style={{ padding: "6px 10px" }}>Gmail</th>
-                          <th style={{ padding: "6px 10px" }}>Contact</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {inquiries.length === 0 ? (
-                          <tr>
-                            <td colSpan={4} style={{ padding: "16px 10px", textAlign: "center", color: "#94a3b8", fontSize: "11px" }}>
-                              No inquiries submitted yet. Submit a test inquiry to preview.
-                            </td>
-                          </tr>
-                        ) : (
-                          inquiries.map((inq) => (
-                            <tr key={inq.srNo} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                              <td style={{ padding: "6px 10px", fontWeight: 700 }}>#{inq.srNo}</td>
-                              <td style={{ padding: "6px 10px", fontWeight: 600 }}>{inq.name}</td>
-                              <td style={{ padding: "6px 10px", color: "#64748b" }}>{inq.gmail}</td>
-                              <td style={{ padding: "6px 10px", color: "#64748b" }}>{inq.contact}</td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                  <DownloadButton onClick={handleExportExcel} label="Download Excel (.xlsx)" width={230} />
-                </div>
               </div>
 
             </div>
@@ -728,11 +624,11 @@ export function LandingPage({ onLogin }: LandingPageProps) {
         )}
 
         {/* Footer: Professional Email Contact & Branding Footer */}
-        <footer style={{
+        <footer className="landing-footer" style={{
           background: "rgba(15, 23, 42, 0.95)", backdropFilter: "blur(20px)",
           color: "#f8fafc", padding: "60px 40px 30px", borderTop: "1px solid rgba(255,255,255,0.1)"
         }}>
-          <div style={{ maxWidth: "1150px", margin: "0 auto", display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1.5fr", gap: "40px", marginBottom: "40px" }}>
+          <div className="landing-footer-grid" style={{ maxWidth: "1150px", margin: "0 auto", display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1.5fr", gap: "40px", marginBottom: "40px" }}>
             
             {/* Column 1: Brand */}
             <div>
@@ -799,7 +695,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
 
           </div>
 
-          <div style={{
+          <div className="landing-footer-bottom" style={{
             maxWidth: "1150px", margin: "0 auto", paddingTop: "24px",
             borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex",
             justifyContent: "space-between", alignItems: "center", fontSize: "12px", color: "#64748b"

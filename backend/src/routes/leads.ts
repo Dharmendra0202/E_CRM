@@ -1,10 +1,61 @@
 import { prisma } from "../utils/prisma";
-import { Router, Response } from "express";
+import { Router, Response, Request } from "express";
 import { logAudit } from "../utils/auditLog";
+import { notifyUsers } from "../utils/notify";
 
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 
 const router = Router();
+
+// ══════════════════════════════════════════════════════════════
+// POST /api/v1/leads/inquiry — PUBLIC (no auth) landing-page inquiry
+// Creates a lead and notifies every admin so they get pinged instantly.
+// ══════════════════════════════════════════════════════════════
+router.post("/inquiry", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { name, email, phone, message, course } = req.body;
+    if (!name || !email) {
+      res.status(400).json({ status: "error", message: "Name and email are required." });
+      return;
+    }
+
+    const lead = await prisma.lead.create({
+      data: {
+        name: String(name).trim(),
+        email: String(email).trim().toLowerCase(),
+        phone: phone ? String(phone).trim() : "",
+        source: "Website Inquiry",
+        notes: message ? String(message).trim() : null,
+        course: course ? String(course).trim() : null,
+        status: "NEW",
+      },
+    });
+
+    await prisma.leadActivity.create({
+      data: { leadId: lead.id, type: "NOTE", content: "New inquiry submitted from the website landing page." },
+    });
+
+    // Notify all admins in-app so they see the inquiry in their notification center
+    const admins = await prisma.user.findMany({
+      where: { role: { in: ["ADMIN", "SUPER_ADMIN"] } },
+      select: { id: true },
+    });
+    await notifyUsers(
+      admins.map((a) => a.id),
+      {
+        title: "New Website Inquiry",
+        message: `${lead.name} (${lead.email}${lead.phone ? `, ${lead.phone}` : ""}) wants to reach you.${lead.notes ? ` "${lead.notes.slice(0, 120)}"` : ""}`,
+        type: "GENERAL",
+        priority: "HIGH",
+        link: "/leads",
+      }
+    );
+
+    res.status(201).json({ status: "success", message: "Inquiry received. Our team will reach out to you shortly." });
+  } catch (err: any) {
+    res.status(500).json({ status: "error", message: err.message });
+  }
+});
 
 // ══════════════════════════════════════════════════════════════
 // GET /api/v1/leads — list leads with filters

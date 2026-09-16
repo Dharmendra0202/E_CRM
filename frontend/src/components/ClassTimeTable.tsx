@@ -218,8 +218,14 @@ export function ClassTimeTable({ userRole = "ADMIN" }: { userRole?: string }) {
                             const subject = (s.subject || s.batch?.subject || "Class").toUpperCase();
                             const teacher = teacherName(s);
                             const color = subjectColor(subject);
+                            const batchName = s.batch?.name || "";
                             return (
-                              <div key={s.id} style={{ position: "relative", marginBottom: cells.length > 1 ? "8px" : 0, paddingRight: isAdmin ? "14px" : 0 }}>
+                              <div key={s.id} style={{ position: "relative", marginBottom: cells.length > 1 ? "10px" : 0, paddingRight: isAdmin ? "14px" : 0 }}>
+                                {batchName && (
+                                  <span style={{ display: "inline-block", fontSize: "10px", fontWeight: 800, color, background: `${color}1a`, borderRadius: "4px", padding: "2px 7px", marginBottom: "4px", letterSpacing: "0.3px", textTransform: "uppercase" }}>
+                                    {batchName}
+                                  </span>
+                                )}
                                 <span style={{ display: "block", fontSize: "13px", fontWeight: 700, color, lineHeight: 1.5 }}>
                                   {subject}{teacher ? ` / ${teacher.toUpperCase()}` : ""}
                                 </span>

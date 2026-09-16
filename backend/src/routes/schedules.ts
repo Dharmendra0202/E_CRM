@@ -12,6 +12,34 @@ const router = Router();
 
 const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+// Parse a time string like "07:30 AM" / "07:30" (24h) into minutes from midnight.
+function toMinutes(t: string): number {
+  if (!t) return -1;
+  const m = t.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!m) return -1;
+  let h = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  const ap = (m[3] || "").toUpperCase();
+  if (ap === "PM" && h !== 12) h += 12;
+  if (ap === "AM" && h === 12) h = 0;
+  return h * 60 + min;
+}
+
+// Two ranges [aStart,aEnd) and [bStart,bEnd) overlap?
+function rangesOverlap(aStart: string, aEnd: string, bStart: string, bEnd: string): boolean {
+  const as = toMinutes(aStart), ae = toMinutes(aEnd), bs = toMinutes(bStart), be = toMinutes(bEnd);
+  if (as < 0 || ae < 0 || bs < 0 || be < 0) return false;
+  return as < be && bs < ae;
+}
+
+// Resolve the effective teacher label for a schedule: explicit teacherName, else batch.teacher user name.
+function scheduleTeacherLabel(s: any): string {
+  if (s.teacherName && String(s.teacherName).trim()) return String(s.teacherName).trim().toLowerCase();
+  const u = s.batch?.teacher?.user;
+  if (u) return `${u.firstName || ""} ${u.lastName || ""}`.trim().toLowerCase();
+  return "";
+}
+
 // ── Helper: dispatch notifications to teacher + all enrolled students ──────
 async function dispatchScheduleNotifications(scheduleId: string, isUpdate = false) {
   try {
@@ -133,73 +161,73 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
       return;
     }
 
-    // Auto-create batch in Database if selecting a preset Grade batch that doesn't exist yet in PostgreSQL
-    let targetBatchId = batchId;
+    // The batch must already exist. We no longer fabricate dummy teachers/batches
+    // here — that polluted the Staff/Teacher directories with placeholder records.
+    const targetBatchId = batchId;
     const existingBatch = await prisma.batch.findUnique({ where: { id: batchId } });
     if (!existingBatch) {
-      let teacher = await prisma.teacher.findFirst();
-      if (!teacher) {
-        let user = await prisma.user.findFirst({ where: { role: "TEACHER" } });
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              email: `teacher_${Date.now()}@ecrm.com`,
-              passwordHash: "dummy",
-              role: "TEACHER",
-              firstName: "Admin",
-              lastName: "Teacher"
-            }
-          });
-        }
-        teacher = await prisma.teacher.create({
-          data: {
-            userId: user.id,
-            qualification: "M.Sc",
-            hourlyRate: 50
-          }
-        });
-      }
-      const newBatch = await prisma.batch.create({
-        data: {
-          id: batchId.startsWith("sb-") ? undefined : batchId,
-          name: req.body.batchName || "Grade Class",
-          subject: req.body.subject || "General Studies",
-          startDate: new Date(),
-          endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-          capacity: 40,
-          teacherId: teacher.id,
-          feeAmount: 500,
-          feeFrequency: "MONTHLY"
-        }
+      res.status(404).json({
+        status: "error",
+        message: "Selected batch does not exist. Create the batch first, then add it to the timetable.",
       });
-      targetBatchId = newBatch.id;
+      return;
     }
 
     // Frontend sends 0-6, DB expects 1-7
     const dbDayOfWeek = Number(dayOfWeek) + 1;
     const frontendDayIdx = Number(dayOfWeek);
 
-    // Conflict check: same batch, day, time
-    const existing = await prisma.schedule.findFirst({
-      where: { dayOfWeek: dbDayOfWeek, startTime, batch: { id: targetBatchId } },
+    // Effective teacher label for the new slot (explicit name, else batch's teacher)
+    const newBatchForTeacher = await prisma.batch.findUnique({
+      where: { id: targetBatchId },
+      include: { teacher: { include: { user: true } } },
     });
-    if (existing) {
+    const newTeacherLabel = (teacherName && String(teacherName).trim())
+      ? String(teacherName).trim().toLowerCase()
+      : scheduleTeacherLabel({ batch: newBatchForTeacher });
+
+    // Pull all existing slots for that day (times are strings → overlap-check in memory)
+    const sameDay = await prisma.schedule.findMany({
+      where: { dayOfWeek: dbDayOfWeek },
+      include: { batch: { include: { teacher: { include: { user: true } } } } },
+    });
+
+    // Conflict 1: same batch overlapping time
+    const batchConflict = sameDay.find(
+      (s: any) => s.batchId === targetBatchId && rangesOverlap(startTime, endTime, s.startTime, s.endTime)
+    );
+    if (batchConflict) {
       res.status(409).json({
         status: "error",
-        message: `This batch already has a class at ${startTime} on ${DAY_NAMES[frontendDayIdx]}.`,
+        message: `This batch already has a class overlapping ${startTime}–${endTime} on ${DAY_NAMES[frontendDayIdx]}.`,
       });
       return;
     }
 
-    // Conflict check: same room, day, time
+    // Conflict 2: same teacher overlapping time (across ANY batch/class)
+    if (newTeacherLabel) {
+      const teacherConflict = sameDay.find(
+        (s: any) => scheduleTeacherLabel(s) === newTeacherLabel && rangesOverlap(startTime, endTime, s.startTime, s.endTime)
+      );
+      if (teacherConflict) {
+        const label = (teacherName || "").trim() || "This teacher";
+        res.status(409).json({
+          status: "error",
+          message: `${label} is already teaching "${teacherConflict.subject || teacherConflict.batch?.subject || "a class"}" (${teacherConflict.batch?.name || "another batch"}) at ${teacherConflict.startTime}–${teacherConflict.endTime} on ${DAY_NAMES[frontendDayIdx]}.`,
+        });
+        return;
+      }
+    }
+
+    // Conflict 3: same room overlapping time
     if (roomOrLink) {
-      const roomConflict = await prisma.schedule.findFirst({
-        where: { dayOfWeek: dbDayOfWeek, startTime, roomOrLink },
-      });
+      const roomConflict = sameDay.find(
+        (s: any) => s.roomOrLink && s.roomOrLink === roomOrLink && rangesOverlap(startTime, endTime, s.startTime, s.endTime)
+      );
       if (roomConflict) {
         res.status(409).json({
           status: "error",
-          message: `Room "${roomOrLink}" is already booked at ${startTime} on ${DAY_NAMES[frontendDayIdx]}.`,
+          message: `Room "${roomOrLink}" is already booked at ${roomConflict.startTime}–${roomConflict.endTime} on ${DAY_NAMES[frontendDayIdx]}.`,
         });
         return;
       }
@@ -232,19 +260,79 @@ router.put("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest, re
   try {
     const { dayOfWeek, startTime, endTime, roomOrLink, batchId, subject, teacherName } = req.body;
 
-    // Frontend sends 0-6, convert to DB 1-7
-    const dbDayOfWeek = dayOfWeek !== undefined ? Number(dayOfWeek) + 1 : undefined;
-    const frontendDayIdx = dayOfWeek !== undefined ? Number(dayOfWeek) : 0;
+    // Load the existing slot so we can compute effective (merged) values for conflict checks
+    const current = await prisma.schedule.findUnique({
+      where: { id: req.params.id },
+      include: { batch: { include: { teacher: { include: { user: true } } } } },
+    });
+    if (!current) {
+      res.status(404).json({ status: "error", message: "Schedule not found." });
+      return;
+    }
 
-    // Conflict check for room
-    if (roomOrLink && dbDayOfWeek !== undefined && startTime) {
-      const roomConflict = await prisma.schedule.findFirst({
-        where: { dayOfWeek: dbDayOfWeek, startTime, roomOrLink, NOT: { id: req.params.id } },
+    // Effective final values after this update
+    const effBatchId = batchId !== undefined ? batchId : current.batchId;
+    const effStart = startTime !== undefined ? startTime : current.startTime;
+    const effEnd = endTime !== undefined ? endTime : current.endTime;
+    const effRoom = roomOrLink !== undefined ? roomOrLink : current.roomOrLink;
+    const dbDayOfWeek = dayOfWeek !== undefined ? Number(dayOfWeek) + 1 : current.dayOfWeek;
+    const frontendDayIdx = dbDayOfWeek - 1;
+
+    // Effective teacher label
+    let effBatchForTeacher: any = current.batch;
+    if (batchId !== undefined && batchId !== current.batchId) {
+      effBatchForTeacher = await prisma.batch.findUnique({
+        where: { id: batchId }, include: { teacher: { include: { user: true } } },
       });
+    }
+    const effTeacherLabel = (teacherName !== undefined)
+      ? (String(teacherName || "").trim().toLowerCase() || scheduleTeacherLabel({ batch: effBatchForTeacher }))
+      : ((current.teacherName && current.teacherName.trim())
+          ? current.teacherName.trim().toLowerCase()
+          : scheduleTeacherLabel({ batch: effBatchForTeacher }));
+
+    // Pull all other slots on that day (exclude self) for overlap checks
+    const sameDay = await prisma.schedule.findMany({
+      where: { dayOfWeek: dbDayOfWeek, NOT: { id: req.params.id } },
+      include: { batch: { include: { teacher: { include: { user: true } } } } },
+    });
+
+    // Conflict 1: same batch overlapping time
+    const batchConflict = sameDay.find(
+      (s: any) => s.batchId === effBatchId && rangesOverlap(effStart, effEnd, s.startTime, s.endTime)
+    );
+    if (batchConflict) {
+      res.status(409).json({
+        status: "error",
+        message: `This batch already has a class overlapping ${effStart}–${effEnd} on ${DAY_NAMES[frontendDayIdx]}.`,
+      });
+      return;
+    }
+
+    // Conflict 2: same teacher overlapping time (across ANY batch/class)
+    if (effTeacherLabel) {
+      const teacherConflict = sameDay.find(
+        (s: any) => scheduleTeacherLabel(s) === effTeacherLabel && rangesOverlap(effStart, effEnd, s.startTime, s.endTime)
+      );
+      if (teacherConflict) {
+        const label = (teacherName || current.teacherName || "").toString().trim() || "This teacher";
+        res.status(409).json({
+          status: "error",
+          message: `${label} is already teaching "${teacherConflict.subject || teacherConflict.batch?.subject || "a class"}" (${teacherConflict.batch?.name || "another batch"}) at ${teacherConflict.startTime}–${teacherConflict.endTime} on ${DAY_NAMES[frontendDayIdx]}.`,
+        });
+        return;
+      }
+    }
+
+    // Conflict 3: same room overlapping time
+    if (effRoom) {
+      const roomConflict = sameDay.find(
+        (s: any) => s.roomOrLink && s.roomOrLink === effRoom && rangesOverlap(effStart, effEnd, s.startTime, s.endTime)
+      );
       if (roomConflict) {
         res.status(409).json({
           status: "error",
-          message: `Room "${roomOrLink}" is already booked at ${startTime} on ${DAY_NAMES[frontendDayIdx]}.`,
+          message: `Room "${effRoom}" is already booked at ${roomConflict.startTime}–${roomConflict.endTime} on ${DAY_NAMES[frontendDayIdx]}.`,
         });
         return;
       }

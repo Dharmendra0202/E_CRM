@@ -7,12 +7,14 @@ import {
   Settings, Building2, Globe, Calendar, Layers, Shield,
   Save, Plus, Trash2, Sun, Moon, Bell, Mail, CreditCard,
 } from "lucide-react";
+import { WhatsAppConnect } from "./ui/WhatsAppConnect";
+import { WhatsAppLogo } from "./ui/WhatsAppLogo";
 
-type SettingsTab = "profile" | "academic" | "departments" | "preferences";
+type SettingsTab = "profile" | "academic" | "departments" | "preferences" | "whatsapp";
 
-export function SettingsPage() {
+export function SettingsPage({ initialTab }: { initialTab?: SettingsTab } = {}) {
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
+  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab || "profile");
   const [org, setOrg] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -85,6 +87,7 @@ export function SettingsPage() {
     { key: "profile" as SettingsTab, label: "Organization", icon: <Building2 size={14} /> },
     { key: "academic" as SettingsTab, label: "Academic Year", icon: <Calendar size={14} /> },
     { key: "departments" as SettingsTab, label: "Departments", icon: <Layers size={14} /> },
+    { key: "whatsapp" as SettingsTab, label: "WhatsApp", icon: <WhatsAppLogo size={14} /> },
     { key: "preferences" as SettingsTab, label: "Preferences", icon: <Globe size={14} /> },
   ];
 
@@ -189,6 +192,9 @@ export function SettingsPage() {
                   </div>
                 </div>
               )}
+
+              {/* WHATSAPP TAB */}
+              {activeTab === "whatsapp" && <WhatsAppConnect />}
 
               {/* PREFERENCES TAB */}
               {activeTab === "preferences" && (

@@ -4229,3 +4229,87 @@ div[style*="border: 1px solid"] {
     max-width: 94vw !important;
   }
 }
+
+/* ==========================================================================
+   LANDING PAGE — FULL RESPONSIVE ADJUSTMENTS
+   ========================================================================== */
+
+/* Tablet & below: tighten nav padding, allow wrapping */
+@media (max-width: 1024px) {
+  .landing-nav {
+    padding: 10px 20px !important;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .landing-nav-links {
+    gap: 18px !important;
+  }
+}
+
+/* Below 860px: hide the inline text nav (keep logo + login), wrap footer to 2 cols */
+@media (max-width: 860px) {
+  .landing-nav-links {
+    display: none !important;
+  }
+  .landing-footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 28px !important;
+  }
+  .landing-footer {
+    padding: 40px 20px 24px !important;
+  }
+}
+
+/* Phones: single-column footer, stacked footer bottom bar, smaller headings */
+@media (max-width: 600px) {
+  .landing-page h1 { font-size: 26px !important; line-height: 1.25 !important; }
+  .landing-page h2 { font-size: 21px !important; }
+  .landing-page h3 { font-size: 16px !important; }
+
+  .landing-nav {
+    padding: 8px 14px !important;
+  }
+  .landing-login-btn {
+    padding: 7px 14px !important;
+    font-size: 12.5px !important;
+  }
+
+  /* Inquiry email/contact go single column so they aren't cramped */
+  .inquiry-two-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  .landing-footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+    text-align: left;
+  }
+  .landing-footer-bottom {
+    flex-direction: column !important;
+    gap: 12px !important;
+    text-align: center;
+  }
+  .landing-footer-bottom > div {
+    justify-content: center !important;
+  }
+
+  /* Reduce big section padding so content isn't pushed off-screen */
+  .landing-page section {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* Neutralize the scaled "popular" pricing card so it can't overflow horizontally */
+  .landing-page [style*="scale(1.02)"] {
+    transform: none !important;
+  }
+}
+
+/* Very small phones: shrink footer email so it never overflows */
+@media (max-width: 400px) {
+  .landing-footer a[href^="mailto:"] {
+    font-size: 11.5px !important;
+    word-break: break-all;
+  }
+  .landing-page h1 { font-size: 23px !important; }
+}

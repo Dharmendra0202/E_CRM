@@ -5,7 +5,9 @@ import { api } from "../utils/api";
 import { addHistoryItem } from "../utils/history";
 import { exportStudents } from "../utils/exportExcel";
 import { DownloadButton } from "./ui/DownloadButton";
-import { WhatsAppStatusWidget } from "./ui/WhatsAppStatusWidget";
+import { WhatsAppButton } from "./ui/WhatsAppButton";
+import { WhatsAppLogo } from "./ui/WhatsAppLogo";
+import { waTemplates } from "../utils/whatsapp";
 import { StudentProfile } from "./StudentProfile";
 import {
   Search,
@@ -39,7 +41,6 @@ import {
   Activity,
   Eye,
   X,
-  ExternalLink,
   Edit3
 } from "lucide-react";
 
@@ -1503,30 +1504,22 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                 </div>
               </div>
 
-              {/* WhatsApp Action Box */}
+              {/* WhatsApp Action Box — reliable click-to-chat welcome message */}
               <div style={{ background: "linear-gradient(135deg, #f0fdf4, #e8f5e9)", borderRadius: "16px", padding: "20px", border: "1.5px solid #25d366" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
                   <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#25d366", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Sparkles size={16} />
+                    <WhatsAppLogo size={18} color="#fff" />
                   </div>
-                  <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#166534" }}>Batch WhatsApp Group Invite</h4>
+                  <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#166534" }}>Send Welcome on WhatsApp</h4>
                 </div>
                 <p style={{ margin: "0 0 14px", fontSize: "12px", color: "#15803d", lineHeight: 1.4 }}>
-                  Share this WhatsApp invite link with the student or parent to join their official class discussion group:
+                  Send a welcome message to {successModalData.student.name} ({successModalData.student.guardianPhone || successModalData.student.phone}). WhatsApp opens with the message ready — just tap send.
                 </p>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <input type="text" readOnly value={successModalData.whatsappLink}
-                    style={{ flex: 1, height: "40px", padding: "0 12px", borderRadius: "10px", border: "none", background: "#fff", fontSize: "12px", fontFamily: "monospace", color: "#166534" }} />
-                  <button onClick={() => {
-                    navigator.clipboard.writeText(successModalData.whatsappLink);
-                    showToast("ðŸ“‹ WhatsApp link copied to clipboard!", "success");
-                  }} style={{ background: "#15803d", color: "#fff", border: "none", borderRadius: "10px", padding: "0 14px", fontSize: "12px", fontWeight: 700, cursor: "pointer" }}>
-                    Copy
-                  </button>
-                  <a href={successModalData.whatsappLink} target="_blank" rel="noreferrer" style={{ background: "#25d366", color: "#fff", textDecoration: "none", borderRadius: "10px", padding: "0 16px", fontSize: "12px", fontWeight: 800, display: "flex", alignItems: "center", gap: "4px" }}>
-                    Open WhatsApp <ExternalLink size={12} />
-                  </a>
-                </div>
+                <WhatsAppButton
+                  phone={successModalData.student.guardianPhone || successModalData.student.phone}
+                  message={waTemplates.welcome(successModalData.student.name, successModalData.student.batch)}
+                  label="Open WhatsApp"
+                />
               </div>
 
               {/* Email & Mobile App Notification Status */}

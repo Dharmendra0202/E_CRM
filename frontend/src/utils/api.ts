@@ -76,6 +76,8 @@ export const api = {
     getById: (id: string) => request<any>(`/leads/${id}`),
     getStats: () => request<any>("/leads/stats"),
     create: (body: object) => request<any>("/leads", { method: "POST", body: JSON.stringify(body) }),
+    submitInquiry: (body: { name: string; email: string; phone?: string; message?: string; course?: string }) =>
+      request<any>("/leads/inquiry", { method: "POST", body: JSON.stringify(body) }),
     update: (id: string, body: object) => request<any>(`/leads/${id}`, { method: "PATCH", body: JSON.stringify(body) }),
     delete: (id: string) => request<any>(`/leads/${id}`, { method: "DELETE" }),
     getActivities: (id: string) => request<any>(`/leads/${id}/activities`),
