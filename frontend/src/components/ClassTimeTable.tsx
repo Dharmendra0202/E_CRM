@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "../utils/api";
-import { CalendarDays, Plus, Trash2, X, Loader2 } from "lucide-react";
+import { CalendarDays, Plus, Trash2, Loader2 } from "lucide-react";
+import { Modal } from "./ui/Modal";
 
 const ACCENT = "#007bff";
 const ACCENT_DARK = "#0069d9";
@@ -18,6 +19,8 @@ interface Schedule {
   startTime: string;
   endTime: string;
   roomOrLink?: string;
+  subject?: string | null;
+  teacherName?: string | null;
   batch?: {
     id: string; name: string; subject: string;
     teacher?: { user?: { firstName?: string; lastName?: string } };
@@ -36,7 +39,7 @@ export function ClassTimeTable({ userRole = "ADMIN" }: { userRole?: string }) {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
-  const [form, setForm] = useState({ batchId: "", dayOfWeek: 0, startTime: "07:00", endTime: "08:00", roomOrLink: "" });
+  const [form, setForm] = useState({ batchId: "", dayOfWeek: 0, startTime: "07:00", endTime: "08:00", roomOrLink: "", subject: "", teacherName: "" });
 
   const load = async () => {
     setIsLoading(true);
@@ -55,6 +58,7 @@ export function ClassTimeTable({ userRole = "ADMIN" }: { userRole?: string }) {
   useEffect(() => { load(); }, []);
 
   const teacherName = (s: Schedule) => {
+    if (s.teacherName && s.teacherName.trim()) return s.teacherName.trim();
     const t = s.batch?.teacher?.user;
     return t ? `${t.firstName || ""} ${t.lastName || ""}`.trim() : "";
   };
@@ -85,8 +89,14 @@ export function ClassTimeTable({ userRole = "ADMIN" }: { userRole?: string }) {
     .sort((a, b) => parseStart(a) - parseStart(b));
   const displaySlots = usedSlots;
 
+  // Course + session banner (MasterSoft style)
+  const selectedBatchObj = batchFilter !== "all" ? batches.find((b) => b.id === batchFilter) : null;
+  const courseName = (selectedBatchObj?.name || (batchFilter === "all" ? "ALL BATCHES" : "—")).toUpperCase();
+  const yr = new Date().getFullYear();
+  const sessionName = `SESSION ${yr}-${yr + 1}`;
+
   const openAdd = () => {
-    setForm({ batchId: batches[0]?.id || "", dayOfWeek: 0, startTime: "07:00", endTime: "08:00", roomOrLink: "" });
+    setForm({ batchId: batches[0]?.id || "", dayOfWeek: 0, startTime: "07:00", endTime: "08:00", roomOrLink: "", subject: "", teacherName: "" });
     setFormError("");
     setShowForm(true);
   };
@@ -114,7 +124,8 @@ export function ClassTimeTable({ userRole = "ADMIN" }: { userRole?: string }) {
       await api.schedules.create({
         batchId: form.batchId,
         batchName: batch?.name,
-        subject: batch?.subject,
+        subject: (form.subject.trim() || batch?.subject || ""),
+        teacherName: form.teacherName.trim(),
         dayOfWeek: form.dayOfWeek,
         startTime,
         endTime,
@@ -177,40 +188,55 @@ export function ClassTimeTable({ userRole = "ADMIN" }: { userRole?: string }) {
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", minWidth: "900px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", minWidth: "1080px", tableLayout: "fixed" }}>
               <thead>
-                <tr style={{ background: "#fafbfe" }}>
-                  <th style={{ padding: "12px 14px", textAlign: "left", fontWeight: 700, color: LABEL, borderBottom: "2px solid #eef0f4", width: "150px" }}>Time Slot</th>
+                <tr style={{ background: "#f4f6fa" }}>
+                  <th style={cellHead}>TIME SLOT</th>
                   {DAYS.map((d) => (
-                    <th key={d} style={{ padding: "12px 14px", textAlign: "left", fontWeight: 700, color: LABEL, borderBottom: "2px solid #eef0f4" }}>{d}</th>
+                    <th key={d} style={cellHead}>{d.toUpperCase()}</th>
                   ))}
+                </tr>
+                {/* Course / Session banner row */}
+                <tr style={{ background: "#fff" }}>
+                  <td colSpan={4} style={{ ...cellBody, fontWeight: 800, color: "#3a3f45" }}>
+                    COURSE NAME&nbsp;-&gt;&nbsp;{courseName}
+                  </td>
+                  <td colSpan={4} style={{ ...cellBody, fontWeight: 800, color: "#3a3f45", textAlign: "right" }}>
+                    SESSION NAME&nbsp;-&gt;&nbsp;{sessionName}
+                  </td>
                 </tr>
               </thead>
               <tbody>
                 {displaySlots.map((slot) => (
-                  <tr key={slot} style={{ borderBottom: "1px solid #f0f1f4" }}>
-                    <td style={{ padding: "12px 14px", fontWeight: 700, color: "#3a3f45", whiteSpace: "nowrap", background: "#fafbfe" }}>{slot}</td>
+                  <tr key={slot}>
+                    <td style={{ ...cellBody, fontWeight: 700, color: "#3a3f45", whiteSpace: "nowrap", background: "#fbfcfe", verticalAlign: "middle", textAlign: "center" }}>{slot}</td>
                     {DAYS.map((_, dayIdx) => {
                       const cells = findCell(slot, dayIdx);
                       return (
-                        <td key={dayIdx} style={{ padding: "8px 10px", verticalAlign: "top", minWidth: "130px" }}>
-                          {cells.map((s) => (
-                            <div key={s.id} style={{
-                              background: "#eef0fe", borderRadius: "6px", padding: "8px 10px", marginBottom: "6px",
-                              borderLeft: `3px solid ${ACCENT}`, position: "relative",
-                            }}>
-                              <div style={{ fontWeight: 700, color: ACCENT, fontSize: "12px" }}>{s.batch?.subject || "Class"}</div>
-                              <div style={{ color: "#5a6169", fontSize: "11px", marginTop: "2px" }}>{s.batch?.name}</div>
-                              {teacherName(s) && <div style={{ color: VALUE, fontSize: "11px" }}>{teacherName(s)}</div>}
-                              {s.roomOrLink && <div style={{ color: VALUE, fontSize: "10px", marginTop: "2px" }}>📍 {s.roomOrLink}</div>}
-                              {isAdmin && (
-                                <button onClick={() => remove(s.id)} title="Remove"
-                                  style={{ position: "absolute", top: "4px", right: "4px", background: "transparent", border: "none", cursor: "pointer", color: "#e3342f", padding: "2px" }}>
-                                  <Trash2 size={12} />
-                                </button>
-                              )}
-                            </div>
-                          ))}
+                        <td key={dayIdx} style={{ ...cellBody, verticalAlign: "middle", minWidth: "140px", textAlign: "center" }}>
+                          {cells.map((s) => {
+                            const subject = (s.subject || s.batch?.subject || "Class").toUpperCase();
+                            const teacher = teacherName(s);
+                            const color = subjectColor(subject);
+                            return (
+                              <div key={s.id} style={{ position: "relative", marginBottom: cells.length > 1 ? "8px" : 0, paddingRight: isAdmin ? "14px" : 0 }}>
+                                <span style={{ display: "block", fontSize: "13px", fontWeight: 700, color, lineHeight: 1.5 }}>
+                                  {subject}{teacher ? ` / ${teacher.toUpperCase()}` : ""}
+                                </span>
+                                {s.roomOrLink ? (
+                                  <span style={{ display: "block", fontSize: "11.5px", fontWeight: 600, color: "#6c757d", lineHeight: 1.4, marginTop: "3px" }}>
+                                    {s.roomOrLink}
+                                  </span>
+                                ) : null}
+                                {isAdmin && (
+                                  <button onClick={() => remove(s.id)} title="Remove"
+                                    style={{ position: "absolute", top: 0, right: "-2px", background: "transparent", border: "none", cursor: "pointer", color: "#dc3545", padding: 0, lineHeight: 1 }}>
+                                    <Trash2 size={11} />
+                                  </button>
+                                )}
+                              </div>
+                            );
+                          })}
                         </td>
                       );
                     })}
@@ -224,49 +250,57 @@ export function ClassTimeTable({ userRole = "ADMIN" }: { userRole?: string }) {
 
       {/* Add modal */}
       {showForm && (
-        <div onClick={() => setShowForm(false)}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: "20px" }}>
-          <div onClick={(e) => e.stopPropagation()}
-            style={{ background: "#fff", borderRadius: "12px", width: "100%", maxWidth: "480px", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 22px", borderBottom: "1px solid #f0f1f4" }}>
-              <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#3a3f45" }}>Add Class to Timetable</h3>
-              <button onClick={() => setShowForm(false)} style={{ background: "transparent", border: "none", cursor: "pointer", color: VALUE }}><X size={20} /></button>
-            </div>
-            <div style={{ padding: "22px" }}>
-              {formError && <div style={{ background: "#fdecec", color: "#e3342f", padding: "10px 14px", borderRadius: "6px", fontSize: "13px", marginBottom: "16px" }}>{formError}</div>}
+        <Modal
+          open={showForm}
+          onClose={() => setShowForm(false)}
+          title="Add Class to Timetable"
+          maxWidth={680}
+          footer={
+            <>
+              <button onClick={() => setShowForm(false)} style={{ padding: "10px 18px", background: "#fff", border: "1px solid #dee2e6", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: LABEL }}>Cancel</button>
+              <button onClick={save} disabled={saving} style={{ padding: "10px 22px", background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_DARK})`, color: "#fff", border: "none", borderRadius: "6px", cursor: saving ? "not-allowed" : "pointer", fontSize: "14px", fontWeight: 600, opacity: saving ? 0.7 : 1, display: "flex", alignItems: "center", gap: "8px" }}>
+                {saving && <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} />} Add Class
+              </button>
+            </>
+          }
+        >
+          {formError && <div style={{ background: "#fdecec", color: "#e3342f", padding: "10px 14px", borderRadius: "6px", fontSize: "13px", marginBottom: "16px" }}>{formError}</div>}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px 18px" }}>
+            <div>
               <Label>Batch</Label>
               <select value={form.batchId} onChange={(e) => setForm({ ...form, batchId: e.target.value })} style={inputStyle}>
                 <option value="">Select batch</option>
                 {batches.map((b) => <option key={b.id} value={b.id}>{b.name} {b.subject ? `— ${b.subject}` : ""}</option>)}
               </select>
-              <div style={{ height: "14px" }} />
+            </div>
+            <div>
               <Label>Day</Label>
               <select value={form.dayOfWeek} onChange={(e) => setForm({ ...form, dayOfWeek: Number(e.target.value) })} style={inputStyle}>
                 {DAYS.map((d, i) => <option key={d} value={i}>{d}</option>)}
               </select>
-              <div style={{ height: "14px" }} />
-              <div style={{ display: "flex", gap: "12px" }}>
-                <div style={{ flex: 1 }}>
-                  <Label>Start Time</Label>
-                  <input type="time" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} style={inputStyle} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <Label>End Time</Label>
-                  <input type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} style={inputStyle} />
-                </div>
-              </div>
-              <div style={{ height: "14px" }} />
-              <Label>Room / Online Link (optional)</Label>
+            </div>
+            <div>
+              <Label>Start Time</Label>
+              <input type="time" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} style={inputStyle} />
+            </div>
+            <div>
+              <Label>End Time</Label>
+              <input type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} style={inputStyle} />
+            </div>
+            <div>
+              <Label>Subject</Label>
+              <input value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} placeholder="e.g. Mathematics (blank = batch subject)" style={inputStyle} />
+            </div>
+            <div>
+              <Label>Teacher Name</Label>
+              <input value={form.teacherName} onChange={(e) => setForm({ ...form, teacherName: e.target.value })} placeholder="e.g. Mr. Sharma" style={inputStyle} />
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <Label>Class Room / Online Link (optional)</Label>
               <input value={form.roomOrLink} onChange={(e) => setForm({ ...form, roomOrLink: e.target.value })} placeholder="e.g. Room 101 or Zoom link" style={inputStyle} />
             </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", padding: "16px 22px", borderTop: "1px solid #f0f1f4" }}>
-              <button onClick={() => setShowForm(false)} style={{ padding: "10px 18px", background: "#fff", border: "1px solid #dee2e6", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: LABEL }}>Cancel</button>
-              <button onClick={save} disabled={saving} style={{ padding: "10px 22px", background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_DARK})`, color: "#fff", border: "none", borderRadius: "6px", cursor: saving ? "not-allowed" : "pointer", fontSize: "14px", fontWeight: 600, opacity: saving ? 0.7 : 1, display: "flex", alignItems: "center", gap: "8px" }}>
-                {saving && <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} />} Add Class
-              </button>
-            </div>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );
@@ -278,4 +312,21 @@ const inputStyle: React.CSSProperties = {
 };
 function Label({ children }: { children: React.ReactNode }) {
   return <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#3a3f45", marginBottom: "6px" }}>{children}</label>;
+}
+
+// ── Timetable cell styles ─────────────────────────────────
+const cellHead: React.CSSProperties = {
+  padding: "15px 14px", textAlign: "center", fontWeight: 800, fontSize: "12.5px",
+  color: "#495057", border: "1px solid #e3e7ee", letterSpacing: "0.4px",
+};
+const cellBody: React.CSSProperties = {
+  padding: "16px 14px", border: "1px solid #e3e7ee", fontSize: "13px", height: "72px",
+};
+
+// Consistent color per subject (deterministic from string) — MasterSoft-style colored labels.
+const SUBJECT_COLORS = ["#2f6fed", "#e0457b", "#e58f00", "#159a6e", "#7b52d3", "#0d9488", "#c026d3", "#d9480f"];
+function subjectColor(subject: string): string {
+  let h = 0;
+  for (let i = 0; i < subject.length; i++) h = (h * 31 + subject.charCodeAt(i)) >>> 0;
+  return SUBJECT_COLORS[h % SUBJECT_COLORS.length];
 }

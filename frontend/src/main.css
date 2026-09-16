@@ -3943,7 +3943,7 @@ div[style*="linear-gradient(135deg, hsl(328"] {
    ═══════════════════════════════════════════════════════════════ */
 :root {
   --sidebar-width: 220px;
-  --header-height: 56px;
+  --header-height: 65px;
 }
 .sidebar-collapsed {
   --sidebar-width: 64px;
@@ -3957,7 +3957,8 @@ div[style*="linear-gradient(135deg, hsl(328"] {
   bottom: 0;
 }
 
-/* On desktop with sidebar: modals open within the content area */
+/* On desktop with sidebar: modals open centered WITHIN the content area
+   (below the fixed header, to the right of the sidebar) */
 @media (min-width: 1024px) {
   .has-sidebar .modal-overlay {
     top: var(--header-height);

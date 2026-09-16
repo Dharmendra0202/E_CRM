@@ -1,20 +1,13 @@
 import { useState, useEffect } from "react";
 import { api } from "../utils/api";
 import {
-  Users2, ChevronLeft, Search, GraduationCap, User, MapPin,
-  BookOpen, IndianRupee, Layers, Mail, Phone, Loader2,
+  Users2, ChevronLeft, Search, Layers, Mail, Phone,
 } from "lucide-react";
-
-// ── MasterSoft theme tokens ──────────────────────────────
-const ACCENT = "#007bff";
-const ACCENT_DARK = "#0069d9";
-const FIELD_BG = "#e9ecf3";
-const LABEL = "#60686f";
-const VALUE = "#6c757d";
-const CARD_SHADOW = "rgba(90, 97, 105, 0.1) 0px 7.5px 35px 0px, rgba(90, 97, 105, 0.1) 0px 2px 3px 0px";
+import { ACCENT, ACCENT_DARK, LABEL, VALUE, CARD_SHADOW, FONT } from "../utils/theme";
+import { Spinner } from "./ui/Spinner";
+import { StudentProfileTabs, ProfileHeader } from "./ui/StudentProfileView";
 
 type Level = "batches" | "students" | "profile";
-type ProfileTab = "personal" | "academic" | "address" | "subject" | "fees";
 
 interface Batch { id: string; name: string; subject?: string; feeAmount?: number; }
 interface Student {
@@ -32,7 +25,6 @@ interface Student {
 
 export function StudentProfiles() {
   const [level, setLevel] = useState<Level>("batches");
-  const [tab, setTab] = useState<ProfileTab>("personal");
 
   const [batches, setBatches] = useState<Batch[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
@@ -78,7 +70,6 @@ export function StudentProfiles() {
 
   const openStudent = async (student: Student) => {
     setSelectedStudent(student);
-    setTab("personal");
     setLevel("profile");
     setProfileLoading(true);
     try {
@@ -131,7 +122,7 @@ export function StudentProfiles() {
       </div>
 
       {isLoading ? (
-        <LoadingBlock label="Loading batches..." />
+        <Spinner label="Loading batches..." />
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "16px" }}>
           {filteredBatches.map((batch) => {
@@ -293,89 +284,29 @@ export function StudentProfiles() {
   );
 
   // ── LEVEL 3: PROFILE ──────────────────────────────────
-  const tabs: { id: ProfileTab; label: string; icon: React.ReactNode }[] = [
-    { id: "personal", label: "Personal", icon: <User size={16} /> },
-    { id: "academic", label: "Academic", icon: <GraduationCap size={16} /> },
-    { id: "address", label: "Address", icon: <MapPin size={16} /> },
-    { id: "subject", label: "Subject", icon: <BookOpen size={16} /> },
-    { id: "fees", label: "Fees", icon: <IndianRupee size={16} /> },
-  ];
-
   const renderProfile = () => {
-    const s: Student = profile || selectedStudent || {};
+    const s: any = profile || selectedStudent || {};
+    const subtitle = `${selectedBatch?.name || ""}${s.user?.email ? ` · ${s.user.email}` : ""}`.trim();
     return (
       <div className="animate-fade-in">
         <BackBar
           onBack={() => setLevel("students")}
           crumb={["Batches", selectedBatch?.name || "", fullName(selectedStudent)]}
         />
-
-        {/* Profile header */}
-        <div style={{
-          background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_DARK})`, borderRadius: "10px",
-          padding: "22px 26px", color: "#fff", display: "flex", alignItems: "center", gap: "18px",
-          marginBottom: "18px",
-        }}>
-          <div style={{
-            width: "62px", height: "62px", borderRadius: "50%", background: "rgba(255,255,255,0.2)",
-            display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", fontWeight: 800,
-          }}>
-            {initials(selectedStudent)}
+        <ProfileHeader name={fullName(selectedStudent)} subtitle={subtitle} />
+        {profileLoading ? (
+          <div style={{ background: "#fff", borderRadius: "10px", boxShadow: CARD_SHADOW }}>
+            <Spinner label="Loading profile..." />
           </div>
-          <div>
-            <h2 style={{ margin: "0 0 2px", fontSize: "22px", fontWeight: 800 }}>{fullName(selectedStudent)}</h2>
-            <div style={{ fontSize: "13px", opacity: 0.9 }}>
-              {selectedBatch?.name} {s.user?.email ? `· ${s.user.email}` : ""}
-            </div>
-          </div>
-        </div>
-
-        <div className="sp-profile-layout" style={{ display: "flex", gap: "18px", alignItems: "flex-start", flexWrap: "wrap" }}>
-          {/* Tab sidebar */}
-          <div className="sp-profile-tabs" style={{
-            background: "#fff", borderRadius: "10px", boxShadow: CARD_SHADOW, padding: "8px",
-            minWidth: "190px", display: "flex", flexDirection: "column", gap: "2px",
-          }}>
-            {tabs.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTab(t.id)}
-                style={{
-                  display: "flex", alignItems: "center", gap: "10px", padding: "12px 14px",
-                  borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "14px", fontWeight: 600,
-                  textAlign: "left", transition: "background 0.15s",
-                  background: tab === t.id ? `linear-gradient(135deg, ${ACCENT}, ${ACCENT_DARK})` : "transparent",
-                  color: tab === t.id ? "#fff" : LABEL,
-                }}
-              >
-                {t.icon} {t.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tab content */}
-          <div className="sp-profile-content" style={{ flex: 1, minWidth: "320px" }}>
-            {profileLoading ? (
-              <div style={{ background: "#fff", borderRadius: "10px", boxShadow: CARD_SHADOW }}>
-                <LoadingBlock label="Loading profile..." />
-              </div>
-            ) : (
-              <>
-                {tab === "personal" && <PersonalTab s={s} />}
-                {tab === "academic" && <AcademicTab s={s} batch={selectedBatch} />}
-                {tab === "address" && <AddressTab s={s} />}
-                {tab === "subject" && <SubjectTab batch={selectedBatch} />}
-                {tab === "fees" && <FeesTab s={s} batch={selectedBatch} />}
-              </>
-            )}
-          </div>
-        </div>
+        ) : (
+          <StudentProfileTabs student={s} batch={selectedBatch} />
+        )}
       </div>
     );
   };
 
   return (
-    <div style={{ fontFamily: "'Nunito', 'Segoe UI', Arial, sans-serif" }}>
+    <div style={{ fontFamily: FONT }}>
       {level === "batches" && renderBatches()}
       {level === "students" && renderStudents()}
       {level === "profile" && renderProfile()}
@@ -409,166 +340,9 @@ function BackBar({ onBack, crumb }: { onBack: () => void; crumb: string[] }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ background: "#fff", borderRadius: "10px", boxShadow: CARD_SHADOW, marginBottom: "18px", overflow: "hidden" }}>
-      <div style={{ padding: "16px 22px", borderBottom: "1px solid #f0f1f4", fontSize: "15px", fontWeight: 700, color: "#3a3f45" }}>
-        {title}
-      </div>
-      <div style={{ padding: "22px" }}>{children}</div>
-    </div>
-  );
-}
-
-function Field({ label, value, required }: { label: string; value?: string; required?: boolean }) {
-  return (
-    <div style={{ marginBottom: "16px" }}>
-      <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#3a3f45", marginBottom: "6px" }}>
-        {required && <span style={{ color: "#e3342f" }}>* </span>}{label}
-      </label>
-      <div style={{
-        background: FIELD_BG, borderRadius: "4px", padding: "10px 14px", fontSize: "14px",
-        color: value ? "#3a3f45" : "#a0a6ad", minHeight: "40px", display: "flex", alignItems: "center",
-      }}>
-        {value || "—"}
-      </div>
-    </div>
-  );
-}
-
-function Grid({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "0 22px" }}>{children}</div>;
-}
-
-function LoadingBlock({ label }: { label: string }) {
-  return (
-    <div style={{ padding: "50px", display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", color: "#6c757d" }}>
-      <Loader2 size={28} className="spin" style={{ animation: "spin 1s linear infinite" }} />
-      <span style={{ fontSize: "14px" }}>{label}</span>
-    </div>
-  );
-}
 
 function EmptyState({ label }: { label: string }) {
   return (
     <div style={{ padding: "50px", textAlign: "center", color: "#a0a6ad", fontSize: "14px" }}>{label}</div>
-  );
-}
-
-// ── Tab contents ──────────────────────────────────────────
-function fmtDate(d?: string) {
-  if (!d) return "";
-  const date = new Date(d);
-  if (isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" });
-}
-
-function PersonalTab({ s }: { s: Student }) {
-  return (
-    <Section title="My Details">
-      <Grid>
-        <Field label="First Name" value={s.user?.firstName} required />
-        <Field label="Last Name / Surname" value={s.user?.lastName} required />
-        <Field label="Gender" value={s.gender} />
-        <Field label="Mobile" value={s.user?.phone} />
-        <Field label="Email" value={s.user?.email} />
-        <Field label="Date of Birth" value={fmtDate(s.dateOfBirth)} required />
-        <Field label="Father / Parent Name" value={s.parentName} />
-        <Field label="Parent Phone" value={s.parentPhone} />
-        <Field label="Parent Email" value={s.parentEmail} />
-        <Field label="Mother Name" value={s.motherName} />
-        <Field label="Mother Phone" value={s.motherPhone} />
-        <Field label="Blood Group" value={s.bloodGroup} />
-        <Field label="School / College" value={s.schoolName} />
-        <Field label="Current Class / Grade" value={s.currentClass} />
-      </Grid>
-    </Section>
-  );
-}
-
-function AcademicTab({ s, batch }: { s: Student; batch: Batch | null }) {
-  const totalFees = (s.invoices || []).reduce((sum, i) => sum + Number(i.totalAmount || 0), 0);
-  return (
-    <>
-      <Section title="Academic Details">
-        <Grid>
-          <Field label="Name" value={`${s.user?.firstName || ""} ${s.user?.lastName || ""}`.trim()} />
-          <Field label="Student ID" value={s.id?.slice(0, 8).toUpperCase()} />
-          <Field label="Course / Batch" value={batch?.name} />
-          <Field label="Subject" value={batch?.subject} />
-          <Field label="Current Class" value={s.currentClass} />
-          <Field label="School / College" value={s.schoolName} />
-          <Field label="Session" value={new Date().getFullYear() + "-" + (new Date().getFullYear() + 1)} />
-          <Field label="Admission Date" value={fmtDate(s.createdAt)} />
-        </Grid>
-      </Section>
-      <Section title="Payment Details">
-        <Grid>
-          <Field label="Fee Type" value="GENERAL" />
-          <Field label="Total Fees" value={totalFees ? `₹${totalFees.toLocaleString("en-IN")}` : undefined} />
-          <Field label="Admission Status" value="ADMITTED" />
-        </Grid>
-      </Section>
-    </>
-  );
-}
-
-function AddressTab({ s }: { s: Student }) {
-  return (
-    <Section title="Address">
-      <Grid>
-        <Field label="Country" value="INDIA" />
-        <Field label="State" value={s.state} />
-        <Field label="City" value={s.city} />
-        <Field label="Pin Code" value={s.pinCode} />
-      </Grid>
-      <Field label="Full Address" value={s.address} />
-    </Section>
-  );
-}
-
-function SubjectTab({ batch }: { batch: Batch | null }) {
-  return (
-    <Section title="Subject Details">
-      <div style={{ marginBottom: "18px", maxWidth: "300px" }}>
-        <Field label="Medium" value="ENGLISH" required />
-      </div>
-      <div style={{ fontSize: "14px", fontWeight: 700, color: "#3a3f45", marginBottom: "10px" }}>Assigned Subjects</div>
-      <div style={{ border: "1px solid #f0f1f4", borderRadius: "6px", overflow: "hidden" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "120px 1fr 120px", padding: "10px 14px", background: "#f7f8fc", fontSize: "12px", fontWeight: 700, color: LABEL }}>
-          <span>Code</span><span>Subject Name</span><span>Status</span>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "120px 1fr 120px", padding: "12px 14px", fontSize: "13px", color: "#3a3f45" }}>
-          <span>MJ</span><span>{batch?.subject || "General"}</span><span style={{ color: "#38c172", fontWeight: 600 }}>Allotted</span>
-        </div>
-      </div>
-    </Section>
-  );
-}
-
-function FeesTab({ s, batch }: { s: Student; batch: Batch | null }) {
-  const invoices = s.invoices || [];
-  const applicable = batch?.feeAmount ? Number(batch.feeAmount) : invoices.reduce((sum, i) => sum + Number(i.totalAmount || 0), 0);
-  const paid = invoices.reduce((sum, i) => sum + (i.payments || []).reduce((p: number, x: any) => p + Number(x.amount || 0), 0), 0);
-  return (
-    <Section title="Admission Fees Details">
-      <div style={{ border: "1px solid #f0f1f4", borderRadius: "6px", overflow: "hidden" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "10px 14px", background: "#f7f8fc", fontSize: "12px", fontWeight: 700, color: LABEL }}>
-          <span>Course</span><span>Applicable</span><span>Paid</span><span>Balance</span>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 14px", fontSize: "13px", color: "#3a3f45", borderBottom: "1px solid #f0f1f4" }}>
-          <span>{batch?.name || "—"}</span>
-          <span>₹{applicable.toLocaleString("en-IN")}</span>
-          <span>₹{paid.toLocaleString("en-IN")}</span>
-          <span>₹{Math.max(0, applicable - paid).toLocaleString("en-IN")}</span>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "12px 14px", fontSize: "13px", fontWeight: 800, color: "#3a3f45" }}>
-          <span>Total</span>
-          <span>₹{applicable.toLocaleString("en-IN")}</span>
-          <span>₹{paid.toLocaleString("en-IN")}</span>
-          <span>₹{Math.max(0, applicable - paid).toLocaleString("en-IN")}</span>
-        </div>
-      </div>
-    </Section>
   );
 }

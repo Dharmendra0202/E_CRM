@@ -6,7 +6,7 @@ import {
   Phone, Mail, Check, AlertCircle, ArrowUpRight, BarChart2, MapPin
 } from "lucide-react";
 import { api } from "../utils/api";
-import { StudentProfile } from "./StudentProfile";
+import { StudentProfileCard } from "./StudentProfileCard";
 
 interface BatchesManagementProps {
   onNavigate?: (view: string) => void;
@@ -271,7 +271,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
 
       {/* Student Profile Modal integration */}
       {viewStudentProfileId && (
-        <StudentProfile studentId={viewStudentProfileId} onClose={() => setViewStudentProfileId(null)} />
+        <StudentProfileCard studentId={viewStudentProfileId} onClose={() => setViewStudentProfileId(null)} />
       )}
 
       {/* ══════════════ HEADER BAR ══════════════ */}
@@ -418,8 +418,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                   return (
                     <tr
                       key={batch.id}
-                      onClick={() => setSelectedBatchForStudents(batch)}
-                      style={{ borderBottom: "1px solid #f0f1f4", cursor: "pointer", transition: "background 0.15s" }}
+                      style={{ borderBottom: "1px solid #f0f1f4", transition: "background 0.15s" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "#f7f9fc")}
                       onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                     >
@@ -454,13 +453,6 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                       <td style={{ ...tdStyle, textAlign: "center" }}>
                         <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
                           <button
-                            onClick={(e) => { e.stopPropagation(); setSelectedBatchForStudents(batch); }}
-                            title="View students"
-                            style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "6px 12px", borderRadius: "6px", border: "none", cursor: "pointer", background: "rgba(0,123,255,0.1)", color: "#0062cc", fontSize: "12px", fontWeight: 600 }}
-                          >
-                            View <ChevronRight size={13} />
-                          </button>
-                          <button
                             title="Delete batch"
                             onClick={(e) => handleDeleteBatch(batch.id, batch.name, e)}
                             style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "30px", height: "30px", borderRadius: "6px", border: "none", cursor: "pointer", background: "rgba(220,53,69,0.08)", color: "var(--color-danger)" }}
@@ -479,164 +471,6 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
       )}
 
       {/* ══════════════ PERFECTLY CENTERED BATCH STUDENTS MODAL ══════════════ */}
-      {selectedBatchForStudents && (
-        <div
-          style={{
-            position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)",
-            display: "flex", alignItems: "center", justifyContent: "center", zIndex: 99999, padding: "20px"
-          }}
-          onClick={() => setSelectedBatchForStudents(null)}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              width: "100%", maxWidth: "820px", maxHeight: "82vh", height: "auto", margin: "auto",
-              background: "#ffffff", borderRadius: "24px", overflow: "hidden", display: "flex", flexDirection: "column",
-              boxShadow: "0 24px 64px -12px rgba(29,10,39,0.35)"
-            }}
-            className="animate-fade-in"
-          >
-            {/* Modal Top Header */}
-            <div style={{
-              padding: "20px 24px", background: "linear-gradient(135deg, #343a40, #1e2226)",
-              color: "#fff", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0
-            }}>
-              <div>
-                <span style={{ fontSize: "10px", fontWeight: 800, color: "#3395ff", textTransform: "uppercase", letterSpacing: "0.8px" }}>
-                  {selectedBatchForStudents.subject}
-                </span>
-                <h2 style={{ margin: "2px 0 0", fontSize: "20px", fontWeight: 800, color: "#fff", wordBreak: "break-word" }}>
-                  {selectedBatchForStudents.name}
-                </h2>
-                <p style={{ margin: "4px 0 0", fontSize: "12px", color: "rgba(255,255,255,0.7)" }}>
-                  Teacher: {selectedBatchForStudents.teacher?.name || "Assigned Teacher"} · Fee: ₹{Number(selectedBatchForStudents.feeAmount || 0).toLocaleString("en-IN")}
-                </p>
-              </div>
-
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <button
-                  onClick={() => setEnrollStudentModalOpen(true)}
-                  style={{
-                    padding: "8px 16px", borderRadius: "10px", border: "none", cursor: "pointer",
-                    background: "linear-gradient(135deg, #007bff, #0069d9)",
-                    color: "#fff", fontSize: "12px", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px"
-                  }}
-                >
-                  <UserPlus size={14} /> Add Student to Batch
-                </button>
-                <button onClick={() => setSelectedBatchForStudents(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#fff", opacity: 0.8 }}>
-                  <X size={22} />
-                </button>
-              </div>
-            </div>
-
-            {/* Sub-header Controls Bar */}
-            <div style={{ padding: "14px 24px", background: "var(--bg-secondary)", borderBottom: "1px solid var(--border-glass)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", flexShrink: 0 }}>
-              <div style={{ position: "relative", width: "240px" }}>
-                <Search size={14} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-secondary)" }} />
-                <input
-                  type="text"
-                  placeholder="Search students in batch..."
-                  value={batchStudentSearch}
-                  onChange={e => setBatchStudentSearch(e.target.value)}
-                  style={{ width: "100%", padding: "7px 12px 7px 32px", borderRadius: "10px", border: "1px solid var(--border-glass)", background: "#fff", fontSize: "12px", outline: "none" }}
-                />
-              </div>
-
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>
-                Enrolled: {selectedBatchForStudents.enrollments?.length || 0} / {selectedBatchForStudents.capacity} Students
-              </span>
-            </div>
-
-            {/* Student List View */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
-              {(selectedBatchForStudents.enrollments?.length || 0) === 0 ? (
-                <div style={{ textAlign: "center", padding: "48px 20px" }}>
-                  <Users2 size={40} style={{ color: "var(--text-secondary)", opacity: 0.3, marginBottom: "10px" }} />
-                  <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "var(--text-secondary)" }}>
-                    No students enrolled in this batch yet.
-                  </p>
-                  <button
-                    onClick={() => setEnrollStudentModalOpen(true)}
-                    style={{ marginTop: "14px", padding: "8px 18px", borderRadius: "10px", border: "none", background: "var(--color-accent)", color: "#fff", fontWeight: 700, fontSize: "12px", cursor: "pointer" }}
-                  >
-                    Enroll First Student
-                  </button>
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                  {selectedBatchForStudents.enrollments
-                    .filter((stu: any) => {
-                      const sObj = stu.student || stu;
-                      const name = stu.name || (sObj?.user ? `${sObj.user.firstName} ${sObj.user.lastName}` : sObj?.parentName || "");
-                      return name.toLowerCase().includes(batchStudentSearch.toLowerCase()) ||
-                             (stu.email || "").toLowerCase().includes(batchStudentSearch.toLowerCase());
-                    })
-                    .map((stu: any, idx: number) => {
-                      const sObj = stu.student || stu;
-                      const displayName = stu.name || (sObj?.user ? `${sObj.user.firstName} ${sObj.user.lastName}` : sObj?.parentName || "Enrolled Student");
-                      const displayEmail = stu.email || sObj?.user?.email || sObj?.parentEmail || "student@local.com";
-                      const displayPhone = stu.phone || sObj?.user?.phone || sObj?.parentPhone || "—";
-                      const initial = displayName.charAt(0)?.toUpperCase() || "S";
-
-                      return (
-                        <div
-                          key={stu.id || idx}
-                          style={{
-                            padding: "14px 18px", background: "#fff", borderRadius: "16px",
-                            border: "1px solid var(--border-glass)", boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
-                            display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px"
-                          }}
-                        >
-                          <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, flex: 1 }}>
-                            <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, #007bff, #0069d9)", color: "#fff", fontSize: "14px", fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              {initial}
-                            </div>
-                            <div style={{ minWidth: 0, flex: 1 }}>
-                              <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "var(--text-primary)", wordBreak: "break-word" }}>
-                                {displayName}
-                              </h4>
-                              <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)", wordBreak: "break-all", overflowWrap: "anywhere" }}>
-                                {displayEmail} · {displayPhone}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                            <div style={{ textAlign: "right" }}>
-                              <span style={{
-                                fontSize: "10px", fontWeight: 800, padding: "3px 8px", borderRadius: "6px",
-                                background: stu.feeStatus === "PAID" ? "hsla(142,70%,42%,0.08)" : "hsla(205, 85%, 50%,0.08)",
-                                color: stu.feeStatus === "PAID" ? "var(--color-success)" : "var(--color-danger)"
-                              }}>
-                                Fee: {stu.feeStatus || "PAID"}
-                              </span>
-                              <p style={{ margin: "3px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>
-                                Att: {stu.attendanceRate || 92}%
-                              </p>
-                            </div>
-
-                            <button
-                              onClick={() => setViewStudentProfileId(stu.id)}
-                              style={{
-                                padding: "7px 14px", borderRadius: "10px", border: "1px solid var(--border-glass)",
-                                background: "var(--bg-secondary)", cursor: "pointer", fontSize: "11.5px", fontWeight: 700,
-                                color: "var(--text-primary)", transition: "all 0.2s"
-                              }}
-                            >
-                              View Profile
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ══════════════ PERFECTLY CENTERED ENROLL STUDENT MODAL ══════════════ */}
       {enrollStudentModalOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999999, padding: "20px" }}>

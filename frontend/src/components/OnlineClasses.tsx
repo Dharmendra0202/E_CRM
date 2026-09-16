@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { api } from "../utils/api";
+import { Modal } from "./ui/Modal";
 import {
-  Plus, Video, Pencil, Trash2, X,
+  Plus, Video, Pencil, Trash2,
   ExternalLink, Loader2,
 } from "lucide-react";
 
@@ -254,45 +255,13 @@ export function OnlineClasses({ userRole = "ADMIN" }: { userRole?: string }) {
 
       {/* Add/Edit Modal */}
       {showForm && (
-        <div
-          onClick={() => setShowForm(false)}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: "20px" }}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{ background: "#fff", borderRadius: "12px", width: "100%", maxWidth: "560px", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}
-          >
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 22px", borderBottom: "1px solid #f0f1f4" }}>
-              <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#3a3f45" }}>
-                {editId ? "Edit Online Class" : "Add Online Class"}
-              </h3>
-              <button onClick={() => setShowForm(false)} style={{ background: "transparent", border: "none", cursor: "pointer", color: VALUE }}>
-                <X size={20} />
-              </button>
-            </div>
-
-            <div style={{ padding: "22px" }}>
-              {formError && (
-                <div style={{ background: "#fdecec", color: "#e3342f", padding: "10px 14px", borderRadius: "6px", fontSize: "13px", marginBottom: "16px" }}>
-                  {formError}
-                </div>
-              )}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-                <ModalField label="Course Name" required value={form.courseName} onChange={(v) => setForm({ ...form, courseName: v })} placeholder="e.g. Class 10 Science" />
-                <ModalField label="Subject Name" required value={form.subjectName} onChange={(v) => setForm({ ...form, subjectName: v })} placeholder="e.g. Physics" />
-                <ModalField label="Schedule Date" required type="date" value={form.scheduleDate} onChange={(v) => setForm({ ...form, scheduleDate: v })} />
-                <ModalField label="Schedule Time" required value={form.scheduleTime} onChange={(v) => setForm({ ...form, scheduleTime: v })} placeholder="e.g. 10:00 AM - 11:00 AM" />
-                <ModalField label="Theory Batch" value={form.theoryBatch} onChange={(v) => setForm({ ...form, theoryBatch: v })} placeholder="Batch name" />
-                <ModalField label="Practical Batch" value={form.practicalBatch} onChange={(v) => setForm({ ...form, practicalBatch: v })} placeholder="Batch name" />
-                <ModalField label="Teacher" value={form.teacherName} onChange={(v) => setForm({ ...form, teacherName: v })} placeholder="Teacher name" />
-                <ModalField label="Meeting ID" value={form.meetingId} onChange={(v) => setForm({ ...form, meetingId: v })} placeholder="Optional" />
-              </div>
-              <div style={{ marginTop: "14px" }}>
-                <ModalField label="Class Link (Zoom / Meet / etc.)" value={form.classLink} onChange={(v) => setForm({ ...form, classLink: v })} placeholder="https://..." fullWidth />
-              </div>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", padding: "16px 22px", borderTop: "1px solid #f0f1f4" }}>
+        <Modal
+          open={showForm}
+          onClose={() => setShowForm(false)}
+          title={editId ? "Edit Online Class" : "Add Online Class"}
+          maxWidth={560}
+          footer={
+            <>
               <button onClick={() => setShowForm(false)}
                 style={{ padding: "10px 18px", background: "#fff", border: "1px solid #dee2e6", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: LABEL }}>
                 Cancel
@@ -302,9 +271,28 @@ export function OnlineClasses({ userRole = "ADMIN" }: { userRole?: string }) {
                 {saving && <Loader2 size={15} style={{ animation: "spin 1s linear infinite" }} />}
                 {editId ? "Save Changes" : "Add Class"}
               </button>
+            </>
+          }
+        >
+          {formError && (
+            <div style={{ background: "#fdecec", color: "#e3342f", padding: "10px 14px", borderRadius: "6px", fontSize: "13px", marginBottom: "16px" }}>
+              {formError}
             </div>
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+            <ModalField label="Course Name" required value={form.courseName} onChange={(v) => setForm({ ...form, courseName: v })} placeholder="e.g. Class 10 Science" />
+            <ModalField label="Subject Name" required value={form.subjectName} onChange={(v) => setForm({ ...form, subjectName: v })} placeholder="e.g. Physics" />
+            <ModalField label="Schedule Date" required type="date" value={form.scheduleDate} onChange={(v) => setForm({ ...form, scheduleDate: v })} />
+            <ModalField label="Schedule Time" required value={form.scheduleTime} onChange={(v) => setForm({ ...form, scheduleTime: v })} placeholder="e.g. 10:00 AM - 11:00 AM" />
+            <ModalField label="Theory Batch" value={form.theoryBatch} onChange={(v) => setForm({ ...form, theoryBatch: v })} placeholder="Batch name" />
+            <ModalField label="Practical Batch" value={form.practicalBatch} onChange={(v) => setForm({ ...form, practicalBatch: v })} placeholder="Batch name" />
+            <ModalField label="Teacher" value={form.teacherName} onChange={(v) => setForm({ ...form, teacherName: v })} placeholder="Teacher name" />
+            <ModalField label="Meeting ID" value={form.meetingId} onChange={(v) => setForm({ ...form, meetingId: v })} placeholder="Optional" />
           </div>
-        </div>
+          <div style={{ marginTop: "14px" }}>
+            <ModalField label="Class Link (Zoom / Meet / etc.)" value={form.classLink} onChange={(v) => setForm({ ...form, classLink: v })} placeholder="https://..." fullWidth />
+          </div>
+        </Modal>
       )}
     </div>
   );

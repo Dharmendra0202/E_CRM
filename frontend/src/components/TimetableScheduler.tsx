@@ -1053,8 +1053,8 @@ export function TimetableScheduler() {
 
       {/* ── MODAL: CREATE / EDIT CLASS ──────────────────────────────────────── */}
       {isFormOpen && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 9999,
+        <div className="modal-overlay" style={{
+          zIndex: 9999,
           background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)",
           display: "flex", alignItems: "center", justifyContent: "center",
           padding: "16px"
@@ -1263,8 +1263,8 @@ export function TimetableScheduler() {
 
       {/* ── MODAL: SUBSTITUTE TEACHER / QUICK RESCHEDULE ─────────────────────── */}
       {isSubModalOpen && subTarget && (
-        <div style={{
-          position: "fixed", inset: 0, zIndex: 99999,
+        <div className="modal-overlay" style={{
+          zIndex: 99999,
           background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)",
           display: "flex", alignItems: "center", justifyContent: "center",
           padding: "16px 16px 100px 16px"

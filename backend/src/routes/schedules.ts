@@ -126,7 +126,7 @@ router.get("/", authenticate, async (_req: AuthRequest, res: Response): Promise<
 // Create a new schedule slot + dispatch notifications
 router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { batchId, dayOfWeek, startTime, endTime, roomOrLink } = req.body;
+    const { batchId, dayOfWeek, startTime, endTime, roomOrLink, subject, teacherName } = req.body;
 
     if (!batchId || dayOfWeek === undefined || !startTime || !endTime) {
       res.status(400).json({ status: "error", message: "batchId, dayOfWeek, startTime and endTime are required." });
@@ -212,6 +212,8 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
         startTime,
         endTime,
         roomOrLink: roomOrLink || "",
+        subject: subject || null,
+        teacherName: teacherName || null,
       },
     });
 
@@ -228,7 +230,7 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
 // Update an existing schedule + dispatch updated notifications
 router.put("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { dayOfWeek, startTime, endTime, roomOrLink, batchId } = req.body;
+    const { dayOfWeek, startTime, endTime, roomOrLink, batchId, subject, teacherName } = req.body;
 
     // Frontend sends 0-6, convert to DB 1-7
     const dbDayOfWeek = dayOfWeek !== undefined ? Number(dayOfWeek) + 1 : undefined;
@@ -254,6 +256,8 @@ router.put("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest, re
     if (startTime !== undefined) updateData.startTime = startTime;
     if (endTime !== undefined) updateData.endTime = endTime;
     if (roomOrLink !== undefined) updateData.roomOrLink = roomOrLink;
+    if (subject !== undefined) updateData.subject = subject || null;
+    if (teacherName !== undefined) updateData.teacherName = teacherName || null;
 
     const schedule = await prisma.schedule.update({
       where: { id: req.params.id },
