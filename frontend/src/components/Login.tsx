@@ -7,7 +7,7 @@ import {
 
 interface LoginProps { onLoginSuccess: (sessionUser: any) => void; }
 type Tab = "login" | "signup" | "forgot";
-type Screen = "form" | "verify" | "reset_sent" | "selectRole";
+type Screen = "form" | "verify" | "reset_sent";
 
 const ACCENT = "#007bff";
 const ACCENT_DARK = "#0069d9";
@@ -26,7 +26,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [screen, setScreen] = useState<Screen>("form");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [roleSelectionUser, setRoleSelectionUser] = useState<any>(null);
   const [name, setName] = useState("");
   const [role, setRole] = useState("ADMIN");
   const [loading, setLoading] = useState(false);
@@ -138,11 +137,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setErrorMsg("");
     try {
       const res = await api.auth.google(response.credential);
-      if (res.needsRoleSelection) {
-        setRoleSelectionUser(res.user);
-        setScreen("selectRole");
-        return;
-      }
       setToken(res.token);
       onLoginSuccess({ ...res.user, user_metadata: { name: `${res.user.firstName} ${res.user.lastName}`, role: res.user.role } });
     } catch (err: any) {
@@ -295,42 +289,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             <h2 style={{ fontSize: "18px", fontWeight: 800, margin: "0 0 8px" }}>Reset link sent</h2>
             <p style={{ fontSize: "13px", color: "#6c757d", margin: "0 0 18px", lineHeight: 1.6 }}>Check your inbox for a password reset link. It expires in 1 hour.</p>
             <button onClick={() => { setScreen("form"); switchTab("login"); }} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: ACCENT, fontWeight: 600 }}>← Back to Sign In</button>
-          </div>
-        )}
-
-        {/* ── ROLE SELECTION (Google new users) ── */}
-        {screen === "selectRole" && roleSelectionUser && (
-          <div className="animate-fade-in" style={{ padding: "4px 0" }}>
-            <h2 style={{ fontSize: "17px", fontWeight: 800, margin: "0 0 4px", textAlign: "center", color: "#2b2f36" }}>Welcome, {roleSelectionUser.firstName}!</h2>
-            <p style={{ fontSize: "13px", color: "#6c757d", margin: "0 0 18px", textAlign: "center" }}>Select your role to continue</p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {([
-                { role: "STUDENT", label: "I am a Student", icon: "🎓", desc: "View classes, attendance, results" },
-                { role: "TEACHER", label: "I am a Teacher", icon: "📚", desc: "Manage classes, mark attendance" },
-                { role: "STAFF", label: "I am Staff", icon: "💼", desc: "Administrative & support work" },
-              ] as const).map((item) => (
-                <button key={item.role}
-                  onClick={async () => {
-                    setLoading(true);
-                    try {
-                      const res = await api.auth.setRole(roleSelectionUser.id, item.role);
-                      setToken(res.token);
-                      onLoginSuccess({ ...res.user, user_metadata: { name: `${res.user.firstName} ${res.user.lastName}`, role: res.user.role } });
-                    } catch (err: any) { setErrorMsg(err.message || "Failed to set role."); setScreen("form"); }
-                    setLoading(false);
-                  }}
-                  disabled={loading}
-                  style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 18px", borderRadius: "12px", border: "1.5px solid #dfe3ea", background: "#fff", cursor: "pointer", textAlign: "left", transition: "all 0.2s" }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.background = `${ACCENT}08`; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#dfe3ea"; e.currentTarget.style.background = "#fff"; }}>
-                  <span style={{ fontSize: "22px" }}>{item.icon}</span>
-                  <div>
-                    <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "#2b2f36" }}>{item.label}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#6c757d" }}>{item.desc}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
           </div>
         )}
 

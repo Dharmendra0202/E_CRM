@@ -1,6 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { Router, Response } from "express";
-import { authenticate, AuthRequest } from "../middleware/auth";
+import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
@@ -26,7 +26,7 @@ router.get("/", authenticate, async (req: AuthRequest, res: Response): Promise<v
 });
 
 // POST /api/v1/notifications — create notification (internal/admin use)
-router.post("/", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post("/", authenticate, authorize("ADMIN", "SUPER_ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { userId, title, message, type, priority, link, metadata } = req.body;
     if (!userId || !title || !message) {
@@ -47,7 +47,7 @@ router.post("/", authenticate, async (req: AuthRequest, res: Response): Promise<
 });
 
 // POST /api/v1/notifications/bulk — send to multiple users
-router.post("/bulk", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post("/bulk", authenticate, authorize("ADMIN", "SUPER_ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { userIds, title, message, type, priority, link } = req.body;
     if (!userIds?.length || !title || !message) {

@@ -39,7 +39,7 @@ router.delete("/books/:id", authenticate, authorize("ADMIN"), async (req: AuthRe
 });
 
 // POST /api/v1/library/books/:id/issue
-router.post("/books/:id/issue", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post("/books/:id/issue", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { issuedTo, dueDate } = req.body;
     if (!issuedTo || !dueDate) { res.status(400).json({ status: "error", message: "issuedTo and dueDate required." }); return; }
@@ -54,7 +54,7 @@ router.post("/books/:id/issue", authenticate, async (req: AuthRequest, res: Resp
 });
 
 // POST /api/v1/library/issues/:id/return
-router.post("/issues/:id/return", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post("/issues/:id/return", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const issue = await prisma.bookIssue.findUnique({ where: { id: req.params.id } });
     if (!issue || issue.status === "RETURNED") { res.status(400).json({ status: "error", message: "Invalid issue or already returned." }); return; }

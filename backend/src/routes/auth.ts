@@ -13,11 +13,14 @@ const googleClient = new OAuth2Client();
 
 const router = Router();
 
-// Emails that are automatically granted ADMIN role on Google login.
-// Add trusted owner/operator emails here (lowercase).
-const ADMIN_EMAIL_ALLOWLIST = [
-  "hemant150604@gmail.com",
-];
+// Emails automatically granted ADMIN role on Google login.
+// Configured via the ADMIN_EMAILS env var (comma-separated, case-insensitive),
+// so the owner sets their own admin account without editing source code.
+// e.g. ADMIN_EMAILS="owner@gmail.com,principal@gmail.com"
+const ADMIN_EMAIL_ALLOWLIST = (process.env.ADMIN_EMAILS || "")
+  .split(",")
+  .map((e) => e.trim().toLowerCase())
+  .filter(Boolean);
 
 // ── Zod Schemas ─────────────────────────────────────────────
 const LoginSchema = z.object({
@@ -475,7 +478,9 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
           data: { googleId, authProvider: user.authProvider === "local" ? "local+google" : user.authProvider, emailVerified: true },
         });
       } else {
-        // NEW Google user — auto-assign ADMIN if email is allowlisted, else ask for role
+        // NEW Google user — allowlisted emails become ADMIN, everyone else is a
+        // STUDENT by default. Users can NEVER pick their own role (prevents anyone
+        // from self-assigning ADMIN/TEACHER). Admins promote teachers/staff in the app.
         const isAllowlistedAdmin = ADMIN_EMAIL_ALLOWLIST.includes(email.toLowerCase());
         user = await prisma.user.create({
           data: {
@@ -483,7 +488,7 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
             passwordHash: "", // No password for Google-only users
             firstName: given_name || "User",
             lastName: family_name || "",
-            role: isAllowlistedAdmin ? "ADMIN" : "PENDING", // Allowlisted owners become ADMIN
+            role: isAllowlistedAdmin ? "ADMIN" : "STUDENT",
             googleId,
             authProvider: "google",
             emailVerified: email_verified ?? true,
@@ -497,15 +502,10 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
       user = await prisma.user.update({ where: { id: user.id }, data: { role: "ADMIN" } });
     }
 
-    // If role is PENDING, ask frontend to show role selection
+    // Safety net: any legacy PENDING Google account is treated as STUDENT.
+    // (Existing users keep their real DB role, so admin-enrolled teachers stay TEACHER.)
     if (user.role === "PENDING") {
-      res.json({
-        status: "success",
-        needsRoleSelection: true,
-        tempUserId: user.id,
-        user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName },
-      });
-      return;
+      user = await prisma.user.update({ where: { id: user.id }, data: { role: "STUDENT" } });
     }
 
     // Issue JWT tokens

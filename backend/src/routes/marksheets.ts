@@ -5,13 +5,22 @@ import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
-// GET /api/v1/marksheets — list all entries (filterable by batch, student)
+// GET /api/v1/marksheets — list entries. Students/parents see ONLY their own.
 router.get("/", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { batch, student_id } = req.query;
     const where: any = {};
     if (batch) where.batch = batch;
     if (student_id) where.studentId = student_id;
+
+    // Enforce student scoping: a STUDENT/PARENT can only ever see their own marks.
+    const role = req.user?.role;
+    if (role === "STUDENT" || role === "PARENT") {
+      const student = await prisma.student.findFirst({ where: { userId: req.user!.id } });
+      if (!student) { res.json({ status: "success", data: [] }); return; }
+      where.studentId = student.id; // override any student_id they tried to pass
+    }
+
     const entries = await prisma.marksheetEntry.findMany({
       where,
       orderBy: { createdAt: "desc" },

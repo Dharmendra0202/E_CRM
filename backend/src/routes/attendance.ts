@@ -236,6 +236,14 @@ router.get("/summary", authenticate, async (req: AuthRequest, res: Response): Pr
     if (student_id) where.studentId = student_id;
     if (batch_id) where.schedule = { batchId: batch_id };
 
+    // Enforce student scoping: STUDENT/PARENT can only see their own attendance.
+    const sumRole = req.user?.role;
+    if (sumRole === "STUDENT" || sumRole === "PARENT") {
+      const self = await prisma.student.findFirst({ where: { userId: req.user!.id } });
+      if (!self) { res.json({ status: "success", data: [] }); return; }
+      where.studentId = self.id;
+    }
+
     const records = await prisma.attendance.findMany({
       where,
       include: {
@@ -305,6 +313,14 @@ router.get("/range", authenticate, async (req: AuthRequest, res: Response): Prom
     };
     if (student_id) where.studentId = student_id;
     if (batch_id) where.schedule = { batchId: batch_id };
+
+    // Enforce student scoping: STUDENT/PARENT can only see their own attendance.
+    const rangeRole = req.user?.role;
+    if (rangeRole === "STUDENT" || rangeRole === "PARENT") {
+      const self = await prisma.student.findFirst({ where: { userId: req.user!.id } });
+      if (!self) { res.json({ status: "success", data: [] }); return; }
+      where.studentId = self.id;
+    }
 
     const records = await prisma.attendance.findMany({
       where,

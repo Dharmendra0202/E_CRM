@@ -32,6 +32,10 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(), passwordHash: hash, firstName, lastName, role, phone,
+        // Admin-created accounts are pre-verified (admin vouches for them), so the
+        // teacher/staff can log in immediately via Google OR email+password without
+        // hitting the "verify your email" gate.
+        emailVerified: true,
         ...(role === "TEACHER" && qualification ? {
           teacher: { create: { qualification, hourlyRate: parseFloat(hourlyRate) || 0, bio } }
         } : {}),

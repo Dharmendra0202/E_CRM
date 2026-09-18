@@ -144,7 +144,7 @@ router.post("/", authenticate, async (req: AuthRequest, res: Response): Promise<
 // ══════════════════════════════════════════════════════════════
 // PUT /api/v1/organizations/:id — update organization details
 // ══════════════════════════════════════════════════════════════
-router.put("/:id", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.put("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { name, type, logo, email, phone, website, address, city, state, pincode, timezone, currency, language } = req.body;
 
@@ -232,7 +232,7 @@ router.post("/:id/setup", authenticate, async (req: AuthRequest, res: Response):
 // ══════════════════════════════════════════════════════════════
 // POST /api/v1/organizations/:id/invite — invite a user
 // ══════════════════════════════════════════════════════════════
-router.post("/:id/invite", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post("/:id/invite", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { email, roleSlug } = req.body;
     const orgId = req.params.id;
