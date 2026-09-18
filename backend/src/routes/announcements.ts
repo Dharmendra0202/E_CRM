@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { logAudit } from "../utils/auditLog";
+import { notifyBatch, notifyUsers } from "../utils/notify";
 import { Router, Response } from "express";
 
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
@@ -31,6 +32,36 @@ router.post("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRe
         publishedBy: req.user!.id, expiresAt: expiresAt ? new Date(expiresAt) : null,
       },
     });
+
+    // ── Notify the target audience about the announcement ──────────
+    (async () => {
+      try {
+        const aud = (audience || "ALL").toUpperCase();
+        const opts = {
+          title: title as string,
+          message: content as string,
+          type: "ANNOUNCEMENT",
+          priority: (priority || "NORMAL") as string,
+          link: "/communication",
+        };
+        if (aud === "BATCH_SPECIFIC" && batchId) {
+          await notifyBatch(batchId, opts);
+          return;
+        }
+        // Map audience → user roles
+        const roleMap: Record<string, string[]> = {
+          ALL: ["STUDENT", "PARENT", "TEACHER", "STAFF", "ADMIN", "SUPER_ADMIN"],
+          STUDENTS: ["STUDENT"],
+          PARENTS: ["PARENT"],
+          TEACHERS: ["TEACHER"],
+          STAFF: ["STAFF"],
+        };
+        const roles = roleMap[aud] || roleMap.ALL;
+        const users = await prisma.user.findMany({ where: { role: { in: roles } }, select: { id: true } });
+        await notifyUsers(users.map((u) => u.id), opts);
+      } catch { /* non-blocking */ }
+    })();
+
     res.status(201).json({ status: "success", data: announcement });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });

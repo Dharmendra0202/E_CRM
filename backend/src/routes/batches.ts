@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { logAudit } from "../utils/auditLog";
+import { notifyStudent } from "../utils/notify";
 import { Router, Response } from "express";
 
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
@@ -51,6 +52,19 @@ router.post("/:id/enroll", authenticate, authorize("ADMIN"), async (req: AuthReq
     const enrollment = await prisma.batchEnrollment.create({
       data: { batchId: req.params.id, studentId, status: "ACTIVE" },
     });
+
+    // Notify the student they've been added to this batch
+    const batch = await prisma.batch.findUnique({ where: { id: req.params.id }, select: { name: true, subject: true } });
+    if (batch) {
+      notifyStudent(studentId, {
+        title: "Enrolled in a New Batch",
+        message: `You've been enrolled in ${batch.name}${batch.subject ? ` (${batch.subject})` : ""}. Check your timetable for class details.`,
+        type: "GENERAL",
+        priority: "NORMAL",
+        link: "/class-timetable",
+      });
+    }
+
     res.status(201).json({ status: "success", data: enrollment });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });

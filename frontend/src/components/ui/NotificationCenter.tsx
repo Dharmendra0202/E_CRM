@@ -129,14 +129,14 @@ export function NotificationCenter({ invoiceCount, studentCount, homeworkCount }
       {/* Dropdown */}
       {isOpen && (
         <div
+          className="animate-slide-up notification-dropdown"
           style={{
             position: "absolute", top: "calc(100% + 8px)", right: 0,
-            width: "340px", background: "#fff", borderRadius: "16px",
+            width: "min(340px, calc(100vw - 24px))", background: "#fff", borderRadius: "16px",
             border: "1px solid var(--border-glass)",
             boxShadow: "0 16px 48px rgba(29,10,39,0.15)",
             overflow: "hidden", zIndex: 9999,
           }}
-          className="animate-slide-up"
         >
           {/* Header */}
           <div style={{ padding: "14px 18px", borderBottom: "1px solid var(--border-glass)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>

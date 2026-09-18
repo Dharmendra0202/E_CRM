@@ -2,6 +2,7 @@ import { prisma } from "../utils/prisma";
 import { Router, Response } from "express";
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 import { logAudit } from "../utils/auditLog";
+import { notifyStudent, notifyAdmins } from "../utils/notify";
 
 const router = Router();
 
@@ -120,6 +121,24 @@ router.post("/:id/pay", authenticate, authorize("ADMIN"), async (req: AuthReques
     await prisma.invoice.update({ where: { id: req.params.id }, data: { status: newStatus, ...(newStatus === "PAID" ? { paidAt: new Date() } : {}) } });
 
     logAudit({ module: "invoices", action: "CREATE", entityId: payment.id, newValue: { amount, paymentMethod, invoiceId: req.params.id, resultStatus: newStatus } }, req);
+
+    // ── Notify the student (payment received) + admins (fee collected) ──
+    const paidAmt = Number(parseFloat(amount)).toLocaleString("en-IN");
+    const remaining = Math.max(0, Number(invoice.totalAmount) - totalPaid);
+    notifyStudent(invoice.studentId, {
+      title: "Payment Received",
+      message: `We received your fee payment of ₹${paidAmt}.${newStatus === "PAID" ? " Your fees are fully paid. Thank you!" : ` Remaining balance: ₹${remaining.toLocaleString("en-IN")}.`}`,
+      type: "FEE",
+      priority: "NORMAL",
+      link: "/fee-receipt",
+    });
+    notifyAdmins({
+      title: "Fee Payment Recorded",
+      message: `₹${paidAmt} received (${paymentMethod || "CASH"}). Invoice is now ${newStatus}.`,
+      type: "FEE",
+      priority: "LOW",
+      link: "/billing",
+    });
 
     res.json({ status: "success", data: payment, invoiceStatus: newStatus });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }

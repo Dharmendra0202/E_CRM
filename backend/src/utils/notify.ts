@@ -60,6 +60,42 @@ export async function notifyBatch(batchId: string, opts: NotifyOptions): Promise
 }
 
 /**
+ * Notify a single student by their Student id (resolves to their linked User).
+ * No-op if the student has no linked user account yet. Non-blocking.
+ */
+export async function notifyStudent(studentId: string, opts: NotifyOptions): Promise<number> {
+  try {
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      select: { userId: true },
+    });
+    if (!student?.userId) return 0;
+    return notifyUsers([student.userId], opts);
+  } catch (err: any) {
+    console.warn(`[notify] notifyStudent failed for ${studentId}: ${err.message}`);
+    return 0;
+  }
+}
+
+/**
+ * Notify all ADMIN / SUPER_ADMIN users. Use for account events (new signup,
+ * new inquiry, etc.) so the admin sees them in the notification center.
+ * Non-blocking: never throws.
+ */
+export async function notifyAdmins(opts: NotifyOptions): Promise<number> {
+  try {
+    const admins = await prisma.user.findMany({
+      where: { role: { in: ["ADMIN", "SUPER_ADMIN"] } },
+      select: { id: true },
+    });
+    return notifyUsers(admins.map((a) => a.id), opts);
+  } catch (err: any) {
+    console.warn(`[notify] notifyAdmins failed: ${err.message}`);
+    return 0;
+  }
+}
+
+/**
  * Notify a list of specific User IDs directly.
  */
 export async function notifyUsers(userIds: string[], opts: NotifyOptions): Promise<number> {

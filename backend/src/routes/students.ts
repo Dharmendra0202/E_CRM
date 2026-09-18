@@ -5,6 +5,7 @@ import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 import bcrypt from "bcryptjs";
 import { sendStudentOnboardingEmail } from "../utils/email";
 import { logAudit } from "../utils/auditLog";
+import { notifyUsers, notifyAdmins } from "../utils/notify";
 
 const router = Router();
 
@@ -219,6 +220,22 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
       data: completedStudent,
       whatsappLink,
       onboardingEmailSent: true
+    });
+
+    // ── Welcome the student + confirm to admins ──────────────────
+    notifyUsers([user.id], {
+      title: "Welcome to the Coaching Center! 🎓",
+      message: `Hi ${firstName}, your enrollment${batch ? ` in ${batch}` : ""} is complete. You can now view your timetable, attendance, marks, and fee receipts here.`,
+      type: "GENERAL",
+      priority: "NORMAL",
+      link: "/dashboard",
+    });
+    notifyAdmins({
+      title: "Student Enrolled",
+      message: `${firstName} ${finalLastName}${batch ? ` was enrolled in ${batch}` : " was added"}.`,
+      type: "SYSTEM",
+      priority: "LOW",
+      link: "/student-profiles",
     });
 
     // Audit log

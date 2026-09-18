@@ -8,6 +8,7 @@ import { OAuth2Client } from "google-auth-library";
 
 import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/email";
 import { logAudit } from "../utils/auditLog";
+import { notifyAdmins } from "../utils/notify";
 
 const googleClient = new OAuth2Client();
 
@@ -89,6 +90,15 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
 
     // Send verification email (non-blocking)
     sendVerificationEmail(user.email, user.firstName, verificationToken).catch(console.error);
+
+    // Notify admins that a new account was created.
+    notifyAdmins({
+      title: "New account registered",
+      message: `${user.firstName} ${user.lastName} (${user.email}) registered as a ${user.role}.`,
+      type: "SYSTEM",
+      priority: "NORMAL",
+      link: "/student-profiles",
+    });
 
     res.status(201).json({
       status: "success",
@@ -494,6 +504,17 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
             emailVerified: email_verified ?? true,
           },
         });
+
+        // Notify admins that a new person signed in with Google.
+        if (!isAllowlistedAdmin) {
+          notifyAdmins({
+            title: "New account via Google",
+            message: `${user.firstName} ${user.lastName} (${user.email}) just signed in with Google as a ${user.role}.`,
+            type: "SYSTEM",
+            priority: "NORMAL",
+            link: "/student-profiles",
+          });
+        }
       }
     }
 

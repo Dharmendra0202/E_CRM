@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { logAudit } from "../utils/auditLog";
+import { notifyBatch } from "../utils/notify";
 import { Router, Response } from "express";
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 
@@ -63,6 +64,19 @@ router.post("/", authenticate, authorize("ADMIN", "TEACHER", "SUPER_ADMIN"), asy
       },
     });
     logAudit({ module: "online-classes", action: "CREATE", entityId: created.id, newValue: { courseName, subjectName } }, req);
+
+    // Notify the batch about the new online class
+    if (batchId) {
+      const when = new Date(scheduleDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      notifyBatch(batchId, {
+        title: "New Online Class",
+        message: `${subjectName} (${courseName}) on ${when} at ${scheduleTime}.${classLink ? " Join link available." : ""}`,
+        type: "GENERAL",
+        priority: "NORMAL",
+        link: "/online-classes",
+      });
+    }
+
     res.status(201).json({ status: "success", data: created });
   } catch (err: any) {
     res.status(500).json({ status: "error", message: err.message });

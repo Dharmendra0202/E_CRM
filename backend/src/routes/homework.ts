@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { logAudit } from "../utils/auditLog";
+import { notifyBatch } from "../utils/notify";
 import { Router, Response } from "express";
 
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
@@ -102,6 +103,18 @@ router.post("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRe
         status: "ACTIVE",
       },
     });
+
+    // Notify the batch (students + teacher) about the new homework
+    if (batchId) {
+      const due = new Date(dueDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      notifyBatch(batchId, {
+        title: "New Homework Assigned",
+        message: `${title} — due ${due}.`,
+        type: "HOMEWORK",
+        priority: "NORMAL",
+        link: "/homework",
+      });
+    }
 
     res.status(201).json({ status: "success", data: hw });
   } catch (err: any) {
