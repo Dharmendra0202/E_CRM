@@ -24,7 +24,10 @@ const STATUS_COLOR: Record<string, string> = {
   PRESENT: "#38c172", ABSENT: "#e3342f", LATE: "#f5a623",
 };
 
-export function AttendanceDetails({ userRole = "ADMIN" }: { userRole?: string }) {
+export function AttendanceDetails({ userRole = "STUDENT" }: { userRole?: string }) {
+  // Students see only their own records — no batch filter. Admin/teacher can filter.
+  const canFilterBatches = userRole === "ADMIN" || userRole === "SUPER_ADMIN" || userRole === "TEACHER";
+
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [batchId, setBatchId] = useState("all");
@@ -36,8 +39,10 @@ export function AttendanceDetails({ userRole = "ADMIN" }: { userRole?: string })
   const [error, setError] = useState("");
 
   useEffect(() => {
-    api.batches.getAll().then((r) => setBatches(r.data || [])).catch(() => setBatches([]));
-  }, []);
+    if (canFilterBatches) {
+      api.batches.getAll().then((r) => setBatches(r.data || [])).catch(() => setBatches([]));
+    }
+  }, [canFilterBatches]);
 
   const show = async () => {
     if (!from || !to) { setError("Please select both From and To dates."); return; }
@@ -85,13 +90,15 @@ export function AttendanceDetails({ userRole = "ADMIN" }: { userRole?: string })
             <Label required>To Date</Label>
             <input type="date" value={to} onChange={(e) => setTo(e.target.value)} style={inputStyle} />
           </div>
-          <div>
-            <Label>Batch</Label>
-            <select value={batchId} onChange={(e) => setBatchId(e.target.value)} style={inputStyle}>
-              <option value="all">All Batches</option>
-              {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
-          </div>
+          {canFilterBatches && (
+            <div>
+              <Label>Batch</Label>
+              <select value={batchId} onChange={(e) => setBatchId(e.target.value)} style={inputStyle}>
+                <option value="all">All Batches</option>
+                {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+          )}
           <button onClick={show} disabled={loading}
             style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "11px 22px", background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_DARK})`, color: "#fff", border: "none", borderRadius: "6px", cursor: loading ? "not-allowed" : "pointer", fontSize: "14px", fontWeight: 600, height: "42px", opacity: loading ? 0.7 : 1 }}>
             {loading ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : <Search size={16} />} Show

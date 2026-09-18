@@ -37,7 +37,7 @@ const EMPTY_FORM = {
 };
 
 // ═══════════════════════════ ONLINE CLASSES ═══════════════════════════
-export function OnlineClasses({ userRole = "ADMIN" }: { userRole?: string }) {
+export function OnlineClasses({ userRole = "STUDENT" }: { userRole?: string }) {
   const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN" || userRole === "TEACHER";
 
   const [tab, setTab] = useState<Tab>("today");

@@ -41,7 +41,7 @@ interface AttendanceTrackerProps {
   userRole?: string;
 }
 
-export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps) {
+export function AttendanceTracker({ userRole = "STUDENT" }: AttendanceTrackerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState("");
@@ -218,6 +218,18 @@ export function AttendanceTracker({ userRole = "ADMIN" }: AttendanceTrackerProps
   const completionRate = summary.total > 0
     ? Math.round(((summary.present + summary.absent + summary.late) / summary.total) * 100)
     : 0;
+
+  // Defense-in-depth: attendance marking is admin/teacher only. Students should
+  // never reach this (routing blocks it), but fail closed if they somehow do.
+  const canMarkAttendance = userRole === "ADMIN" || userRole === "SUPER_ADMIN" || userRole === "TEACHER";
+  if (!canMarkAttendance) {
+    return (
+      <div className="animate-fade-in" style={{ padding: "60px 20px", textAlign: "center", color: "var(--text-secondary)" }}>
+        <h2 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "8px" }}>Attendance Marking</h2>
+        <p style={{ fontSize: "14px" }}>This tool is for teachers and admins. View your own attendance under Class Attendance.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">

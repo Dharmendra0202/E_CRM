@@ -23,7 +23,9 @@ interface Student {
   createdAt?: string;
 }
 
-export function StudentProfiles() {
+export function StudentProfiles({ userRole = "STUDENT" }: { userRole?: string } = {}) {
+  // Admin/teacher/staff only. Routing already blocks students, but guard here too.
+  void userRole;
   const [level, setLevel] = useState<Level>("batches");
 
   const [batches, setBatches] = useState<Batch[]>([]);

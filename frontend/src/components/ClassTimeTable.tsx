@@ -28,8 +28,10 @@ interface Schedule {
 }
 interface Batch { id: string; name: string; subject?: string; }
 
-export function ClassTimeTable({ userRole = "ADMIN" }: { userRole?: string }) {
+export function ClassTimeTable({ userRole = "STUDENT" }: { userRole?: string }) {
   const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN";
+  // Students see only their own timetable — no batch filter. Admin/teacher can filter.
+  const canFilterBatches = isAdmin || userRole === "TEACHER";
 
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -44,7 +46,11 @@ export function ClassTimeTable({ userRole = "ADMIN" }: { userRole?: string }) {
   const load = async () => {
     setIsLoading(true);
     try {
-      const [sRes, bRes] = await Promise.all([api.schedules.getAll(), api.batches.getAll()]);
+      // Students don't need (and can't access) the full batch list — only admin/teacher filter by batch.
+      const [sRes, bRes] = await Promise.all([
+        api.schedules.getAll(),
+        canFilterBatches ? api.batches.getAll() : Promise.resolve({ data: [] as Batch[] }),
+      ]);
       setSchedules(sRes.data || []);
       setBatches(bRes.data || []);
     } catch {
@@ -158,14 +164,16 @@ export function ClassTimeTable({ userRole = "ADMIN" }: { userRole?: string }) {
           </p>
         </div>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-          <select
-            value={batchFilter}
-            onChange={(e) => setBatchFilter(e.target.value)}
-            style={{ padding: "9px 14px", borderRadius: "6px", border: "1px solid #dee2e6", fontSize: "14px", background: "#fff", outline: "none" }}
-          >
-            <option value="all">All Batches</option>
-            {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
+          {canFilterBatches && (
+            <select
+              value={batchFilter}
+              onChange={(e) => setBatchFilter(e.target.value)}
+              style={{ padding: "9px 14px", borderRadius: "6px", border: "1px solid #dee2e6", fontSize: "14px", background: "#fff", outline: "none" }}
+            >
+              <option value="all">All Batches</option>
+              {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          )}
           {isAdmin && (
             <button onClick={openAdd}
               style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 18px", background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT_DARK})`, color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontSize: "14px", fontWeight: 600 }}>

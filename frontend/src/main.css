@@ -3742,22 +3742,50 @@ div[style*="linear-gradient(135deg, hsl(328"] {
   .has-sidebar aside {
     transform: translateX(-100%);
     transition: transform 0.3s ease;
-    z-index: 1001;   /* above overlay and dock */
+    z-index: 1201 !important;   /* above overlay, dock, and header */
+    /* Full-height drawer starting at the very top (it overlays the header),
+       comfortable width for phones (override inline 220px). */
+    top: 0 !important;
+    height: 100vh !important;
+    width: 86vw !important;
+    max-width: 330px !important;
+    min-width: 264px !important;
+    box-shadow: 4px 0 28px rgba(0,0,0,0.22) !important;
   }
   .has-sidebar aside.mobile-open {
     transform: translateX(0);
+  }
+  /* The scrollable nav list fills remaining height and scrolls smoothly by touch. */
+  .has-sidebar aside > div:last-child {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-bottom: 40px !important;
+  }
+  /* Finger-friendly group headers and items in the mobile drawer */
+  .has-sidebar aside button {
+    min-height: 42px;
+  }
+  /* Group header labels a touch larger and clearer on mobile */
+  .has-sidebar aside > div:last-child > div > button:first-child {
+    font-size: 12px !important;
   }
   /* Overlay behind sidebar when open */
   .sidebar-overlay {
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 1000;   /* above dock, below sidebar */
+    background: rgba(0,0,0,0.5);
+    z-index: 1200;   /* just below the drawer (1201), above everything else */
   }
   .sidebar-overlay.visible {
     display: block;
   }
+  /* Remove the duplicate top-drawer hamburger on mobile — the header menu
+     button already opens the real sidebar drawer. */
+  .navbar-mobile-toggle { display: none !important; }
+  .top-drawer { display: none !important; }
+  /* Show the drawer's close (X) button on mobile */
+  .sidebar-mobile-close { display: flex !important; }
   /* Hide the floating bottom dock while the mobile drawer is open */
   .mobile-drawer-open .crm-bottom-dock {
     display: none !important;
@@ -3880,6 +3908,31 @@ div[style*="linear-gradient(135deg, hsl(328"] {
   [style*="justify-content: space-between"][style*="flex-wrap: wrap"] {
     flex-direction: column;
     align-items: flex-start !important;
+  }
+}
+
+/* ── Page headers (title + action buttons) wrap on mobile instead of overflowing ── */
+@media (max-width: 768px) {
+  /* Common inline page-header pattern: flex row, title left + actions right */
+  .crm-viewport [style*="justify-content: space-between"][style*="align-items: flex-start"],
+  .crm-viewport [style*="justify-content: space-between"][style*="align-items: center"] {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+  /* Action button clusters wrap and can shrink */
+  .crm-viewport [style*="display: flex"][style*="gap: 10px"],
+  .crm-viewport [style*="display: flex"][style*="gap: 8px"] {
+    flex-wrap: wrap !important;
+  }
+  /* Tab rows (All Invoices / Done / Pending / Payroll etc.) scroll instead of squishing */
+  .crm-viewport [style*="border-bottom"][style*="display: flex"] {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+  }
+  .crm-viewport [style*="border-bottom"][style*="display: flex"] > button {
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 }
 

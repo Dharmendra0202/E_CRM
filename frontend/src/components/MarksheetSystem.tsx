@@ -15,7 +15,7 @@ interface MarkEntry {
   batch: string;
 }
 
-export function MarksheetSystem({ userRole = "ADMIN" }: { userRole?: string }) {
+export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string }) {
   const isStudent = userRole === "STUDENT" || userRole === "PARENT";
   const [entries, setEntries] = useState<MarkEntry[]>([]);
   const [students, setStudents] = useState<any[]>([]);

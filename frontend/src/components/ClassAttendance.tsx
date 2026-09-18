@@ -20,7 +20,7 @@ interface Row {
 }
 interface Batch { id: string; name: string; }
 
-export function ClassAttendance({ userRole = "ADMIN" }: { userRole?: string }) {
+export function ClassAttendance({ userRole = "STUDENT" }: { userRole?: string }) {
   const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN" || userRole === "TEACHER";
 
   const [rows, setRows] = useState<Row[]>([]);
@@ -46,8 +46,12 @@ export function ClassAttendance({ userRole = "ADMIN" }: { userRole?: string }) {
   };
 
   useEffect(() => {
-    api.batches.getAll().then((r) => setBatches(r.data || [])).catch(() => setBatches([]));
-  }, []);
+    // Only admins/teachers filter by batch. Students see only their own record,
+    // so we don't fetch the (admin-only) batch list for them.
+    if (isAdmin) {
+      api.batches.getAll().then((r) => setBatches(r.data || [])).catch(() => setBatches([]));
+    }
+  }, [isAdmin]);
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [batchFilter]);
 
   const filtered = rows.filter((r) =>
@@ -75,11 +79,14 @@ export function ClassAttendance({ userRole = "ADMIN" }: { userRole?: string }) {
           }}>
             <TrendingUp size={15} /> Overall: {overall}%
           </div>
-          <select value={batchFilter} onChange={(e) => setBatchFilter(e.target.value)}
-            style={{ padding: "9px 14px", borderRadius: "6px", border: "1px solid #dee2e6", fontSize: "14px", background: "#fff", outline: "none" }}>
-            <option value="all">All Batches</option>
-            {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-          </select>
+          {/* Batch filter is admin/teacher only — students see just their own record */}
+          {isAdmin && (
+            <select value={batchFilter} onChange={(e) => setBatchFilter(e.target.value)}
+              style={{ padding: "9px 14px", borderRadius: "6px", border: "1px solid #dee2e6", fontSize: "14px", background: "#fff", outline: "none" }}>
+              <option value="all">All Batches</option>
+              {batches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          )}
         </div>
       </div>
 

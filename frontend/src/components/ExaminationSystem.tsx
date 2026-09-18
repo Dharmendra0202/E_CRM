@@ -33,7 +33,7 @@ const STATUS_COLORS: Record<ExamStatus, string> = {
 
 const LS_KEY = "ecrm_exams"; // kept for migration fallback
 
-export function ExaminationSystem({ userRole = "ADMIN" }: { userRole?: string }) {
+export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string }) {
   const isStudent = userRole === "STUDENT" || userRole === "PARENT";
   const [exams, setExams] = useState<Exam[]>([]);
   const [batches, setBatches] = useState<any[]>([]);

@@ -20,7 +20,10 @@ router.get("/", authenticate, async (req: AuthRequest, res: Response): Promise<v
     const where: any = { student: { deletedAt: null } };
     if (req.user?.role === "STUDENT" || req.user?.role === "PARENT") {
       const student = await prisma.student.findFirst({ where: { userId: req.user.id } });
-      if (student) where.studentId = student.id;
+      // If a student/parent has no linked Student record, they must see NOTHING
+      // (never fall through to the unfiltered all-invoices query).
+      if (!student) { res.json({ status: "success", data: [] }); return; }
+      where.studentId = student.id;
     }
     const invoices = await prisma.invoice.findMany({
       where,

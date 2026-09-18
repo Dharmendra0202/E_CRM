@@ -17,7 +17,7 @@ interface ReceiptRow {
   amount: number;
 }
 
-export function FeeReceipt({ userRole = "ADMIN" }: { userRole?: string }) {
+export function FeeReceipt({ userRole = "STUDENT" }: { userRole?: string }) {
   const isStudent = userRole === "STUDENT" || userRole === "PARENT";
   const [rows, setRows] = useState<ReceiptRow[]>([]);
   const [loading, setLoading] = useState(true);

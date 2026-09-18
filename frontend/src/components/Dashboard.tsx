@@ -31,7 +31,7 @@ export function Dashboard({
   batchesList,
   staffList,
   userName,
-  userRole = "ADMIN",
+  userRole = "STUDENT",
   onNavigate,
 }: DashboardProps) {
   // Derived Real Database Statistics

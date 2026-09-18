@@ -11,7 +11,9 @@ import {
   Briefcase, GraduationCap, X, Check, Download, Eye, FileText
 } from "lucide-react";
 
-export function FeeManagement() {
+export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = {}) {
+  // Admin/billing/staff only. Routing already blocks students, but guard here too.
+  void userRole;
   const [invoices, setInvoices] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("");

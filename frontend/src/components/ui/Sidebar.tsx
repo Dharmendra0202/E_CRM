@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
   Check, BookOpen, GraduationCap, Target,
   Megaphone, BarChart3, Settings, Shield, FileText,
-  ChevronDown, Layers, Video,
+  ChevronDown, Layers, Video, X,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -17,16 +17,26 @@ interface SidebarProps {
 }
 
 // Role-based access map: which views each role can see
-const ROLE_VIEWS: Record<string, string[]> = {
+// Single source of truth for which views each role may access.
+// Exported so App.tsx (dock + view guard) uses the exact same rules.
+export const ROLE_VIEWS: Record<string, string[]> = {
   ADMIN: ["*"], // all views
   SUPER_ADMIN: ["*"],
-  TEACHER: ["dashboard", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "schedule", "homework", "exams", "examination", "marksheet", "leads", "student-profiles", "batches", "communication"],
-  STAFF: ["dashboard", "leads", "student-profiles", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "billing", "fee-receipt", "communication"],
-  STUDENT: ["dashboard", "schedule", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "examination", "marksheet", "fee-receipt"],
-  PARENT: ["dashboard", "attendance", "examination", "marksheet", "billing", "fee-receipt", "communication"],
-  ACCOUNTANT: ["dashboard", "billing", "reports"],
+  // NOTE: "attendance" (AttendanceTracker) is the MARKING tool — admin/teacher only.
+  // Students/parents get "class-attendance" (own summary) + "attendance-details" (own records).
+  TEACHER: ["dashboard", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "schedule", "homework", "exams", "examination", "marksheet", "leads", "student-profiles", "batches", "communication", "my-profile"],
+  STAFF: ["dashboard", "leads", "student-profiles", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "billing", "fee-receipt", "communication", "my-profile"],
+  STUDENT: ["dashboard", "schedule", "online-classes", "class-attendance", "class-timetable", "attendance-details", "examination", "marksheet", "fee-receipt", "my-profile"],
+  PARENT: ["dashboard", "examination", "marksheet", "fee-receipt", "my-profile"],
+  ACCOUNTANT: ["dashboard", "billing", "reports", "my-profile"],
   PENDING: ["dashboard"],
 };
+
+/** Whether a given role may access a given view. */
+export function canAccessView(role: string | undefined, view: string): boolean {
+  const allowed = ROLE_VIEWS[role || "STUDENT"] || ROLE_VIEWS.STUDENT;
+  return allowed.includes("*") || allowed.includes(view);
+}
 
 const NAV_ITEMS = [
   { group: "Main", items: [
@@ -149,9 +159,8 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
     setExpandedItems(next);
   };
 
-  // Filter NAV_ITEMS based on role
-  const allowedViews = ROLE_VIEWS[userRole] || ROLE_VIEWS.STUDENT;
-  const isAllowed = (view: string) => allowedViews.includes("*") || allowedViews.includes(view);
+  // Filter NAV_ITEMS based on role (uses the shared helper)
+  const isAllowed = (view: string) => canAccessView(userRole, view);
   
   const filteredNavItems = NAV_ITEMS.map(group => ({
     ...group,
@@ -221,6 +230,21 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
           <GraduationCap size={16} color="#fff" />
         </div>
         {!collapsed && <span style={{ fontSize: "16px", fontWeight: 800, fontFamily: "var(--font-headings)", whiteSpace: "nowrap" }} className="text-gradient-indigo">EduFlow</span>}
+        {/* Mobile-only close button */}
+        {mobileOpen && (
+          <button
+            onClick={onMobileClose}
+            aria-label="Close menu"
+            className="sidebar-mobile-close"
+            style={{
+              marginLeft: "auto", width: "34px", height: "34px", borderRadius: "9px",
+              border: "none", background: "hsla(285,30%,20%,0.06)", cursor: "pointer",
+              display: "none", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)", flexShrink: 0,
+            }}
+          >
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* Nav Groups - Scrollable */}

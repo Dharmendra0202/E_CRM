@@ -38,14 +38,14 @@ import { WeakStudentModule } from "./components/WeakStudentModule";
 import { BatchesManagement } from "./components/BatchesManagement";
 import { LandingPage } from "./components/LandingPage";
 import { ProfilePage } from "./components/ProfilePage";
-import { Sidebar } from "./components/ui/Sidebar";
+import { Sidebar, canAccessView } from "./components/ui/Sidebar";
 import { CommandPalette } from "./components/ui/CommandPalette";
 import { NotificationCenter } from "./components/ui/NotificationCenter";
 import {
   Search, Plus, Check, GraduationCap, TrendingUp,
   Menu, X, LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
   Filter, LogOut, ShieldCheck, Sparkles,
-  Activity, BookOpen, IndianRupee, History, Sun, Moon, Download,
+  Activity, BookOpen, BarChart3, IndianRupee, History, Sun, Moon, Download,
   ChevronLeft, ChevronRight, User
 } from "lucide-react";
 
@@ -318,6 +318,17 @@ function App() {
     : userProfile?.email ? userProfile.email.substring(0, 2).toUpperCase() : "DA";
   const userName = userProfile?.user_metadata?.name || userProfile?.email?.split("@")[0] || "Dharmendra";
   const userRole = userProfile?.user_metadata?.role || "Super Administrator";
+  // Raw role used for access control (falls back to STUDENT — least privilege).
+  const effectiveRole = (userProfile?.user_metadata?.role || "STUDENT").toUpperCase();
+
+  // Guard: if the current view isn't allowed for this role, send them to dashboard.
+  // Prevents a student/teacher from landing on (or being stuck on) an admin screen.
+  useEffect(() => {
+    if (!userProfile) return;
+    if (!canAccessView(effectiveRole, currentView)) {
+      setCurrentView("dashboard");
+    }
+  }, [userProfile, effectiveRole, currentView]);
 
   const [showLogin, setShowLogin] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -367,7 +378,7 @@ function App() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={() => setMobileSidebarOpen(false)}
-        userRole={userProfile?.user_metadata?.role || "ADMIN"}
+        userRole={effectiveRole}
       />
 
       {/* ── Command Palette ── */}
@@ -382,11 +393,18 @@ function App() {
         {([
           { view: "dashboard", icon: <LayoutDashboard size={20} />, label: "Dashboard" },
           { view: "new-enrollment", icon: <Users2 size={20} />,     label: "Enroll" },
+          { view: "student-profiles", icon: <Users2 size={20} />,   label: "Profiles" },
           { view: "class-timetable",  icon: <CalendarDays size={20} />,    label: "Timetable" },
           { view: "class-attendance",icon: <Check size={20} />,           label: "Attendance" },
+          { view: "examination", icon: <BookOpen size={20} />,     label: "Exams" },
+          { view: "marksheet", icon: <BarChart3 size={20} />,      label: "Marksheet" },
+          { view: "fee-receipt", icon: <CreditCard size={20} />,   label: "Fee Receipt" },
           { view: "billing",   icon: <CreditCard size={20} />,      label: "Billing" },
           { view: "staff",     icon: <Briefcase size={20} />,       label: "Staff" },
-        ] as { view: ViewType; icon: React.ReactNode; label: string }[]).map(({ view, icon, label }) => (
+        ] as { view: ViewType; icon: React.ReactNode; label: string }[])
+          .filter(({ view }) => canAccessView(effectiveRole, view))
+          .slice(0, 6)
+          .map(({ view, icon, label }) => (
           <button key={view} className={`crm-dock-item ${currentView === view ? "is-active" : ""}`} onClick={() => { setCurrentView(view); }}>
             {icon}
             <span className="crm-dock-tooltip">{label}</span>
@@ -644,7 +662,7 @@ function App() {
               batchesList={batchesList}
               staffList={staffList}
               userName={userName}
-              userRole={userProfile?.user_metadata?.role || "ADMIN"}
+              userRole={effectiveRole}
               onNavigate={(view, opts) => {
                 setCurrentView(view as ViewType);
                 if (view === "leads" && opts?.tab) setStudentTab(opts.tab);
@@ -653,14 +671,14 @@ function App() {
           )}
 
           {/* ══════════════ STUDENT PROFILES VIEW ══════════════ */}
-          {currentView === "student-profiles" && <StudentProfiles />}
+          {currentView === "student-profiles" && <StudentProfiles userRole={effectiveRole} />}
 
           {/* ══════════════ ONLINE CLASSES SUB-VIEWS ══════════════ */}
-          {currentView === "online-classes" && <OnlineClasses userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
-          {currentView === "class-attendance" && <ClassAttendance userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
-          {currentView === "class-timetable" && <ClassTimeTable userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
-          {currentView === "attendance-details" && <AttendanceDetails userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
-          {currentView === "fee-receipt" && <FeeReceipt userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
+          {currentView === "online-classes" && <OnlineClasses userRole={effectiveRole} />}
+          {currentView === "class-attendance" && <ClassAttendance userRole={effectiveRole} />}
+          {currentView === "class-timetable" && <ClassTimeTable userRole={effectiveRole} />}
+          {currentView === "attendance-details" && <AttendanceDetails userRole={effectiveRole} />}
+          {currentView === "fee-receipt" && <FeeReceipt userRole={effectiveRole} />}
 
           {/* ══════════════ ADMISSIONS CRM VIEW ══════════════ */}
           {currentView === "admissions" && <AdmissionsCRM />}
@@ -670,10 +688,10 @@ function App() {
           {currentView === "bulk-promotion" && <BulkPromotion />}
 
           {/* ══════════════ EXAMINATION SYSTEM VIEW ══════════════ */}
-          {currentView === "examination" && <ExaminationSystem userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
+          {currentView === "examination" && <ExaminationSystem userRole={effectiveRole} />}
 
           {/* ══════════════ MARKSHEET VIEW ══════════════ */}
-          {currentView === "marksheet" && <MarksheetSystem userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
+          {currentView === "marksheet" && <MarksheetSystem userRole={effectiveRole} />}
 
           {/* ══════════════ WEAK STUDENT VIEW ══════════════ */}
           {currentView === "weak-students" && <WeakStudentModule />}
@@ -708,7 +726,7 @@ function App() {
           )}
 
           {/* ══════════════ ATTENDANCE VIEW ══════════════ */}
-          {currentView === "attendance" && <AttendanceTracker userRole={userProfile?.user_metadata?.role || "ADMIN"} />}
+          {currentView === "attendance" && <AttendanceTracker userRole={effectiveRole} />}
 
           {/* ══════════════ EXAMS VIEW ══════════════ */}
           {currentView === "exams" && (
@@ -719,7 +737,7 @@ function App() {
 
 
           {/* ══════════════ BILLING VIEW ══════════════ */}
-          {currentView === "billing" && <FeeManagement />}
+          {currentView === "billing" && <FeeManagement userRole={effectiveRole} />}
 
 
           {/* ══════════════ HOMEWORK VIEW ══════════════ */}
