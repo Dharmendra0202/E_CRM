@@ -203,23 +203,17 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
     });
 
     // Generate WhatsApp group invite link for batch
-    const sanitizeBatch = (batch || "Class").replace(/\s+/g, "_").toUpperCase();
-    const whatsappLink = `https://chat.whatsapp.com/ECRM_BATCH_${sanitizeBatch}`;
-
     // Send onboarding email (non-blocking)
     sendStudentOnboardingEmail(
       email.toLowerCase(),
       `${firstName} ${finalLastName}`,
       batch || "Standard Batch",
-      whatsappLink,
       feeAmount ? parseFloat(feeAmount) : 8500
     ).catch(console.error);
 
     res.status(201).json({
       status: "success",
       data: completedStudent,
-      whatsappLink,
-      onboardingEmailSent: true
     });
 
     // ── Welcome the student + confirm to admins ──────────────────

@@ -204,7 +204,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
     feeAmount: "8500", notes: ""
   });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  const [successModalData, setSuccessModalData] = useState<{ student: Student; whatsappLink: string } | null>(null);
+  const [successModalData, setSuccessModalData] = useState<{ student: Student } | null>(null);
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
@@ -414,11 +414,8 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
     showToast(`ðŸŽ‰ ${optimisticStudent.name} registered successfully!`, "success");
     setActiveTab("all");
 
-    // Default modal with WhatsApp invite link while DB request is processed
-    const fallbackLink = `https://chat.whatsapp.com/ECRM_BATCH_${currentData.batch.replace(/\s+/g, "_").toUpperCase()}`;
     setSuccessModalData({
       student: optimisticStudent,
-      whatsappLink: fallbackLink
     });
 
     // Save to database in background
@@ -462,11 +459,9 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
           return updated;
         });
         
-        // Update modal data with server-assigned student ID and backend link
-        const wlink = res.whatsappLink || fallbackLink;
+        // Update modal data with real server-assigned student ID
         setSuccessModalData({
           student: mappedStudent,
-          whatsappLink: wlink
         });
       }
     } catch (err) {
@@ -1526,7 +1521,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
               <div style={{ background: "#eff6ff", borderRadius: "14px", padding: "16px", border: "none", display: "flex", alignItems: "center", gap: "12px" }}>
                 <Mail size={20} style={{ color: "#2563eb", flexShrink: 0 }} />
                 <div style={{ fontSize: "12px", color: "#1e40af", lineHeight: 1.4 }}>
-                  <strong>Onboarding Email Sent!</strong> Contains credentials (Password: <code>Student@123</code>), timetable, WhatsApp link, and Mobile App download link.
+                  <strong>Onboarding Email Sent!</strong> The student's login email and batch details have been sent to their registered address. They can sign in with Google or use email + password to access their portal.
                 </div>
               </div>
 

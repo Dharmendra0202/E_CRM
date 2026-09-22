@@ -31,8 +31,6 @@ import marksheetsRoutes from "./routes/marksheets";
 import notificationsRoutes from "./routes/notifications";
 import paymentsRoutes from "./routes/payments";
 import onlineClassesRoutes from "./routes/onlineClasses";
-import whatsappRoutes from "./routes/whatsapp";
-import { attachWhatsAppSocket } from "./utils/whatsapp";
 
 dotenv.config();
 
@@ -75,9 +73,6 @@ io.on("connection", (socket) => {
     logger.info(`Socket disconnected: ${socket.id}`);
   });
 });
-
-// Give the WhatsApp service a handle to Socket.IO for live status/QR events.
-attachWhatsAppSocket(io);
 
 // ── Middleware ──────────────────────────────────────────────
 app.use(helmet({
@@ -143,7 +138,6 @@ app.use("/api/v1/marksheets", marksheetsRoutes);
 app.use("/api/v1/notifications", notificationsRoutes);
 app.use("/api/v1/payments",      paymentsRoutes);
 app.use("/api/v1/online-classes", onlineClassesRoutes);
-app.use("/api/v1/whatsapp",      whatsappRoutes);
 
 // ── Health Check ────────────────────────────────────────────
 app.get("/api/v1/health", async (_req: Request, res: Response) => {

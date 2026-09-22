@@ -19,7 +19,7 @@ export async function sendVerificationEmail(to: string, name: string, token: str
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
         <!-- Header -->
-        <tr><td style="background:linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%));padding:36px 40px;text-align:center;">
+        <tr><td style="background:linear-gradient(135deg,#007bff,#0069d9);padding:36px 40px;text-align:center;">
           <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;letter-spacing:-0.5px;">🎓 E-CRM Portal</h1>
           <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px;letter-spacing:1px;text-transform:uppercase;">Academy Management System</p>
         </td></tr>
@@ -28,7 +28,7 @@ export async function sendVerificationEmail(to: string, name: string, token: str
           <h2 style="margin:0 0 12px;color:#1a0a2e;font-size:22px;font-weight:700;">Verify your email address</h2>
           <p style="margin:0 0 24px;color:#6b7280;font-size:15px;line-height:1.6;">Hi <strong>${name}</strong>, welcome to E-CRM! Please verify your email address to activate your account and access the dashboard.</p>
           <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:8px 0 32px;">
-            <a href="${link}" style="display:inline-block;background:linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%));color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 16px rgba(255,0,128,0.3);">
+            <a href="${link}" style="display:inline-block;background:linear-gradient(135deg,#007bff,#0069d9);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-size:15px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 16px rgba(0,123,255,0.35);">
               ✅ Verify Email Address
             </a>
           </td></tr></table>
@@ -60,7 +60,7 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f8;padding:40px 20px;">
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-        <tr><td style="background:linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%));padding:36px 40px;text-align:center;">
+        <tr><td style="background:linear-gradient(135deg,#007bff,#0069d9);padding:36px 40px;text-align:center;">
           <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;">🔐 Password Reset</h1>
           <p style="margin:6px 0 0;color:rgba(255,255,255,0.8);font-size:13px;letter-spacing:1px;text-transform:uppercase;">E-CRM Portal</p>
         </td></tr>
@@ -68,7 +68,7 @@ export async function sendPasswordResetEmail(to: string, name: string, token: st
           <h2 style="margin:0 0 12px;color:#1a0a2e;font-size:22px;font-weight:700;">Reset your password</h2>
           <p style="margin:0 0 24px;color:#6b7280;font-size:15px;line-height:1.6;">Hi <strong>${name}</strong>, we received a request to reset your password. Click below to set a new one.</p>
           <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:8px 0 32px;">
-            <a href="${link}" style="display:inline-block;background:linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%));color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-size:15px;font-weight:700;box-shadow:0 4px 16px rgba(255,0,128,0.3);">
+            <a href="${link}" style="display:inline-block;background:linear-gradient(135deg,#007bff,#0069d9);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:10px;font-size:15px;font-weight:700;box-shadow:0 4px 16px rgba(0,123,255,0.35);">
               🔑 Reset Password
             </a>
           </td></tr></table>
@@ -183,7 +183,7 @@ export async function sendStudentScheduleUpdateEmail(
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f8;padding:40px 20px;">
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
-        <tr><td style="background:linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%));padding:36px 40px;text-align:center;">
+        <tr><td style="background:linear-gradient(135deg,#007bff,#0069d9);padding:36px 40px;text-align:center;">
           <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:800;">📚 ${action} Class Schedule</h1>
           <p style="margin:6px 0 0;color:rgba(255,255,255,0.75);font-size:13px;">E-CRM Academy · Student Notification</p>
         </td></tr>
@@ -238,7 +238,6 @@ export async function sendStudentOnboardingEmail(
   to: string,
   studentName: string,
   batchName: string,
-  whatsappLink: string,
   feeAmount: number
 ) {
   const appDownloadUrl = `${APP_URL}/download-app`;
@@ -253,7 +252,7 @@ export async function sendStudentOnboardingEmail(
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f8;padding:40px 20px;">
     <tr><td align="center">
       <table width="580" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 6px 28px rgba(0,0,0,0.08);">
-        <tr><td style="background:linear-gradient(135deg,hsl(328,100%,54%),hsl(271,91%,60%));padding:40px;text-align:center;">
+        <tr><td style="background:linear-gradient(135deg,#007bff,#0069d9);padding:40px;text-align:center;">
           <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:800;">🎉 Welcome to the Academy!</h1>
           <p style="margin:8px 0 0;color:rgba(255,255,255,0.85);font-size:14px;font-weight:600;">E-CRM Student Onboarding & Access Portal</p>
         </td></tr>
@@ -264,31 +263,28 @@ export async function sendStudentOnboardingEmail(
           </p>
 
           <!-- Credentials Box -->
-          <div style="background:#fdf2f8;border:1.5px solid #fbcfe8;border-radius:14px;padding:20px;margin-bottom:24px;">
-            <h3 style="margin:0 0 12px;color:#9d174d;font-size:15px;font-weight:700;">🔐 Your Account Credentials</h3>
+          <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:14px;padding:20px;margin-bottom:24px;">
+            <h3 style="margin:0 0 12px;color:#1e40af;font-size:15px;font-weight:700;">🔐 Your Account Credentials</h3>
             <table width="100%" cellpadding="6" cellspacing="0">
               <tr>
-                <td style="color:#831843;font-size:13px;font-weight:600;width:120px;">Email / Login:</td>
+                <td style="color:#1e3a8a;font-size:13px;font-weight:600;width:120px;">Email / Login:</td>
                 <td style="color:#1f2937;font-size:14px;font-weight:700;">${to}</td>
               </tr>
               <tr>
-                <td style="color:#831843;font-size:13px;font-weight:600;">Default Password:</td>
-                <td style="color:#1f2937;font-size:14px;font-weight:700;font-family:monospace;">Student@123</td>
+                <td style="color:#1e3a8a;font-size:13px;font-weight:600;">Login via:</td>
+                <td style="color:#1f2937;font-size:14px;font-weight:700;">Continue with Google (Gmail), or contact admin for a password.</td>
               </tr>
               <tr>
-                <td style="color:#831843;font-size:13px;font-weight:600;">Monthly Fee:</td>
+                <td style="color:#1e3a8a;font-size:13px;font-weight:600;">Monthly Fee:</td>
                 <td style="color:#059669;font-size:14px;font-weight:800;">₹${feeAmount.toLocaleString("en-IN")}</td>
               </tr>
             </table>
           </div>
 
-          <!-- WhatsApp Group -->
+          <!-- Contact Info -->
           <div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:14px;padding:20px;margin-bottom:24px;text-align:center;">
-            <h3 style="margin:0 0 8px;color:#166534;font-size:15px;font-weight:700;">💬 Join Your Batch WhatsApp Group</h3>
-            <p style="margin:0 0 16px;color:#15803d;font-size:13px;">Get instant class updates, schedule changes, and study materials.</p>
-            <a href="${whatsappLink}" target="_blank" style="display:inline-block;background:#25d366;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;box-shadow:0 4px 14px rgba(37,211,102,0.35);">
-              📲 Join WhatsApp Group
-            </a>
+            <h3 style="margin:0 0 8px;color:#166534;font-size:15px;font-weight:700;">💬 Need Help?</h3>
+            <p style="margin:0;color:#15803d;font-size:13px;">Contact your academy administrator directly. They will share class details, schedules, and batch information with you.</p>
           </div>
 
           <!-- App Download -->

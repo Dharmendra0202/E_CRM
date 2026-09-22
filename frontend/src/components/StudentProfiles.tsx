@@ -84,10 +84,10 @@ export function StudentProfiles({ userRole = "STUDENT" }: { userRole?: string } 
     }
   };
 
-  const fullName = (s?: Student) =>
+  const fullName = (s?: Student | null) =>
     `${s?.user?.firstName || ""} ${s?.user?.lastName || ""}`.trim() || "Unnamed Student";
 
-  const initials = (s?: Student) => {
+  const initials = (s?: Student | null) => {
     const f = s?.user?.firstName?.[0] || "";
     const l = s?.user?.lastName?.[0] || "";
     return (f + l).toUpperCase() || "S";
