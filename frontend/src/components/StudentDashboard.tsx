@@ -154,7 +154,7 @@ export function StudentDashboard({ userName, onNavigate }: Props) {
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontSize: "13px", fontWeight: 600, color: "#3a3f45" }}>{n.title}</div>
                         <div style={{ fontSize: "12px", color: VALUE, marginTop: "2px" }}>{n.message}</div>
-                        <div style={{ fontSize: "10px", color: "#a0a6ad", marginTop: "3px" }}>{timeAgo(n.createdAt)}</div>
+                        <div style={{ fontSize: "11px", color: "#a0a6ad", marginTop: "3px" }}>{timeAgo(n.createdAt)}</div>
                       </div>
                     </div>
                   ))}

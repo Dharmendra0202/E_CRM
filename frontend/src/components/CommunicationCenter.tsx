@@ -89,7 +89,7 @@ export function CommunicationCenter() {
           { label: "Urgent", value: announcements.filter((a) => a.priority === "URGENT").length, color: "var(--color-danger)" },
         ].map((s, i) => (
           <div key={i} style={{ background: "#fff", borderRadius: "12px", padding: "14px", border: "1px solid var(--border-glass)" }}>
-            <p style={{ margin: "0 0 4px", fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s.label}</p>
+            <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s.label}</p>
             <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: s.color }}>{s.value}</p>
           </div>
         ))}
@@ -120,7 +120,7 @@ export function CommunicationCenter() {
                       <span style={{ fontSize: "9px", fontWeight: 700, color: "#17a2b8", background: "rgba(23,162,184,0.08)", padding: "2px 7px", borderRadius: "8px" }}>{ann.audience}</span>
                     </div>
                     <p style={{ margin: "0 0 6px", fontSize: "12px", color: "var(--text-secondary)", lineHeight: 1.5 }}>{ann.content.substring(0, 150)}{ann.content.length > 150 ? "..." : ""}</p>
-                    <p style={{ margin: 0, fontSize: "10px", color: "var(--text-secondary)" }}>
+                    <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>
                       {new Date(ann.publishedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
@@ -142,7 +142,7 @@ export function CommunicationCenter() {
       {/* Create Modal */}
       {showCreate && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowCreate(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "480px" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "480px" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>New Announcement</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
               <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Title *</label><input style={inputStyle} value={newAnn.title} onChange={(e) => setNewAnn({ ...newAnn, title: e.target.value })} placeholder="Announcement title" /></div>

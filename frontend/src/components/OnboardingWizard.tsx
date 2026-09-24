@@ -151,7 +151,7 @@ export function OnboardingWizard({ onComplete }: OnboardingWizardProps) {
       </div>
 
       {/* Step Content Card */}
-      <div style={{ background: "#fff", borderRadius: "20px", padding: "32px", border: "1px solid var(--border-glass)", boxShadow: "0 4px 24px rgba(29,10,39,0.06)" }}>
+      <div style={{ background: "#fff", borderRadius: "16px", padding: "32px", border: "1px solid var(--border-glass)", boxShadow: "0 4px 24px rgba(29,10,39,0.06)" }}>
         {/* Step 1: Organization Details */}
         {currentStep === 1 && (
           <div>

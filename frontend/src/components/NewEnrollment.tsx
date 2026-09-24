@@ -245,10 +245,15 @@ export const NewEnrollment: React.FC = () => {
   // ─────────── Success State ───────────
   if (submitted) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "70vh", padding: "24px" }}>
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "center", minHeight: "70vh", padding: "24px",
+        // Soft scrim so the confirmation card recedes the busy app chrome behind it.
+        background: "hsla(285,30%,12%,0.28)", backdropFilter: "blur(2px)",
+        borderRadius: "16px",
+      }}>
         <div style={{
-          background: "#fff", borderRadius: "24px", padding: "48px", textAlign: "center",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.08)", border: "1px solid hsla(285,30%,20%,0.06)",
+          background: "#fff", borderRadius: "16px", padding: "48px", textAlign: "center",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.18)", border: "1px solid hsla(285,30%,20%,0.06)",
           maxWidth: "440px", width: "100%",
         }}>
           <div style={{
@@ -291,17 +296,18 @@ export const NewEnrollment: React.FC = () => {
       display: "flex",
       flexDirection: "column",
     }}>
-      {/* Header — Only shown on initial Role selection step */}
-      {currentStep === 1 && (
-        <div style={{ marginBottom: "20px" }}>
-          <h1 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px", color: "#343a40" }}>
-            New Enrollment
-          </h1>
+      {/* Header — persistent page title so the page always has a single H1 and a
+          stable primary heading regardless of which step is active. */}
+      <div style={{ marginBottom: "16px" }}>
+        <h1 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px", color: "#343a40" }}>
+          New Enrollment
+        </h1>
+        {currentStep === 1 && (
           <p style={{ fontSize: "13px", color: "#6c757d", margin: 0 }}>
             Add a new student, staff member, or teacher to the system
           </p>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Step Indicator with Real-Time Filling Connectors */}
       <div style={{
@@ -309,25 +315,27 @@ export const NewEnrollment: React.FC = () => {
         alignItems: "center",
         justifyContent: "center",
         gap: "4px",
-        marginBottom: "20px",
+        marginBottom: "14px",
         padding: "0 4px",
       }}>
         {steps.map((step, idx) => (
           <React.Fragment key={step.num}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", height: "28px" }}>
               <div style={{
                 width: "28px", height: "28px", borderRadius: "50%", display: "flex",
-                alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700,
+                alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700, flexShrink: 0,
                 background: currentStep >= step.num
                   ? "linear-gradient(135deg, #0069d9, #007bff)"
                   : "hsla(285,30%,20%,0.06)",
                 color: currentStep >= step.num ? "#fff" : "#6c757d",
                 transition: "all 0.3s ease",
               }}>
-                {currentStep > step.num ? <Check size={13} /> : step.num}
+                {/* Show the sequential position (1..n), not the internal step id, so
+                    the numbering never skips (e.g. staff/teacher: 1,2 not 1,2,4). */}
+                {currentStep > step.num ? <Check size={13} /> : idx + 1}
               </div>
               <span style={{
-                fontSize: "11px", fontWeight: 600,
+                fontSize: "12px", fontWeight: 600, lineHeight: "28px", whiteSpace: "nowrap",
                 color: currentStep >= step.num ? "#343a40" : "#6c757d",
               }}>
                 {step.label}
@@ -339,6 +347,7 @@ export const NewEnrollment: React.FC = () => {
                 height: "3px",
                 borderRadius: "3px",
                 margin: "0 8px",
+                alignSelf: "center",
                 background: "hsla(285,30%,20%,0.08)",
                 overflow: "hidden",
                 position: "relative",
@@ -359,7 +368,7 @@ export const NewEnrollment: React.FC = () => {
       {/* Form Card */}
       <div style={{
         background: "#fff",
-        borderRadius: "18px",
+        borderRadius: "16px",
         padding: currentStep === 1 ? "24px" : "20px 24px",
         boxShadow: "0 4px 24px rgba(0,0,0,0.05)",
         border: "1px solid hsla(285,30%,20%,0.06)",
@@ -367,9 +376,9 @@ export const NewEnrollment: React.FC = () => {
         {/* ═══════════ STEP 1: Role Selection ═══════════ */}
         {currentStep === 1 && (
           <div>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 6px", color: "#343a40" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 6px", color: "#343a40" }}>
               I am enrolling a...
-            </h3>
+            </h2>
             <p style={{ fontSize: "13px", color: "#6c757d", margin: "0 0 24px" }}>
               Select the type of person you are adding
             </p>
@@ -384,11 +393,11 @@ export const NewEnrollment: React.FC = () => {
                   key={item.key}
                   onClick={() => { setRole(item.key); setErrors({}); setCurrentStep(2); }}
                   style={{
-                    padding: "24px 16px", borderRadius: "16px", border: "2px solid",
+                    padding: "20px 16px", borderRadius: "16px", border: "2px solid",
                     borderColor: role === item.key ? "#0069d9" : "hsla(285,30%,20%,0.08)",
                     background: role === item.key ? "rgba(0,123,255,0.04)" : "#fff",
                     cursor: "pointer", textAlign: "center", transition: "all 0.2s",
-                    display: "flex", flexDirection: "column", alignItems: "center", gap: "10px",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: "12px",
                   }}
                   onMouseEnter={(e) => {
                     if (role !== item.key) e.currentTarget.style.borderColor = "rgba(0,123,255,0.3)";
@@ -400,12 +409,16 @@ export const NewEnrollment: React.FC = () => {
                   <div style={{ color: role === item.key ? "#0069d9" : "#6c757d", transition: "color 0.2s" }}>
                     {item.icon}
                   </div>
-                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#343a40" }}>
-                    {item.label}
-                  </span>
-                  <span style={{ fontSize: "11px", color: "#6c757d" }}>
-                    {item.desc}
-                  </span>
+                  {/* Title + description grouped tightly so the label reads with its
+                      caption, with the larger gap reserved for icon → text. */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
+                    <span style={{ fontSize: "14px", fontWeight: 700, color: "#343a40" }}>
+                      {item.label}
+                    </span>
+                    <span style={{ fontSize: "12px", color: "#6c757d" }}>
+                      {item.desc}
+                    </span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -418,9 +431,9 @@ export const NewEnrollment: React.FC = () => {
         {/* ═══════════ STEP 2: Personal Details ═══════════ */}
         {currentStep === 2 && (
           <div>
-            <h3 style={{ fontSize: "15px", fontWeight: 700, margin: "0 0 2px", color: "#343a40" }}>
+            <h2 style={{ fontSize: "15px", fontWeight: 700, margin: "0 0 2px", color: "#343a40" }}>
               Personal Information
-            </h3>
+            </h2>
             <p style={{ fontSize: "12px", color: "#6c757d", margin: "0 0 16px" }}>
               Enter the {role}'s basic details
             </p>
@@ -550,9 +563,9 @@ export const NewEnrollment: React.FC = () => {
         {/* ═══════════ STEP 3: Guardian Details (Students only) ═══════════ */}
         {currentStep === 3 && role === "student" && (
           <div>
-            <h3 style={{ fontSize: "15px", fontWeight: 700, margin: "0 0 2px", color: "#343a40" }}>
+            <h2 style={{ fontSize: "15px", fontWeight: 700, margin: "0 0 2px", color: "#343a40" }}>
               Guardian Information
-            </h3>
+            </h2>
             <p style={{ fontSize: "12px", color: "#6c757d", margin: "0 0 16px" }}>
               Enter the student's parent / guardian details
             </p>
@@ -597,9 +610,9 @@ export const NewEnrollment: React.FC = () => {
         {/* ═══════════ STEP 4: Fee Structure ═══════════ */}
         {currentStep === 4 && (
           <div>
-            <h3 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 6px", color: "#343a40" }}>
+            <h2 style={{ fontSize: "16px", fontWeight: 700, margin: "0 0 6px", color: "#343a40" }}>
               Fee Structure
-            </h3>
+            </h2>
             <p style={{ fontSize: "13px", color: "#6c757d", margin: "0 0 24px" }}>
               Define the payment plan for this enrollment
             </p>
@@ -679,7 +692,7 @@ export const NewEnrollment: React.FC = () => {
                   <span style={{ fontSize: "13px", fontWeight: 700, color: "#343a40", display: "block" }}>
                     {plan.label}
                   </span>
-                  <span style={{ fontSize: "11px", color: "#6c757d" }}>
+                  <span style={{ fontSize: "12px", color: "#6c757d" }}>
                     {plan.desc}
                   </span>
                 </button>
@@ -701,7 +714,7 @@ export const NewEnrollment: React.FC = () => {
             {/* Auto-Calculated Fee & Installment Breakdown Preview */}
             {fee.totalAmount && (
               <div style={{
-                marginTop: "20px", padding: "18px", borderRadius: "14px",
+                marginTop: "20px", padding: "18px", borderRadius: "16px",
                 background: "rgba(0,123,255,0.05)", border: "1px solid rgba(0,123,255,0.15)",
                 display: "flex", flexDirection: "column", gap: "10px"
               }}>
@@ -719,15 +732,15 @@ export const NewEnrollment: React.FC = () => {
                   return (
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", background: "#fff", padding: "14px", borderRadius: "12px", border: "1px solid hsla(285,30%,20%,0.06)" }}>
                       <div>
-                        <span style={{ fontSize: "11px", color: "#6c757d", fontWeight: 600 }}>Total Fee Billed</span>
+                        <span style={{ fontSize: "12px", color: "#6c757d", fontWeight: 600 }}>Total Fee Billed</span>
                         <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: "#0069d9" }}>₹{total.toLocaleString("en-IN")}</p>
                       </div>
                       <div>
-                        <span style={{ fontSize: "11px", color: "#6c757d", fontWeight: 600 }}>Paid Today ({fee.paymentMethod})</span>
+                        <span style={{ fontSize: "12px", color: "#6c757d", fontWeight: 600 }}>Paid Today ({fee.paymentMethod})</span>
                         <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: "hsl(142,70%,40%)" }}>₹{paid.toLocaleString("en-IN")}</p>
                       </div>
                       <div>
-                        <span style={{ fontSize: "11px", color: "#6c757d", fontWeight: 600 }}>Remaining Dues</span>
+                        <span style={{ fontSize: "12px", color: "#6c757d", fontWeight: 600 }}>Remaining Dues</span>
                         <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: remaining > 0 ? "hsl(205, 85%, 50%)" : "hsl(142,70%,40%)" }}>₹{remaining.toLocaleString("en-IN")}</p>
                       </div>
                       {remaining > 0 ? (

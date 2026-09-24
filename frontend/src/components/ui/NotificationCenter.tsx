@@ -163,7 +163,7 @@ export function NotificationCenter({ invoiceCount, studentCount, homeworkCount }
                   <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "var(--text-primary)" }}>{notif.title}</p>
                   <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{notif.desc}</p>
                 </div>
-                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 600, flexShrink: 0 }}>{notif.time}</span>
+                <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600, flexShrink: 0 }}>{notif.time}</span>
               </div>
             ))}
           </div>

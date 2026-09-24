@@ -72,9 +72,9 @@ export function AttendanceDetails({ userRole = "STUDENT" }: { userRole?: string 
     <div className="animate-fade-in" style={{ fontFamily: FONT }}>
       {/* Header */}
       <div style={{ marginBottom: "18px" }}>
-        <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#3a3f45", margin: "0 0 4px", display: "flex", alignItems: "center", gap: "10px" }}>
+        <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#3a3f45", margin: "0 0 4px", display: "flex", alignItems: "center", gap: "10px" }}>
           <FileText size={22} style={{ color: ACCENT }} /> Attendance Datewise Details
-        </h2>
+        </h1>
         <p style={{ fontSize: "13px", color: VALUE, margin: 0 }}>Select a date range to view attendance records.</p>
       </div>
 

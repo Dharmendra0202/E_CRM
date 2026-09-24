@@ -319,10 +319,10 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
           { label: "Pending Dues", value: `₹${outstanding.toLocaleString("en-IN")}`, icon: <AlertCircle size={18} />, color: "var(--color-danger)" },
           { label: "Overdue Invoices", value: overdueCount, icon: <Clock size={18} />, color: "hsl(38,92%,50%)" },
         ].map((s, i) => (
-          <div key={i} style={{ background: "#fff", borderRadius: "14px", padding: "18px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "14px" }}>
-            <div style={{ width: "42px", height: "42px", borderRadius: "11px", background: `${s.color}12`, display: "flex", alignItems: "center", justifyContent: "center", color: s.color }}>{s.icon}</div>
+          <div key={i} style={{ background: "#fff", borderRadius: "16px", padding: "18px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "14px" }}>
+            <div style={{ width: "42px", height: "42px", borderRadius: "12px", background: `${s.color}12`, display: "flex", alignItems: "center", justifyContent: "center", color: s.color }}>{s.icon}</div>
             <div>
-              <p style={{ margin: 0, fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s.label}</p>
+              <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s.label}</p>
               <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: s.color }}>{s.value}</p>
             </div>
           </div>
@@ -404,7 +404,7 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
                       </div>
                       <div>
                         <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{name}</p>
-                        <p style={{ margin: 0, fontSize: "10px", color: "var(--text-secondary)" }}>{inv.student?.user?.email}</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>{inv.student?.user?.email}</p>
                       </div>
                     </div>
                     <span style={{ fontSize: "13px", fontWeight: 700 }}>₹{Number(inv.totalAmount).toLocaleString("en-IN")}</span>
@@ -415,10 +415,9 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                       {inv.status !== "PAID" ? (
                         <>
-                          <button onClick={() => { setShowPay(inv); setPayForm({ amount: String(remaining), paymentMethod: "CASH", transactionReference: "" }); }}
-                            style={{ fontSize: "11px", fontWeight: 700, color: "#fff", background: "linear-gradient(135deg, #007bff, #0069d9)", border: "none", padding: "6px 12px", borderRadius: "8px", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,123,255,0.3)" }}>
+                          <Button variant="primary" size="sm" onClick={() => { setShowPay(inv); setPayForm({ amount: String(remaining), paymentMethod: "CASH", transactionReference: "" }); }}>
                             Pay Now
-                          </button>
+                          </Button>
                           <a
                             href={`https://wa.me/${inv.student?.parentPhone ? inv.student.parentPhone.replace(/[^0-9]/g, "") : inv.student?.user?.phone ? inv.student.user.phone.replace(/[^0-9]/g, "") : "918383999973"}?text=${encodeURIComponent(
                               `Fee Reminder from EduFlow: Dear Parent of ${name}, an outstanding fee balance of Rs. ${remaining.toLocaleString("en-IN")} is pending for Invoice #${inv.id.substring(0, 8)} (Due Date: ${new Date(inv.dueDate).toLocaleDateString()}). Please submit payment online or contact EduFlow at +91 8383999973.`
@@ -474,7 +473,7 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
             {staffList.length === 0 ? (
               <p style={{ fontSize: "13px", color: "var(--text-secondary)", gridColumn: "1 / -1", textAlign: "center", padding: "32px 0" }}>No staff or teachers registered yet.</p>
             ) : staffList.map((member) => (
-              <div key={member.id} style={{ background: "rgba(29,10,39,0.02)", borderRadius: "14px", padding: "18px", border: "1px solid var(--border-glass)" }}>
+              <div key={member.id} style={{ background: "rgba(29,10,39,0.02)", borderRadius: "16px", padding: "18px", border: "1px solid var(--border-glass)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
                   <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "rgba(0,123,255,0.12)", color: "#0069d9", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "14px" }}>
                     {`${member.firstName[0]}${member.lastName[0]}`.toUpperCase()}
@@ -502,7 +501,7 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
       {/* Staff Payment Drawer / Modal */}
       {showStaffDrawer && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowStaffDrawer(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "24px", padding: "28px", width: "100%", maxWidth: "440px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "440px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800 }}>Record Staff / Teacher Salary</h3>
               <button onClick={() => setShowStaffDrawer(false)} style={{ background: "transparent", border: "none", cursor: "pointer" }}><X size={18} /></button>
@@ -557,7 +556,7 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
       {/* Create Invoice Modal */}
       {showCreate && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowCreate(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Issue Invoice</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
@@ -599,7 +598,7 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
       {/* Record Payment Modal */}
       {showPay && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowPay(null)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Record Payment</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div><label style={labelStyle}>Amount (₹) *</label><input style={inputStyle} type="number" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: e.target.value })} /></div>
@@ -616,20 +615,17 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
               <div><label style={labelStyle}>Reference / Transaction ID</label><input style={inputStyle} value={payForm.transactionReference} onChange={(e) => setPayForm({ ...payForm, transactionReference: e.target.value })} placeholder="Optional" /></div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
-              <button
+              <Button
                 type="button"
+                variant="primary"
+                size="lg"
                 onClick={handleRazorpayOnlinePayment}
-                disabled={paying}
-                style={{
-                  width: "100%", padding: "12px", borderRadius: "10px",
-                  background: "linear-gradient(135deg, #0284c7, #2563eb)", color: "#fff",
-                  border: "none", fontSize: "14px", fontWeight: 800, cursor: "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
-                  boxShadow: "0 4px 14px rgba(37,99,235,0.3)"
-                }}
+                isLoading={paying}
+                leftIcon={<CreditCard size={16} />}
+                style={{ width: "100%" }}
               >
-                <CreditCard size={16} /> Pay via Razorpay (Test Mode)
-              </button>
+                Pay via Razorpay (Test Mode)
+              </Button>
               <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
                 <Button variant="secondary" onClick={() => setShowPay(null)}>Cancel</Button>
                 <Button variant="primary" isLoading={paying} onClick={handleRecordPayment} leftIcon={<CheckCircle2 size={14} />}>Record Offline Cash/Bank</Button>
@@ -642,7 +638,7 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
       {/* ── DETAILED PAYMENT RECEIPT & VERIFICATION MODAL ───────── */}
       {selectedReceipt && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 99999 }} onClick={() => setSelectedReceipt(null)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "24px", padding: "28px", width: "100%", maxWidth: "520px", boxShadow: "0 24px 60px rgba(0,0,0,0.2)" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "520px", boxShadow: "0 24px 60px rgba(0,0,0,0.2)" }} className="animate-slide-up">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", borderBottom: "1px solid var(--border-glass)", paddingBottom: "14px" }}>
               <div>
                 <span style={{ fontSize: "11px", fontWeight: 800, color: "var(--color-accent)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Official Payment Receipt</span>
@@ -652,7 +648,7 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
             </div>
 
             {/* Student & Status Info */}
-            <div style={{ background: "rgba(29,10,39,0.03)", borderRadius: "14px", padding: "16px", marginBottom: "20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div style={{ background: "rgba(29,10,39,0.03)", borderRadius: "16px", padding: "16px", marginBottom: "20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               <div>
                 <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 600 }}>Student Name</span>
                 <p style={{ margin: "2px 0 0", fontSize: "14px", fontWeight: 800 }}>
@@ -672,17 +668,17 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
             {/* Billing Summary */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "20px", textAlign: "center" }}>
               <div style={{ background: "rgba(0,123,255,0.08)", padding: "12px", borderRadius: "12px" }}>
-                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Total Billed</span>
+                <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Total Billed</span>
                 <p style={{ margin: "2px 0 0", fontSize: "16px", fontWeight: 800, color: "#0069d9" }}>₹{Number(selectedReceipt.totalAmount).toLocaleString("en-IN")}</p>
               </div>
               <div style={{ background: "hsla(142,70%,45%,0.08)", padding: "12px", borderRadius: "12px" }}>
-                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Paid Amount</span>
+                <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Paid Amount</span>
                 <p style={{ margin: "2px 0 0", fontSize: "16px", fontWeight: 800, color: "var(--color-success)" }}>
                   ₹{(selectedReceipt.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0).toLocaleString("en-IN")}
                 </p>
               </div>
               <div style={{ background: "hsla(346,84%,61%,0.08)", padding: "12px", borderRadius: "12px" }}>
-                <span style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Remaining Dues</span>
+                <span style={{ fontSize: "11px", color: "var(--text-secondary)", fontWeight: 700, textTransform: "uppercase" }}>Remaining Dues</span>
                 <p style={{ margin: "2px 0 0", fontSize: "16px", fontWeight: 800, color: "var(--color-danger)" }}>
                   ₹{Math.max(0, Number(selectedReceipt.totalAmount) - (selectedReceipt.payments?.reduce((s: number, p: any) => s + Number(p.amount), 0) || 0)).toLocaleString("en-IN")}
                 </p>

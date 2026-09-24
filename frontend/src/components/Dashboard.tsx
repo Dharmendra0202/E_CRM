@@ -1,5 +1,6 @@
 import React from "react";
 import { Card } from "./ui/Card";
+import { Button } from "./ui/Button";
 import { Skeleton } from "./ui/Skeleton";
 import { StudentDashboard } from "./StudentDashboard";
 import {
@@ -8,7 +9,7 @@ import {
   BarChart3, Clock, AlertCircle, Zap,
   Plus, CheckCircle2, Activity, Layers, Bell, FileText,
   Upload, Sparkles, ShieldCheck, User, MessageSquare, Award,
-  ChevronRight, Download, AlertTriangle, ArrowRight
+  ChevronRight, Download, AlertTriangle, ArrowRight, UserCog
 } from "lucide-react";
 
 interface DashboardProps {
@@ -81,57 +82,64 @@ export function Dashboard({
   const isStaff = currentRole === "STAFF";
 
   // KPI Cards Config (All Clickable & Linked)
+  // `trend: "up"` → green + TrendingUp icon (real positive movement, non-zero only).
+  // `trend: "neutral"` → gray, no trend icon (static counts / zero values).
+  // The badge only reads as "success" green when the underlying number is actually > 0.
   const kpiCards = [
     {
       icon: <Users2 size={20} />,
       gradient: "linear-gradient(135deg, #007bff, #0069d9)",
-      label: "TOTAL STUDENTS",
+      label: "Total students",
       value: totalStudents,
       badge: `+${studentsThisMonth} this month`,
-      badgeColor: "var(--color-success)",
+      trend: studentsThisMonth > 0 ? "up" : "neutral",
       onClick: () => onNavigate("leads"),
     },
     {
       icon: <IndianRupee size={20} />,
       gradient: "linear-gradient(135deg, hsl(142,70%,42%), hsl(160,70%,35%))",
-      label: "FEES COLLECTED",
+      label: "Fees collected",
       value: `₹${totalFeesCollected.toLocaleString("en-IN")}`,
+      isCurrency: true,
       badge: `${collectionRate}% of target`,
-      badgeColor: "var(--color-success)",
+      trend: collectionRate > 0 ? "up" : "neutral",
       onClick: () => onNavigate("billing"),
     },
     {
       icon: <UserCheck size={20} />,
       gradient: "linear-gradient(135deg, #0069d9, hsl(240,80%,65%))",
-      label: "AVG ATTENDANCE",
+      label: "Avg attendance",
       value: `${avgAttendance.toFixed(1)}%`,
       badge: `${totalAttendanceRecords} records`,
-      badgeColor: "var(--color-success)",
+      trend: "neutral" as const,
       onClick: () => onNavigate("attendance"),
     },
     {
       icon: <Target size={20} />,
       gradient: "linear-gradient(135deg, hsl(38,92%,50%), hsl(20,95%,55%))",
-      label: "ENROLLED STUDENTS",
+      label: "Enrolled students",
       value: enrolledStudents,
       badge: `${newStudents} new today`,
-      badgeColor: "var(--color-success)",
+      trend: newStudents > 0 ? "up" : "neutral",
       onClick: () => onNavigate("leads"),
     },
   ];
 
   // Bento Navigation Cards Config (All Clickable)
+  // `primary` marks the handful of most-frequent tasks. Quick Navigation only
+  // renders these (max 5) so it stays a focused shortcut strip, not a full
+  // duplicate of the sidebar. Each card carries a live data summary in `desc`.
   const moduleCards = [
-    { icon: <Users2 size={22} />, label: "Students", desc: `${totalStudents} registered`, color: "#007bff", view: "leads" },
-    { icon: <Target size={22} />, label: "Admissions", desc: "CRM pipeline", color: "#0069d9", view: "admissions" },
+    { icon: <Users2 size={22} />, label: "Students", desc: `${totalStudents} registered`, color: "#007bff", view: "leads", primary: true },
+    { icon: <Target size={22} />, label: "Admissions", desc: "CRM pipeline", color: "#0069d9", view: "admissions", primary: true },
     { icon: <GraduationCap size={22} />, label: "Batches", desc: `${totalBatches} active`, color: "#17a2b8", view: "batches" },
-    { icon: <CheckCircle2 size={22} />, label: "Attendance", desc: `${avgAttendance.toFixed(0)}% avg rate`, color: "hsl(142,70%,42%)", view: "attendance" },
-    { icon: <IndianRupee size={22} />, label: "Billing", desc: `₹${totalFeesCollected.toLocaleString("en-IN")} collected`, color: "hsl(38,92%,50%)", view: "billing" },
+    { icon: <CheckCircle2 size={22} />, label: "Attendance", desc: `${avgAttendance.toFixed(0)}% avg rate`, color: "hsl(142,70%,42%)", view: "attendance", primary: true },
+    { icon: <IndianRupee size={22} />, label: "Billing", desc: `₹${totalFeesCollected.toLocaleString("en-IN")} collected`, color: "hsl(38,92%,50%)", view: "billing", primary: true },
     { icon: <CalendarDays size={22} />, label: "Timetable", desc: "Manage schedules", color: "hsl(200,70%,45%)", view: "schedule" },
-    { icon: <BookOpen size={22} />, label: "Exams", desc: "Results & reports", color: "hsl(205, 85%, 50%)", view: "exams" },
+    { icon: <BookOpen size={22} />, label: "Exams", desc: "Results & reports", color: "hsl(205, 85%, 50%)", view: "exams", primary: true },
     { icon: <Activity size={22} />, label: "Homework", desc: "Assignments & grading", color: "hsl(200,70%,45%)", view: "homework" },
     { icon: <Layers size={22} />, label: "Staff", desc: `${totalStaffOnly} members`, color: "hsl(260,91%,55%)", view: "staff" },
-    { icon: <GraduationCap size={22} />, label: "Teachers", desc: `${totalTeachers} registered`, color: "hsl(142,70%,42%)", view: "teachers" },
+    { icon: <UserCog size={22} />, label: "Teachers", desc: `${totalTeachers} registered`, color: "hsl(142,70%,42%)", view: "teachers" },
     { icon: <BarChart3 size={22} />, label: "Reports", desc: "Analytics & insights", color: "hsl(38,70%,45%)", view: "reports" },
   ];
 
@@ -142,7 +150,11 @@ export function Dashboard({
     STAFF: ["leads", "attendance", "billing", "communication"],
     STUDENT: ["schedule", "attendance", "exams", "homework"],
   };
-  const visibleModuleCards = moduleCards.filter(c => (allowedModuleViews[currentRole] || allowedModuleViews.STUDENT).includes(c.view));
+  // Only the top few tasks the current role can access — capped at 5 to avoid
+  // duplicating the full sidebar. Prefer `primary` tasks, then fill up to 5.
+  const roleAllowed = moduleCards.filter(c => (allowedModuleViews[currentRole] || allowedModuleViews.STUDENT).includes(c.view));
+  const primaryAllowed = roleAllowed.filter(c => c.primary);
+  const visibleModuleCards = (primaryAllowed.length ? primaryAllowed : roleAllowed).slice(0, 5);
 
   return (
     <div className="animate-fade-in" style={{ paddingBottom: "30px" }}>
@@ -161,21 +173,21 @@ export function Dashboard({
         <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
             <div onClick={() => onNavigate("schedule")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>MY TIMETABLE</div>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>My timetable</div>
               <div style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", marginTop: "4px" }}>View Schedule →</div>
-              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{totalBatches} active batch schedules</p>
+              <p style={{ margin: "6px 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>{totalBatches} active batch schedules</p>
             </div>
 
             <div onClick={() => onNavigate("attendance")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>STUDENT ATTENDANCE</div>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Student attendance</div>
               <div style={{ fontSize: "22px", fontWeight: 800, color: "hsl(142,70%,35%)", marginTop: "4px" }}>Mark Attendance →</div>
-              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Track & record daily attendance</p>
+              <p style={{ margin: "6px 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>Track & record daily attendance</p>
             </div>
 
             <div onClick={() => onNavigate("homework")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>HOMEWORK & EXAMS</div>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Homework & exams</div>
               <div style={{ fontSize: "22px", fontWeight: 800, color: "#007bff", marginTop: "4px" }}>Manage Assignments →</div>
-              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Review homework & exam marks</p>
+              <p style={{ margin: "6px 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>Review homework & exam marks</p>
             </div>
           </div>
 
@@ -183,14 +195,14 @@ export function Dashboard({
             <h3 style={{ margin: "0 0 14px", fontSize: "15px", fontWeight: 800, display: "flex", alignItems: "center", gap: "7px" }}>
               <Zap size={16} style={{ color: "var(--color-accent)" }} /> Quick Navigation
             </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+            <div className="module-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
               {visibleModuleCards.map((card) => (
                 <div
                   key={card.label}
                   onClick={() => onNavigate(card.view)}
                   style={{
                     background: "#fff",
-                    borderRadius: "14px",
+                    borderRadius: "16px",
                     padding: "16px 18px",
                     border: "none",
                     boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)",
@@ -213,7 +225,7 @@ export function Dashboard({
                     style={{
                       width: "42px",
                       height: "42px",
-                      borderRadius: "11px",
+                      borderRadius: "12px",
                       background: `${card.color}12`,
                       display: "flex",
                       alignItems: "center",
@@ -226,9 +238,9 @@ export function Dashboard({
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{card.label}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{card.desc}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>{card.desc}</p>
                   </div>
-                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.4, flexShrink: 0 }} />
+                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.7, flexShrink: 0 }} />
                 </div>
               ))}
             </div>
@@ -243,14 +255,14 @@ export function Dashboard({
         <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
             <div onClick={() => onNavigate("billing")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>COLLECT FEES</div>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Collect fees</div>
               <div style={{ fontSize: "22px", fontWeight: 800, color: "hsl(38,92%,45%)", marginTop: "4px" }}>Fee Billing →</div>
-              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{unpaidInvoices.length} pending fee invoices</p>
+              <p style={{ margin: "6px 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>{unpaidInvoices.length} pending fee invoices</p>
             </div>
             <div onClick={() => onNavigate("leads")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
-              <div style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)" }}>STUDENT DIRECTORY</div>
+              <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>Student directory</div>
               <div style={{ fontSize: "22px", fontWeight: 800, color: "#17a2b8", marginTop: "4px" }}>{totalStudents} Students</div>
-              <p style={{ margin: "6px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Manage registrations & records</p>
+              <p style={{ margin: "6px 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>Manage registrations & records</p>
             </div>
           </div>
 
@@ -258,14 +270,14 @@ export function Dashboard({
             <h3 style={{ margin: "0 0 14px", fontSize: "15px", fontWeight: 800, display: "flex", alignItems: "center", gap: "7px" }}>
               <Zap size={16} style={{ color: "var(--color-accent)" }} /> Quick Navigation
             </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+            <div className="module-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
               {visibleModuleCards.map((card) => (
                 <div
                   key={card.label}
                   onClick={() => onNavigate(card.view)}
                   style={{
                     background: "#fff",
-                    borderRadius: "14px",
+                    borderRadius: "16px",
                     padding: "16px 18px",
                     border: "none",
                     boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)",
@@ -288,7 +300,7 @@ export function Dashboard({
                     style={{
                       width: "42px",
                       height: "42px",
-                      borderRadius: "11px",
+                      borderRadius: "12px",
                       background: `${card.color}12`,
                       display: "flex",
                       alignItems: "center",
@@ -301,9 +313,9 @@ export function Dashboard({
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{card.label}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{card.desc}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>{card.desc}</p>
                   </div>
-                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.4, flexShrink: 0 }} />
+                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.7, flexShrink: 0 }} />
                 </div>
               ))}
             </div>
@@ -316,6 +328,16 @@ export function Dashboard({
       {/* ========================================================================= */}
       {isAdmin && (
         <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
+          {/* Page heading */}
+          <div>
+            <h1 style={{ margin: 0, fontSize: "24px", fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-headings)" }}>
+              Dashboard
+            </h1>
+            <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--text-secondary)" }}>
+              Welcome back{userName ? `, ${userName}` : ""}. Here's your academy at a glance.
+            </p>
+          </div>
+
           {/* KPI Cards Grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
             {kpiCards.map((m, i) => (
@@ -364,28 +386,38 @@ export function Dashboard({
                       </div>
                       <span
                         style={{
-                          fontSize: "11px",
+                          fontSize: "12px",
                           fontWeight: 700,
-                          color: m.badgeColor,
-                          background: "hsla(142,70%,42%,0.1)",
+                          color: m.trend === "up" ? "var(--color-success)" : "var(--text-secondary)",
+                          background: m.trend === "up" ? "hsla(142,70%,42%,0.1)" : "hsla(285,10%,40%,0.08)",
                           padding: "4px 10px",
-                          borderRadius: "20px",
+                          borderRadius: "8px",
                           display: "inline-flex",
                           alignItems: "center",
                           gap: "4px",
                           whiteSpace: "nowrap",
                         }}
                       >
-                        <TrendingUp size={10} />
+                        {m.trend === "up" && <TrendingUp size={11} />}
                         {m.badge}
                       </span>
                     </div>
-                    <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.6px" }}>
-                      {m.label}
-                    </p>
-                    <h2 style={{ margin: 0, fontSize: "26px", fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-headings)" }}>
-                      {m.value}
-                    </h2>
+                    {/* Value is the focal point; label sits directly above it as a tight caption */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      <p style={{ margin: 0, fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", letterSpacing: "0.2px" }}>
+                        {m.label}
+                      </p>
+                      <h2 style={{ margin: 0, fontSize: "32px", lineHeight: 1.1, fontWeight: 800, color: "var(--text-primary)", fontFamily: "var(--font-headings)" }}>
+                        {m.isCurrency ? (
+                          <>
+                            <span style={{ fontSize: "22px", fontWeight: 700, marginRight: "1px", verticalAlign: "baseline" }}>₹</span>
+                            {String(m.value).replace(/^₹/, "")}
+                          </>
+                        ) : (
+                          m.value
+                        )}
+                      </h2>
+                    </div>
                   </>
                 )}
               </div>
@@ -397,14 +429,14 @@ export function Dashboard({
             <h3 style={{ margin: "0 0 14px", fontSize: "15px", fontWeight: 800, display: "flex", alignItems: "center", gap: "7px" }}>
               <Zap size={16} style={{ color: "var(--color-accent)" }} /> Academy Quick Navigation
             </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "12px" }}>
+            <div className="module-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
               {visibleModuleCards.map((card) => (
                 <div
                   key={card.label}
                   onClick={() => onNavigate(card.view)}
                   style={{
                     background: "#fff",
-                    borderRadius: "14px",
+                    borderRadius: "16px",
                     padding: "16px 18px",
                     border: "none",
                     boxShadow: "0 2px 8px rgba(29,10,39,0.04), 0 4px 12px -6px rgba(29,10,39,0.06)",
@@ -427,7 +459,7 @@ export function Dashboard({
                     style={{
                       width: "42px",
                       height: "42px",
-                      borderRadius: "11px",
+                      borderRadius: "12px",
                       background: `${card.color}12`,
                       display: "flex",
                       alignItems: "center",
@@ -440,9 +472,9 @@ export function Dashboard({
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{card.label}</p>
-                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>{card.desc}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>{card.desc}</p>
                   </div>
-                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.4, flexShrink: 0 }} />
+                  <ArrowUpRight size={14} style={{ color: "var(--text-secondary)", opacity: 0.7, flexShrink: 0 }} />
                 </div>
               ))}
             </div>
@@ -455,16 +487,21 @@ export function Dashboard({
                 <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "7px" }}>
                   <AlertCircle size={16} style={{ color: "var(--color-danger)" }} /> Pending Student Fees
                 </h3>
-                <button onClick={() => onNavigate("billing")} style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "rgba(0,123,255,0.07)", border: "1px solid rgba(0,123,255,0.18)", borderRadius: "8px", padding: "5px 11px", cursor: "pointer" }}>
-                  View All <ArrowUpRight size={11} />
-                </button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onNavigate("billing")}
+                  rightIcon={<ArrowUpRight size={13} />}
+                >
+                  View all
+                </Button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {unpaidInvoices.slice(0, 5).map((inv, idx) => (
                   <div key={inv.id || idx} onClick={() => onNavigate("billing")} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", background: "hsla(205, 85%, 50%,0.04)", borderRadius: "10px", border: "1px solid hsla(205, 85%, 50%,0.1)", cursor: "pointer" }}>
                     <div>
                       <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>{inv.student?.user ? `${inv.student.user.firstName} ${inv.student.user.lastName}` : "Student"}</p>
-                      <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>Due: {new Date(inv.dueDate).toLocaleDateString("en-IN")}</p>
+                      <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary)" }}>Due: {new Date(inv.dueDate).toLocaleDateString("en-IN")}</p>
                     </div>
                     <span style={{ fontSize: "14px", fontWeight: 800, color: "var(--color-danger)" }}>₹{Number(inv.totalAmount).toLocaleString("en-IN")}</span>
                   </div>

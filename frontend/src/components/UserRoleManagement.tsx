@@ -209,12 +209,12 @@ export function UserRoleManagement() {
                       </div>
                     </div>
                     <div>
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#0069d9", background: "rgba(0,123,255,0.08)", padding: "3px 10px", borderRadius: "20px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#0069d9", background: "rgba(0,123,255,0.08)", padding: "3px 10px", borderRadius: "8px" }}>
                         {member.role}
                       </span>
                     </div>
                     <div>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 700, color: st.color, background: st.bg, padding: "3px 10px", borderRadius: "20px" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "11px", fontWeight: 700, color: st.color, background: st.bg, padding: "3px 10px", borderRadius: "8px" }}>
                         {st.icon} {member.status}
                       </span>
                     </div>
@@ -299,7 +299,7 @@ export function UserRoleManagement() {
       {/* ═══ INVITE MODAL ═══ */}
       {showInvite && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowInvite(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Invite User</h3>
             <div style={{ marginBottom: "14px" }}>
               <label style={labelStyle}>Email Address</label>
@@ -326,7 +326,7 @@ export function UserRoleManagement() {
       {/* ═══ CREATE ROLE MODAL ═══ */}
       {showCreateRole && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowCreateRole(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Create Role</h3>
             <div style={{ marginBottom: "14px" }}>
               <label style={labelStyle}>Role Name</label>

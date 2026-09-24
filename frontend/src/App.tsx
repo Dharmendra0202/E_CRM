@@ -7,7 +7,7 @@ import { Toggle } from "./components/ui/Toggle";
 import { api, setToken, getToken } from "./utils/api";
 import { Login } from "./components/Login";
 import { StudentManagement } from "./components/StudentManagement";
-import { StudentProfile } from "./components/StudentProfile";
+import { StudentProfileCard } from "./components/StudentProfileCard";
 import { StudentProfiles } from "./components/StudentProfiles";
 import { OnlineClasses } from "./components/OnlineClasses";
 import { ClassTimeTable } from "./components/ClassTimeTable";
@@ -430,8 +430,9 @@ function App() {
               title="Toggle menu"
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
-                width: "36px", height: "36px", borderRadius: "10px", border: "none",
-                background: "hsla(285,30%,20%,0.06)", cursor: "pointer",
+                width: "36px", height: "36px", borderRadius: "10px",
+                border: "1px solid var(--border-glass)",
+                background: "transparent", cursor: "pointer",
               }}
             >
               <Menu size={20} style={{ color: "var(--text-primary)" }} />
@@ -447,7 +448,7 @@ function App() {
                 title="Go Back (Two-finger swipe right on touchpad)"
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  width: "28px", height: "28px", borderRadius: "8px", border: "1px solid var(--border-glass)",
+                  width: "28px", height: "28px", borderRadius: "10px", border: "1px solid var(--border-glass)",
                   background: historyIndex > 0 ? "rgba(255,255,255,0.8)" : "transparent",
                   cursor: historyIndex > 0 ? "pointer" : "not-allowed",
                   opacity: historyIndex > 0 ? 1 : 0.4,
@@ -462,7 +463,7 @@ function App() {
                 title="Go Forward (Two-finger swipe left on touchpad)"
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  width: "28px", height: "28px", borderRadius: "8px", border: "1px solid var(--border-glass)",
+                  width: "28px", height: "28px", borderRadius: "10px", border: "1px solid var(--border-glass)",
                   background: historyIndex < viewHistory.length - 1 ? "rgba(255,255,255,0.8)" : "transparent",
                   cursor: historyIndex < viewHistory.length - 1 ? "pointer" : "not-allowed",
                   opacity: historyIndex < viewHistory.length - 1 ? 1 : 0.4,
@@ -474,11 +475,12 @@ function App() {
             </div>
           </div>
 
-          <div className="navbar-search-box" style={{ display: "flex", width: "300px", position: "relative" }}>
+          <div className="navbar-search-box" style={{ display: "flex", position: "relative" }}>
             <Search size={15} style={{ color: "var(--text-secondary)", flexShrink: 0 }} />
             <input
               type="text"
-              placeholder="Search student, staff, teacher..."
+              placeholder="Search everywhere..."
+              aria-label="Global search across students, staff and teachers"
               className="navbar-search-input"
               value={globalSearch}
               onChange={e => setGlobalSearch(e.target.value)}
@@ -533,7 +535,7 @@ function App() {
               return (
                 <div style={{
                   position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0,
-                  background: "#fff", borderRadius: "14px",
+                  background: "#fff", borderRadius: "16px",
                   boxShadow: "0 12px 40px rgba(0,0,0,0.18)", zIndex: 99999,
                   border: "1px solid hsla(285,30%,20%,0.08)", overflow: "hidden"
                 }}>
@@ -865,7 +867,7 @@ function App() {
 
       {/* ── SEARCH RESULT: Full Student Profile ────────────── */}
       {globalSearchCard && (
-        <StudentProfile
+        <StudentProfileCard
           studentId={globalSearchCard.id}
           onClose={() => { setGlobalSearchCard(null); setIsCardClosing(false); }}
         />

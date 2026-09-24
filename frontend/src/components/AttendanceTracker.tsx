@@ -256,7 +256,7 @@ export function AttendanceTracker({ userRole = "STUDENT" }: AttendanceTrackerPro
                 alignItems: "center",
                 gap: "8px",
                 padding: "8px 14px",
-                borderRadius: "20px",
+                borderRadius: "8px",
                 background: isConnected ? "hsla(142,70%,40%,0.08)" : "hsla(205, 85%, 50%,0.08)",
                 border: `1px solid ${isConnected ? "hsla(142,70%,40%,0.2)" : "hsla(205, 85%, 50%,0.2)"}`,
                 fontSize: "12px",
@@ -581,11 +581,11 @@ export function AttendanceTracker({ userRole = "STUDENT" }: AttendanceTrackerPro
                           <span
                             style={{
                               marginLeft: "8px",
-                              padding: "1px 6px",
+                              padding: "2px 7px",
                               background: "rgba(23,162,184,0.1)",
                               color: "#17a2b8",
-                              borderRadius: "4px",
-                              fontSize: "10px",
+                              borderRadius: "8px",
+                              fontSize: "11px",
                               fontWeight: 700,
                             }}
                           >

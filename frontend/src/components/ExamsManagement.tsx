@@ -70,7 +70,7 @@ export function ExamsManagement() {
             </div>
             <div>
               <p style={{ margin: 0, fontSize: "28px", fontWeight: 800, color: "var(--text-primary)" }}>{stat.value}</p>
-              <p style={{ margin: "4px 0 0", fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.8px" }}>{stat.label}</p>
+              <p style={{ margin: "4px 0 0", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.8px" }}>{stat.label}</p>
             </div>
           </div>
         ))}
@@ -106,7 +106,7 @@ export function ExamsManagement() {
               <thead>
                 <tr style={{ borderBottom: "1px solid var(--border-glass)", background: "rgba(29,10,39,0.02)" }}>
                   {["ROLL NO", "STUDENT NAME", "BATCH", "STATUS", "ACTION"].map((h) => (
-                    <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
+                    <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.5px" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -133,12 +133,13 @@ export function ExamsManagement() {
                           </span>
                         </td>
                         <td style={{ padding: "12px 16px" }}>
-                          <button
+                          <Button
+                            variant="secondary"
+                            size="sm"
                             onClick={() => setSelectedStudent(student)}
-                            style={{ fontSize: "11px", fontWeight: 700, color: "var(--color-accent)", background: "rgba(0,123,255,0.08)", border: "1px solid rgba(0,123,255,0.2)", padding: "4px 10px", borderRadius: "8px", cursor: "pointer" }}
                           >
                             Report Card
-                          </button>
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -155,16 +156,16 @@ export function ExamsManagement() {
             <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
               <Printer size={16} style={{ color: "var(--color-accent)" }} /> Printable Report Card
             </h3>
-            <span style={{ fontSize: "9px", fontWeight: 800, color: "#fff", background: "var(--color-accent)", padding: "3px 8px", borderRadius: "6px" }}>LIVE PREVIEW</span>
+            <span style={{ fontSize: "11px", fontWeight: 800, color: "#fff", background: "var(--color-accent)", padding: "3px 8px", borderRadius: "8px" }}>LIVE PREVIEW</span>
           </div>
 
           {selectedStudent ? (
-            <div style={{ background: "#fff", borderRadius: "14px", border: "1px solid rgba(0,123,255,0.15)", padding: "20px", boxShadow: "0 4px 16px rgba(29,10,39,0.06)" }}>
+            <div style={{ background: "#fff", borderRadius: "16px", border: "1px solid rgba(0,123,255,0.15)", padding: "20px", boxShadow: "0 4px 16px rgba(29,10,39,0.06)" }}>
               {/* School Header */}
               <div style={{ textAlign: "center", paddingBottom: "12px", borderBottom: "1px solid var(--border-glass)", marginBottom: "14px" }}>
                 <GraduationCap size={28} style={{ color: "var(--color-accent)", marginBottom: "4px" }} />
                 <h4 style={{ margin: "0 0 2px", fontSize: "14px", fontWeight: 800 }}>E-CRM ACADEMY</h4>
-                <p style={{ margin: 0, fontSize: "9px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "1.5px" }}>Official Academic Progress Report</p>
+                <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "1.5px" }}>Official Academic Progress Report</p>
               </div>
 
               {/* Student Info */}

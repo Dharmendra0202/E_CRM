@@ -101,7 +101,7 @@ export function HomeworkAssignments() {
             { label: "Pending Grading", value: stats.pendingGrading, color: "hsl(38,92%,50%)" },
           ].map((s, i) => (
             <div key={i} style={{ background: "#fff", borderRadius: "12px", padding: "14px", border: "1px solid var(--border-glass)" }}>
-              <p style={{ margin: "0 0 4px", fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s.label}</p>
+              <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s.label}</p>
               <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: s.color }}>{s.value}</p>
             </div>
           ))}
@@ -155,11 +155,11 @@ export function HomeworkAssignments() {
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
                   <div style={{ textAlign: "center" }}>
                     <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#0069d9" }}>{hw.submissionCount}</p>
-                    <p style={{ margin: 0, fontSize: "9px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Submitted</p>
+                    <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Submitted</p>
                   </div>
                   <div style={{ textAlign: "center" }}>
                     <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "var(--color-success)" }}>{hw.gradedCount}</p>
-                    <p style={{ margin: 0, fontSize: "9px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Graded</p>
+                    <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Graded</p>
                   </div>
                   {hw.status === "ACTIVE" && (
                     <button onClick={() => handleCloseHomework(hw.id)} title="Close assignment" style={{ width: "30px", height: "30px", borderRadius: "8px", border: "1px solid var(--border-glass)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-secondary)" }}>
@@ -176,7 +176,7 @@ export function HomeworkAssignments() {
       {/* Create Modal */}
       {showCreate && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowCreate(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "480px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "480px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>New Assignment</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
               <div style={{ gridColumn: "1 / -1" }}><label style={labelStyle}>Title *</label><input style={inputStyle} value={newHw.title} onChange={(e) => setNewHw({ ...newHw, title: e.target.value })} placeholder="Assignment title" /></div>

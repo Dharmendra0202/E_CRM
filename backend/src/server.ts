@@ -80,8 +80,10 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// CORS - Environment-specific whitelist (rejects unknown origins)
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "http://localhost:5173,http://localhost:3000")
+// CORS - Environment-specific whitelist (rejects unknown origins).
+// Includes Capacitor WebView origins so the Android APK can call the API.
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ||
+  "http://localhost:5173,http://localhost:3000,http://localhost,capacitor://localhost,https://localhost")
   .split(",")
   .map(o => o.trim());
 

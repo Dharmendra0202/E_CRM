@@ -150,8 +150,8 @@ export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string 
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {upcoming.map((exam) => (
-              <div key={exam.id} style={{ background: "#fff", borderRadius: "14px", padding: "16px 20px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "14px" }}>
-                <div style={{ width: "42px", height: "42px", borderRadius: "11px", background: `${STATUS_COLORS[exam.status]}12`, display: "flex", alignItems: "center", justifyContent: "center", color: STATUS_COLORS[exam.status], flexShrink: 0 }}>
+              <div key={exam.id} style={{ background: "#fff", borderRadius: "16px", padding: "16px 20px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "14px" }}>
+                <div style={{ width: "42px", height: "42px", borderRadius: "12px", background: `${STATUS_COLORS[exam.status]}12`, display: "flex", alignItems: "center", justifyContent: "center", color: STATUS_COLORS[exam.status], flexShrink: 0 }}>
                   <FileText size={20} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -185,7 +185,7 @@ export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string 
           <div key={s} onClick={() => setFilterStatus(filterStatus === s ? "" : s)}
             style={{ padding: "12px", borderRadius: "12px", background: filterStatus === s ? `${STATUS_COLORS[s]}12` : "#fff", border: `1.5px solid ${filterStatus === s ? STATUS_COLORS[s] : "var(--border-glass)"}`, cursor: "pointer", textAlign: "center" }}>
             <p style={{ margin: "0 0 4px", fontSize: "18px", fontWeight: 800, color: STATUS_COLORS[s] }}>{exams.filter(e => e.status === s).length}</p>
-            <p style={{ margin: 0, fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s}</p>
+            <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s}</p>
           </div>
         ))}
       </div>
@@ -198,8 +198,8 @@ export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string 
             <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>No exams{filterStatus ? ` with status "${filterStatus}"` : ""}. Create one to get started.</p>
           </div>
         ) : filtered.map(exam => (
-          <div key={exam.id} style={{ background: "#fff", borderRadius: "14px", padding: "16px 20px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "14px" }}>
-            <div style={{ width: "42px", height: "42px", borderRadius: "11px", background: `${STATUS_COLORS[exam.status]}12`, display: "flex", alignItems: "center", justifyContent: "center", color: STATUS_COLORS[exam.status], flexShrink: 0 }}>
+          <div key={exam.id} style={{ background: "#fff", borderRadius: "16px", padding: "16px 20px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "14px" }}>
+            <div style={{ width: "42px", height: "42px", borderRadius: "12px", background: `${STATUS_COLORS[exam.status]}12`, display: "flex", alignItems: "center", justifyContent: "center", color: STATUS_COLORS[exam.status], flexShrink: 0 }}>
               <FileText size={20} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -212,19 +212,18 @@ export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string 
               </p>
             </div>
             <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
-              <button onClick={() => setMarksExam(exam)} title="Enter marks"
-                style={{ padding: "6px 12px", borderRadius: "8px", border: "none", background: "rgba(0,123,255,0.1)", color: "#0062cc", fontSize: "10px", fontWeight: 700, cursor: "pointer" }}>
+              <Button variant="secondary" size="sm" onClick={() => setMarksExam(exam)} title="Enter marks">
                 Enter Marks
-              </button>
+              </Button>
               {exam.status !== "PUBLISHED" && (
                 <button onClick={() => advanceStatus(exam.id)} title={`Move to ${STATUS_FLOW[STATUS_FLOW.indexOf(exam.status) + 1]}`}
                   style={{ padding: "6px 12px", borderRadius: "8px", border: "none", background: `${STATUS_COLORS[exam.status]}12`, color: STATUS_COLORS[exam.status], fontSize: "10px", fontWeight: 700, cursor: "pointer" }}>
                   Next →
                 </button>
               )}
-              <button onClick={() => deleteExam(exam.id)} style={{ padding: "6px", borderRadius: "8px", border: "none", background: "hsla(205, 85%, 50%,0.08)", color: "var(--color-danger)", cursor: "pointer" }}>
+              <Button variant="secondary" size="icon" onClick={() => deleteExam(exam.id)} title="Delete exam" style={{ width: "32px", height: "32px", color: "var(--color-danger)" }}>
                 <Trash2 size={14} />
-              </button>
+              </Button>
             </div>
           </div>
         ))}

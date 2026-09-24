@@ -74,7 +74,7 @@ export function ReportsAnalytics() {
           <div key={i} style={{ background: "#fff", borderRadius: "14px", padding: "18px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "14px" }}>
             <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: `${kpi.color}12`, display: "flex", alignItems: "center", justifyContent: "center", color: kpi.color }}>{kpi.icon}</div>
             <div>
-              <p style={{ margin: 0, fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{kpi.label}</p>
+              <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{kpi.label}</p>
               <p style={{ margin: 0, fontSize: "24px", fontWeight: 800 }}>{kpi.value}</p>
             </div>
           </div>
@@ -85,9 +85,9 @@ export function ReportsAnalytics() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "16px" }}>
         {/* Finance Overview */}
         <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", border: "1px solid var(--border-glass)" }}>
-          <h3 style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+          <h2 style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
             <IndianRupee size={16} style={{ color: "var(--color-accent)" }} /> Financial Summary
-          </h3>
+          </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {[
               { label: "Total Billed", value: `₹${finance.totalBilled.toLocaleString("en-IN")}`, color: "#0069d9" },
@@ -105,9 +105,9 @@ export function ReportsAnalytics() {
 
         {/* Attendance Overview */}
         <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", border: "1px solid var(--border-glass)" }}>
-          <h3 style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+          <h2 style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
             <Activity size={16} style={{ color: "var(--color-success)" }} /> Attendance Analytics
-          </h3>
+          </h2>
           <div style={{ textAlign: "center", marginBottom: "16px" }}>
             <p style={{ margin: 0, fontSize: "48px", fontWeight: 800, color: "var(--color-success)" }}>{attendance.avgAttendance}%</p>
             <p style={{ margin: "4px 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>Average Attendance Rate</p>
@@ -121,7 +121,7 @@ export function ReportsAnalytics() {
               <div key={i} style={{ padding: "10px", background: `${item.color}08`, borderRadius: "10px", textAlign: "center" }}>
                 <span style={{ display: "flex", justifyContent: "center", color: item.color, marginBottom: "4px" }}>{item.icon}</span>
                 <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: item.color }}>{item.value}</p>
-                <p style={{ margin: "2px 0 0", fontSize: "9px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{item.label}</p>
+                <p style={{ margin: "2px 0 0", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{item.label}</p>
               </div>
             ))}
           </div>
@@ -130,9 +130,9 @@ export function ReportsAnalytics() {
 
       {/* Lead Pipeline */}
       <div style={{ background: "#fff", borderRadius: "16px", padding: "20px", border: "1px solid var(--border-glass)" }}>
-        <h3 style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+        <h2 style={{ margin: "0 0 16px", fontSize: "14px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
           <BarChart3 size={16} style={{ color: "#0069d9" }} /> Lead Pipeline ({leads.total} total)
-        </h3>
+        </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: "8px" }}>
           {Object.entries(leads.pipeline).map(([status, count]) => {
             const colors: Record<string, string> = { NEW: "#17a2b8", CONTACTED: "#0069d9", COUNSELLING: "hsl(38,92%,50%)", FOLLOW_UP: "#007bff", ENROLLED: "var(--color-success)", LOST: "var(--color-danger)" };
@@ -140,7 +140,7 @@ export function ReportsAnalytics() {
             return (
               <div key={status} style={{ padding: "12px", background: `${color}08`, borderRadius: "10px", textAlign: "center" }}>
                 <p style={{ margin: 0, fontSize: "18px", fontWeight: 800, color }}>{count as number}</p>
-                <p style={{ margin: "4px 0 0", fontSize: "9px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{status.replace("_", " ")}</p>
+                <p style={{ margin: "4px 0 0", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{status.replace("_", " ")}</p>
               </div>
             );
           })}

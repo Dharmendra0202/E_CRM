@@ -64,21 +64,21 @@ export function WeakStudentModule() {
         <div style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "hsla(205, 85%, 50%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-danger)" }}><TrendingDown size={20} /></div>
           <div>
-            <p style={{ margin: 0, fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Below 40%</p>
+            <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Below 40%</p>
             <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "var(--color-danger)" }}>{weakStudents.length}</p>
           </div>
         </div>
         <div style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "rgba(0,123,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#0069d9" }}><Target size={20} /></div>
           <div>
-            <p style={{ margin: 0, fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Total in Batch</p>
+            <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Total in Batch</p>
             <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "#0069d9" }}>{batchStudents.length}</p>
           </div>
         </div>
         <div style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)", display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "hsla(142,70%,42%,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-success)" }}><CheckCircle2 size={20} /></div>
           <div>
-            <p style={{ margin: 0, fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Above 40%</p>
+            <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>Above 40%</p>
             <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "var(--color-success)" }}>{batchStudents.length - weakStudents.length}</p>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function WeakStudentModule() {
               </div>
               <div style={{ textAlign: "right", flexShrink: 0 }}>
                 <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "var(--color-danger)" }}>{ws.percentage.toFixed(1)}%</p>
-                <p style={{ margin: 0, fontSize: "10px", color: "var(--text-secondary)" }}>{ws.totalObtained}/{ws.totalMax}</p>
+                <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{ws.totalObtained}/{ws.totalMax}</p>
               </div>
             </div>
           ))}
@@ -127,7 +127,7 @@ export function WeakStudentModule() {
           {["MCQ Practice", "One-Word Answers", "Match the Columns", "Practice Tests"].map(item => (
             <div key={item} style={{ padding: "12px", borderRadius: "10px", background: "#fff", border: "1px solid rgba(0,123,255,0.12)", textAlign: "center" }}>
               <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#0069d9" }}>{item}</p>
-              <p style={{ margin: "4px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>Coming Soon</p>
+              <p style={{ margin: "4px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>Coming Soon</p>
             </div>
           ))}
         </div>

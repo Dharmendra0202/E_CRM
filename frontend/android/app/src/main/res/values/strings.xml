@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">EduFlow E-CRM</string>
+    <string name="title_activity_main">EduFlow E-CRM</string>
+    <string name="package_name">com.eduflow.ecrm</string>
+    <string name="custom_url_scheme">com.eduflow.ecrm</string>
+</resources>

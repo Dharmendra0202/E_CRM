@@ -117,7 +117,7 @@ export const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) =
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#ffffff", borderRadius: "24px", width: "100%", maxWidth: "640px",
+          background: "#ffffff", borderRadius: "16px", width: "100%", maxWidth: "640px",
           boxShadow: "0 25px 60px rgba(0,0,0,0.35)",
           display: "flex", flexDirection: "column", maxHeight: "85vh", overflow: "hidden"
         }}

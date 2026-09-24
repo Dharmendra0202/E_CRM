@@ -245,7 +245,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       <div style={{
         width: "100%", maxWidth: "400px", background: "rgba(255,255,255,0.8)",
         backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
-        borderRadius: "18px", boxShadow: "0 20px 60px -12px rgba(90,97,105,0.3)",
+        borderRadius: "16px", boxShadow: "0 20px 60px -12px rgba(90,97,105,0.3)",
         border: "1px solid rgba(255,255,255,0.6)", padding: "22px 26px 24px",
       }}>
         {/* Mascot */}

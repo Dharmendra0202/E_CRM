@@ -121,7 +121,7 @@ export function SettingsPage({ initialTab }: { initialTab?: SettingsTab } = {}) 
               {/* PROFILE TAB */}
               {activeTab === "profile" && (
                 <div>
-                  <h3 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: 700 }}>Organization Profile</h3>
+                  <h2 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: 700 }}>Organization Profile</h2>
                   {!org ? (
                     <p style={{ fontSize: "13px", color: "var(--text-secondary)" }}>No organization set up. Go to Onboarding to create one.</p>
                   ) : (
@@ -144,7 +144,7 @@ export function SettingsPage({ initialTab }: { initialTab?: SettingsTab } = {}) 
               {/* ACADEMIC YEAR TAB */}
               {activeTab === "academic" && (
                 <div>
-                  <h3 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: 700 }}>Academic Years</h3>
+                  <h2 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: 700 }}>Academic Years</h2>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
                     {academicYears.length === 0 ? (
                       <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No academic years configured.</p>
@@ -169,7 +169,7 @@ export function SettingsPage({ initialTab }: { initialTab?: SettingsTab } = {}) 
               {/* DEPARTMENTS TAB */}
               {activeTab === "departments" && (
                 <div>
-                  <h3 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: 700 }}>Departments</h3>
+                  <h2 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: 700 }}>Departments</h2>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "16px" }}>
                     {departments.length === 0 ? (
                       <p style={{ fontSize: "12px", color: "var(--text-secondary)" }}>No departments configured.</p>
@@ -193,7 +193,7 @@ export function SettingsPage({ initialTab }: { initialTab?: SettingsTab } = {}) 
               {/* PREFERENCES TAB */}
               {activeTab === "preferences" && (
                 <div>
-                  <h3 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: 700 }}>Preferences</h3>
+                  <h2 style={{ margin: "0 0 16px", fontSize: "16px", fontWeight: 700 }}>Preferences</h2>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                     <div>
                       <label style={labelStyle}>Timezone</label>

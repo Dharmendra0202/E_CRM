@@ -152,7 +152,7 @@ export function StudentProfiles({ userRole = "STUDENT" }: { userRole?: string } 
                   </div>
                   <span style={{
                     background: "#eef0fe", color: ACCENT, fontSize: "12px", fontWeight: 700,
-                    padding: "4px 12px", borderRadius: "20px",
+                    padding: "4px 12px", borderRadius: "8px",
                   }}>
                     {count} {count === 1 ? "student" : "students"}
                   </span>
@@ -184,7 +184,7 @@ export function StudentProfiles({ userRole = "STUDENT" }: { userRole?: string } 
                 }}>
                   <Users2 size={22} />
                 </div>
-                <span style={{ background: "#eef0f4", color: VALUE, fontSize: "12px", fontWeight: 700, padding: "4px 12px", borderRadius: "20px" }}>
+                <span style={{ background: "#eef0f4", color: VALUE, fontSize: "12px", fontWeight: 700, padding: "4px 12px", borderRadius: "8px" }}>
                   {unassignedStudents.length}
                 </span>
               </div>

@@ -279,7 +279,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
             <h1 style={{ fontSize: "26px", fontWeight: 800, margin: 0, color: "var(--text-primary)" }}>Batches & Student Groups</h1>
-            <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-accent)", background: "rgba(0,123,255,0.08)", padding: "4px 12px", borderRadius: "20px", border: "1px solid rgba(0,123,255,0.15)" }}>
+            <span style={{ fontSize: "12px", fontWeight: 800, color: "var(--color-accent)", background: "rgba(0,123,255,0.08)", padding: "4px 12px", borderRadius: "8px", border: "1px solid rgba(0,123,255,0.15)" }}>
               {totalBatches} Active Cohorts
             </span>
           </div>
@@ -292,7 +292,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
           <button
             onClick={() => setIsCreateModalOpen(true)}
             style={{
-              padding: "11px 22px", borderRadius: "14px", border: "none", cursor: "pointer",
+              padding: "11px 22px", borderRadius: "12px", border: "none", cursor: "pointer",
               background: "linear-gradient(135deg, #007bff, #0069d9)",
               color: "#fff", fontSize: "13.5px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px",
               boxShadow: "0 6px 20px -4px rgba(0,123,255,0.35)", transition: "all 0.25s ease"
@@ -314,11 +314,11 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
           { label: "Course Revenue Potential", value: `₹${totalRevenue.toLocaleString("en-IN")}`, icon: <IndianRupee size={20} />, color: "#17a2b8", bg: "rgba(23,162,184,0.08)", sub: "Active batch fees" },
         ].map((stat, i) => (
           <div key={i} style={{
-            background: "#fff", borderRadius: "20px", padding: "20px",
+            background: "#fff", borderRadius: "16px", padding: "20px",
             border: "1px solid var(--border-glass)", boxShadow: "var(--shadow-card)",
             display: "flex", alignItems: "center", gap: "16px"
           }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: stat.bg, color: stat.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: stat.bg, color: stat.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
               {stat.icon}
             </div>
             <div>
@@ -332,7 +332,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
 
       {/* ══════════════ FILTER & SEARCH CONTROLS ══════════════ */}
       <div style={{
-        background: "#fff", borderRadius: "20px", padding: "16px 20px", marginBottom: "28px",
+        background: "#fff", borderRadius: "16px", padding: "16px 20px", marginBottom: "28px",
         border: "1px solid var(--border-glass)", boxShadow: "0 2px 12px rgba(29,10,39,0.03)",
         display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "14px"
       }}>
@@ -345,7 +345,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             style={{
-              width: "100%", padding: "11px 14px 11px 40px", borderRadius: "14px",
+              width: "100%", padding: "11px 14px 11px 40px", borderRadius: "12px",
               border: "1px solid var(--border-glass)", background: "var(--bg-secondary)",
               fontSize: "13.5px", outline: "none", transition: "all 0.2s ease"
             }}
@@ -385,7 +385,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
           <p style={{ margin: "14px 0 0", fontSize: "14px", color: "var(--text-secondary)" }}>Loading student cohorts...</p>
         </div>
       ) : filteredBatches.length === 0 ? (
-        <div style={{ background: "#fff", borderRadius: "24px", padding: "60px 20px", textAlign: "center", border: "1px solid var(--border-glass)" }}>
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "60px 20px", textAlign: "center", border: "1px solid var(--border-glass)" }}>
           <BookOpen size={48} style={{ color: "var(--text-secondary)", opacity: 0.3, marginBottom: "12px" }} />
           <h3 style={{ margin: "0 0 6px", fontSize: "18px", fontWeight: 700 }}>No Batches Found</h3>
           <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary)" }}>
@@ -431,7 +431,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
                         </div>
                       </td>
                       <td style={tdStyle}>
-                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#0062cc", background: "rgba(0,123,255,0.08)", padding: "3px 10px", borderRadius: "20px" }}>
+                        <span style={{ fontSize: "11px", fontWeight: 700, color: "#0062cc", background: "rgba(0,123,255,0.08)", padding: "3px 10px", borderRadius: "8px" }}>
                           {batch.subject || "General"}
                         </span>
                       </td>
@@ -474,7 +474,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
       {/* ══════════════ PERFECTLY CENTERED ENROLL STUDENT MODAL ══════════════ */}
       {enrollStudentModalOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999999, padding: "20px" }}>
-          <div style={{ width: "100%", maxWidth: "460px", background: "#fff", borderRadius: "24px", padding: "28px", boxShadow: "0 24px 64px rgba(0,0,0,0.25)" }} className="animate-fade-in">
+          <div style={{ width: "100%", maxWidth: "460px", background: "#fff", borderRadius: "16px", padding: "28px", boxShadow: "0 24px 64px rgba(0,0,0,0.25)" }} className="animate-fade-in">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800 }}>Enroll Student to Batch</h3>
               <button onClick={() => setEnrollStudentModalOpen(false)} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={18} /></button>
@@ -519,7 +519,7 @@ export function BatchesManagement({ onNavigate }: BatchesManagementProps) {
       {/* ══════════════ PERFECTLY CENTERED CREATE NEW BATCH MODAL ══════════════ */}
       {isCreateModalOpen && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999999, padding: "20px" }}>
-          <div style={{ width: "100%", maxWidth: "560px", background: "#fff", borderRadius: "24px", padding: "28px", boxShadow: "0 24px 64px rgba(0,0,0,0.25)", maxHeight: "90vh", overflowY: "auto" }} className="animate-fade-in">
+          <div style={{ width: "100%", maxWidth: "560px", background: "#fff", borderRadius: "16px", padding: "28px", boxShadow: "0 24px 64px rgba(0,0,0,0.25)", maxHeight: "90vh", overflowY: "auto" }} className="animate-fade-in">
             
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <div>

@@ -135,9 +135,9 @@ export function OnlineClasses({ userRole = "STUDENT" }: { userRole?: string }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "18px" }}>
         <div>
-          <h2 style={{ fontSize: "20px", fontWeight: 700, color: "#3a3f45", margin: "0 0 4px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#3a3f45", margin: "0 0 4px", display: "flex", alignItems: "center", gap: "10px" }}>
             <Video size={22} style={{ color: ACCENT }} /> Online Classes
-          </h2>
+          </h1>
           <p style={{ fontSize: "13px", color: VALUE, margin: 0 }}>
             {isAdmin ? "Schedule and manage online classes for your students." : "Your scheduled online classes."}
           </p>

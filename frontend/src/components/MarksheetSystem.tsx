@@ -152,13 +152,13 @@ export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string })
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
                 <thead>
                   <tr style={{ background: "rgba(29,10,39,0.02)", borderBottom: "1px solid var(--border-glass)" }}>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Exam</th>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Subject</th>
-                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Type</th>
-                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Marks</th>
-                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>%</th>
-                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Grade</th>
-                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Result</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Exam</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Subject</th>
+                    <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Type</th>
+                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Marks</th>
+                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>%</th>
+                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Grade</th>
+                    <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Result</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -216,12 +216,12 @@ export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string })
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
               <thead>
                 <tr style={{ background: "rgba(29,10,39,0.02)", borderBottom: "1px solid var(--border-glass)" }}>
-                  <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Rank</th>
-                  <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Student</th>
-                  <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Subjects</th>
-                  <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Total</th>
-                  <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>%</th>
-                  <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "10px", textTransform: "uppercase" }}>Grade</th>
+                  <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Rank</th>
+                  <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Student</th>
+                  <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Subjects</th>
+                  <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Total</th>
+                  <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>%</th>
+                  <th style={{ padding: "12px 16px", textAlign: "center", fontWeight: 700, color: "var(--text-secondary)", fontSize: "11px", textTransform: "uppercase" }}>Grade</th>
                 </tr>
               </thead>
               <tbody>
@@ -254,7 +254,7 @@ export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string })
       {/* Add Marks Modal */}
       {showAdd && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowAdd(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "420px" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "420px" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Add Marks</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>

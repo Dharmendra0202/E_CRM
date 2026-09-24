@@ -97,7 +97,7 @@ export function LibraryManagement() {
             { label: "Overdue", value: stats.overdue, color: "var(--color-danger)" },
           ].map((s, i) => (
             <div key={i} style={{ background: "#fff", borderRadius: "12px", padding: "14px", border: "1px solid var(--border-glass)" }}>
-              <p style={{ margin: "0 0 4px", fontSize: "10px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s.label}</p>
+              <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s.label}</p>
               <p style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: s.color }}>{s.value}</p>
             </div>
           ))}
@@ -137,7 +137,7 @@ export function LibraryManagement() {
                 </span>
               </div>
               <p style={{ margin: 0, fontSize: "11px", color: "var(--text-secondary)" }}>{book.author} {book.category ? `· ${book.category}` : ""}</p>
-              {book.isbn && <p style={{ margin: "2px 0 0", fontSize: "10px", color: "var(--text-secondary)" }}>ISBN: {book.isbn}</p>}
+              {book.isbn && <p style={{ margin: "2px 0 0", fontSize: "11px", color: "var(--text-secondary)" }}>ISBN: {book.isbn}</p>}
               {book.availableCopies > 0 && (
                 <button onClick={() => openIssueModal(book.id)} style={{ marginTop: "8px", fontSize: "11px", fontWeight: 700, color: "#0069d9", background: "rgba(0,123,255,0.08)", border: "1px solid rgba(0,123,255,0.2)", padding: "5px 10px", borderRadius: "8px", cursor: "pointer" }}>Issue Book</button>
               )}
@@ -167,7 +167,7 @@ export function LibraryManagement() {
       {/* Add Book Modal */}
       {showAddBook && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowAddBook(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "420px" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "420px" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Add Book</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div><label style={labelStyle}>Title *</label><input style={inputStyle} value={newBook.title} onChange={(e) => setNewBook({ ...newBook, title: e.target.value })} placeholder="Book title" /></div>
@@ -186,7 +186,7 @@ export function LibraryManagement() {
       {/* Issue Book Modal */}
       {showIssueBook && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowIssueBook(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "420px" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "420px" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>Issue Book</h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>

@@ -8,7 +8,7 @@ import { DownloadButton } from "./ui/DownloadButton";
 import { WhatsAppButton } from "./ui/WhatsAppButton";
 import { WhatsAppLogo } from "./ui/WhatsAppLogo";
 import { waTemplates } from "../utils/whatsapp";
-import { StudentProfile } from "./StudentProfile";
+import { StudentProfileCard } from "./StudentProfileCard";
 import {
   Search,
   User,
@@ -1111,7 +1111,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
 
               {/* No Result Message */}
               {profileSearchPerformed && !profileResult && (
-                <div style={{ background: "#fff", borderRadius: "20px", padding: "56px 24px", textAlign: "center", boxShadow: "0 4px 20px -4px rgba(29,10,39,0.08)", marginBottom: "28px" }}>
+                <div style={{ background: "#fff", borderRadius: "16px", padding: "56px 24px", textAlign: "center", boxShadow: "0 4px 20px -4px rgba(29,10,39,0.08)", marginBottom: "28px" }}>
                   <XCircle size={52} style={{ color: "hsl(342,90%,60%)", margin: "0 auto 16px", opacity: 0.6 }} />
                   <h3 style={{ color: "#343a40", fontWeight: 700, marginBottom: "8px" }}>No student found</h3>
                   <p style={{ fontSize: "13px", color: "#6c757d", maxWidth: "340px", margin: "0 auto" }}>
@@ -1175,7 +1175,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "640px",
+              background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "640px",
               maxHeight: "90vh", overflowY: "auto", boxShadow: "0 32px 80px rgba(0,0,0,0.35)",
               border: "none", position: "relative"
             }}
@@ -1250,13 +1250,13 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                 { icon: <CheckCircle2 size={15} style={{ color: getFeeColor(profileResult.feeStatus).color }} />, label: "Fee Status", val: profileResult.feeStatus, color: getFeeColor(profileResult.feeStatus).color },
               ].map((item, i) => (
                 <div key={i} style={{
-                  background: "#fff", borderRadius: "14px", padding: "14px",
+                  background: "#fff", borderRadius: "16px", padding: "14px",
                   boxShadow: "0 4px 16px -4px rgba(29,10,39,0.14)",
                   border: "none"
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
                     {item.icon}
-                    <span style={{ fontSize: "9px", fontWeight: 800, color: "#6c757d", textTransform: "uppercase", letterSpacing: "0.4px" }}>{item.label}</span>
+                    <span style={{ fontSize: "11px", fontWeight: 800, color: "#6c757d", textTransform: "uppercase", letterSpacing: "0.4px" }}>{item.label}</span>
                   </div>
                   <span style={{ fontSize: "18px", fontWeight: 900, color: item.color }}>{item.val}</span>
                 </div>
@@ -1302,7 +1302,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
                       {item.icon}
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: "9px", fontWeight: 800, color: "#6c757d", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "3px" }}>{item.label}</div>
+                      <div style={{ fontSize: "11px", fontWeight: 800, color: "#6c757d", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "3px" }}>{item.label}</div>
                       <div style={{ fontSize: "12px", fontWeight: 600, color: "#343a40", wordBreak: "break-word" }}>{item.val}</div>
                     </div>
                   </div>
@@ -1334,7 +1334,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
               {/* Notes */}
               {profileResult.notes && (
                 <div style={{ background: "hsla(38,92%,50%,0.06)", borderRadius: "12px", padding: "16px", border: "none", marginBottom: "20px" }}>
-                  <h4 style={{ margin: "0 0 6px", fontSize: "10px", fontWeight: 800, color: "hsl(38,92%,38%)", display: "flex", alignItems: "center", gap: "5px", textTransform: "uppercase", letterSpacing: "0.4px" }}>
+                  <h4 style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: 800, color: "hsl(38,92%,38%)", display: "flex", alignItems: "center", gap: "5px", textTransform: "uppercase", letterSpacing: "0.4px" }}>
                     <FileText size={12} /> Notes & Remarks
                   </h4>
                   <p style={{ margin: 0, fontSize: "13px", color: "#343a40", lineHeight: 1.6 }}>{profileResult.notes}</p>
@@ -1459,7 +1459,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
           zIndex: 9999, padding: "20px"
         }}>
           <div className="animate-scale-up" style={{
-            background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "520px",
+            background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "520px",
             boxShadow: "0 24px 64px rgba(0,0,0,0.3)", overflow: "hidden", border: "none"
           }}>
             {/* Modal Header */}
@@ -1484,7 +1484,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
             {/* Modal Body */}
             <div style={{ padding: "28px", display: "flex", flexDirection: "column", gap: "20px" }}>
               {/* Student Summary */}
-              <div style={{ background: "#f9fafb", borderRadius: "14px", padding: "16px", border: "none" }}>
+              <div style={{ background: "#f9fafb", borderRadius: "16px", padding: "16px", border: "none" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                   <span style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>Enrolled Student:</span>
                   <span style={{ fontSize: "13px", fontWeight: 800, color: "var(--text-primary)" }}>{successModalData.student.name}</span>
@@ -1518,7 +1518,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
               </div>
 
               {/* Email & Mobile App Notification Status */}
-              <div style={{ background: "#eff6ff", borderRadius: "14px", padding: "16px", border: "none", display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ background: "#eff6ff", borderRadius: "16px", padding: "16px", border: "none", display: "flex", alignItems: "center", gap: "12px" }}>
                 <Mail size={20} style={{ color: "#2563eb", flexShrink: 0 }} />
                 <div style={{ fontSize: "12px", color: "#1e40af", lineHeight: 1.4 }}>
                   <strong>Onboarding Email Sent!</strong> The student's login email and batch details have been sent to their registered address. They can sign in with Google or use email + password to access their portal.
@@ -1535,7 +1535,7 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
 
       {/* Student Profile Overlay */}
       {profileStudentId && (
-        <StudentProfile studentId={profileStudentId} onClose={() => setProfileStudentId(null)} />
+        <StudentProfileCard studentId={profileStudentId} onClose={() => setProfileStudentId(null)} />
       )}
     </div>
   );

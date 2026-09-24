@@ -134,7 +134,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
               <span style={{ fontSize: "20px", fontWeight: 900, letterSpacing: "-0.5px" }}>
                 <span className="text-gradient-indigo">EduFlow</span> <span style={{ color: "#1e1b4b" }}>ECRM</span>
               </span>
-              <span style={{ display: "block", fontSize: "9px", fontWeight: 800, color: "var(--color-accent)", textTransform: "uppercase", letterSpacing: "1px" }}>
+              <span style={{ display: "block", fontSize: "11px", fontWeight: 800, color: "var(--color-accent)", textTransform: "uppercase", letterSpacing: "1px" }}>
                 Institution OS
               </span>
             </div>
@@ -298,7 +298,7 @@ export function LandingPage({ onLogin }: LandingPageProps) {
                   boxShadow: "0 4px 16px rgba(0,0,0,0.03)"
                 }}>
                   <span style={{
-                    fontSize: "10px", fontWeight: 800, padding: "3px 8px", borderRadius: "10px",
+                    fontSize: "11px", fontWeight: 800, padding: "3px 8px", borderRadius: "10px",
                     background: "rgba(0,123,255,0.12)", color: "#0069d9", textTransform: "uppercase",
                     letterSpacing: "0.5px"
                   }}>

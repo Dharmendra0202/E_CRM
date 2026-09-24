@@ -876,7 +876,7 @@ export function TimetableScheduler() {
 
       {/* ── LOADING ──────────────────────────────────────────────────────────── */}
       {loading && (
-        <div style={{ background: "#fff", borderRadius: "20px", padding: "60px", textAlign: "center", color: "var(--text-secondary)", border: "1px solid rgba(29,10,39,0.08)" }}>
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "60px", textAlign: "center", color: "var(--text-secondary)", border: "1px solid rgba(29,10,39,0.08)" }}>
           <RefreshCw size={28} style={{ color: "var(--color-accent)", marginBottom: "12px" }} />
           <p style={{ margin: 0, fontWeight: 700, fontSize: "14px" }}>Loading timetable…</p>
         </div>
@@ -958,7 +958,7 @@ export function TimetableScheduler() {
             const cards = filtered.filter(s => s.batchId === batch.id);
             if (cards.length === 0) return null;
             return (
-              <div key={batch.id} style={{ background: "#fff", borderRadius: "20px", padding: "24px", border: "1px solid hsla(285,40%,60%,0.15)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+              <div key={batch.id} style={{ background: "#fff", borderRadius: "16px", padding: "24px", border: "1px solid hsla(285,40%,60%,0.15)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid hsla(285,40%,60%,0.15)", paddingBottom: "12px" }}>
                   <div>
                     <h3 style={{ margin: "0 0 4px", fontSize: "17px", fontWeight: 800, color: "var(--text-primary)" }}>{batch.name}</h3>
@@ -995,7 +995,7 @@ export function TimetableScheduler() {
             const cards = filtered.filter(s => s.teacherName === teacherName);
             if (cards.length === 0) return null;
             return (
-              <div key={teacherName} style={{ background: "#fff", borderRadius: "20px", padding: "24px", border: "1px solid hsla(285,40%,60%,0.15)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
+              <div key={teacherName} style={{ background: "#fff", borderRadius: "16px", padding: "24px", border: "1px solid hsla(285,40%,60%,0.15)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid hsla(285,40%,60%,0.15)", paddingBottom: "12px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <div style={{ width: "42px", height: "42px", borderRadius: "12px", background: "linear-gradient(135deg,#f59e0b,#d97706)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "16px" }}>
@@ -1039,7 +1039,7 @@ export function TimetableScheduler() {
           padding: "16px"
         }} onClick={() => setIsFormOpen(false)}>
           <div onClick={(e) => e.stopPropagation()} style={{
-            background: "#fff", borderRadius: "20px", width: "100%", maxWidth: "480px",
+            background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "480px",
             padding: "28px", boxShadow: "0 25px 60px rgba(0,0,0,0.2)",
             display: "flex", flexDirection: "column", gap: "20px",
             maxHeight: "85vh", overflowY: "auto"
@@ -1190,7 +1190,7 @@ export function TimetableScheduler() {
       {/* ── MODAL: SESSION DETAILS ───────────────────────────────────────────── */}
       {detailSession && (
         <div className="modal-overlay" style={{ background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px", zIndex: 999 }}>
-          <div style={{ background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "440px", padding: "24px", boxShadow: "0 20px 50px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{ background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "440px", padding: "24px", boxShadow: "0 20px 50px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div>
                 <span style={{ fontSize: "11px", fontWeight: 800, color: detailSession.color, background: detailSession.bg, padding: "3px 8px", borderRadius: "12px" }}>{detailSession.batchName}</span>
@@ -1249,7 +1249,7 @@ export function TimetableScheduler() {
           padding: "16px 16px 100px 16px"
         }}>
           <div style={{
-            background: "#fff", borderRadius: "24px", width: "100%", maxWidth: "480px",
+            background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "480px",
             padding: "24px", boxShadow: "0 25px 60px rgba(0,0,0,0.3)",
             display: "flex", flexDirection: "column", gap: "16px"
           }}>

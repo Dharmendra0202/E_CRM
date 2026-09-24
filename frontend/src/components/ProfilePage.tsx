@@ -339,7 +339,7 @@ export function ProfilePage() {
           <div>
             <label style={labelStyle}>Email Address</label>
             <input style={readOnlyFieldStyle} value={profile.email} readOnly />
-            <span style={{ fontSize: "10px", color: "var(--text-secondary)", marginTop: "4px", display: "block" }}>Email cannot be changed</span>
+            <span style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px", display: "block" }}>Email cannot be changed</span>
           </div>
           <div>
             <label style={labelStyle}>Phone Number</label>
@@ -458,7 +458,7 @@ export function ProfilePage() {
               <div>
                 <label style={labelStyle}>Date of Birth</label>
                 <input style={readOnlyFieldStyle} value={profile.student.dateOfBirth ? new Date(profile.student.dateOfBirth).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" }) : "Not set"} readOnly />
-                <span style={{ fontSize: "10px", color: "var(--text-secondary)", marginTop: "4px", display: "block" }}>Contact admin to update DOB</span>
+                <span style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px", display: "block" }}>Contact admin to update DOB</span>
               </div>
               <div style={{ gridColumn: "1 / -1" }}>
                 <label style={labelStyle}>Address</label>
@@ -497,7 +497,7 @@ export function ProfilePage() {
             <div>
               <label style={labelStyle}>Hourly Rate</label>
               <input style={readOnlyFieldStyle} value={`₹${profile.teacher.hourlyRate || 0}`} readOnly />
-              <span style={{ fontSize: "10px", color: "var(--text-secondary)", marginTop: "4px", display: "block" }}>Managed by admin</span>
+              <span style={{ fontSize: "11px", color: "var(--text-secondary)", marginTop: "4px", display: "block" }}>Managed by admin</span>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={labelStyle}>Bio</label>

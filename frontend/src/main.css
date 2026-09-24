@@ -954,6 +954,12 @@ p {
    11. UI COMPONENT: NAVIGATION DRAWER
    ========================================================================== */
 .top-drawer {
+  /* Hidden by default and never surfaced: the sidebar is the single primary
+     navigation, and the toggle that used to open this drawer is hidden at all
+     widths. Keeping it merely opacity:0 left a second, invisible nav in the DOM
+     that competed for attention and confused assistive tech / audits. Removing
+     it from layout entirely eliminates the "double navigation" problem. */
+  display: none;
   position: absolute;
   top: 75px; /* Height of the sticky header */
   left: 0;
@@ -1090,16 +1096,19 @@ p {
   display: flex;
   align-items: center;
   position: relative;
-  width: 280px;
+  /* Compact by default so it reads as a secondary/global utility next to any
+     in-page contextual search; expands on focus when actively used. */
+  width: 200px;
   height: 38px;
   background: hsla(285, 30%, 94%, 0.5);
   border: 1px solid var(--border-glass);
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 0 var(--space-md);
   transition: all 0.25s ease;
 }
 
 .navbar-search-box:focus-within {
+  width: 300px;
   border-color: var(--color-accent);
   box-shadow: 0 0 10px var(--color-accent-glow);
   background: #ffffff;
@@ -1186,7 +1195,7 @@ p {
 }
 
 .dropdown-user-role {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
 }
 
@@ -2402,7 +2411,7 @@ p {
 }
 
 .stu-student-email {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   display: block;
 }
@@ -2626,7 +2635,7 @@ p {
 }
 
 .stu-qs-lbl {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   font-weight: 600;
   display: block;
@@ -2870,7 +2879,7 @@ p {
 }
 
 .stu-field-error {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-danger);
   font-weight: 600;
 }
@@ -2988,7 +2997,7 @@ p {
 }
 
 .stu-progress-batch {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-secondary);
   font-weight: 500;
 }
@@ -3040,7 +3049,7 @@ p {
 }
 
 .stu-psub-name {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-secondary);
   overflow: hidden;
@@ -3207,7 +3216,7 @@ p {
 }
 
 .shad-input-error {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-danger);
   font-weight: 600;
   margin-top: 2px;
@@ -3824,6 +3833,11 @@ div[style*="linear-gradient(135deg, hsl(328"] {
     padding-top: 72px !important;
   }
 }
+
+/* ── Dashboard Quick-Navigation grid ──
+   Base is an auto-fit track (set inline) so the ~5 shortcut cards flow onto
+   a single row on wide screens and wrap evenly below without orphaning a
+   card in a dead corner. The mobile rules below just cap the column count. */
 
 /* ── Small mobile (< 600px) ── */
 @media (max-width: 600px) {

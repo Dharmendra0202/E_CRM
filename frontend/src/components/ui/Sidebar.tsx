@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Users2, CalendarDays, CreditCard, Briefcase,
   Check, BookOpen, GraduationCap, Target,
   Megaphone, BarChart3, Settings, Shield, FileText,
-  ChevronDown, Layers, Video, X,
+  ChevronDown, Layers, Video, X, UserCog,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -48,7 +48,7 @@ const NAV_ITEMS = [
   { group: "Profiles", items: [
     { view: "student-profiles", icon: <Users2 size={18} />, label: "Students Profile" },
     { view: "staff", icon: <Briefcase size={18} />, label: "Staff" },
-    { view: "teachers", icon: <GraduationCap size={18} />, label: "Teachers" },
+    { view: "teachers", icon: <UserCog size={18} />, label: "Teachers" },
   ]},
   { group: "Attendance", items: [
     { view: "online-classes", icon: <Video size={18} />, label: "Online Classes" },
@@ -60,10 +60,10 @@ const NAV_ITEMS = [
     { view: "examination", icon: <BookOpen size={18} />, label: "Examinations" },
     { view: "marksheet", icon: <BarChart3 size={18} />, label: "Marksheet" },
   ]},
-  { group: "Fee Receipt", items: [
+  { group: "Financials", items: [
     { view: "fee-receipt", icon: <CreditCard size={18} />, label: "Fee Receipt" },
   ]},
-  { group: "Settings", items: [
+  { group: "Administration", items: [
     { view: "reports", icon: <BarChart3 size={18} />, label: "Reports" },
     { view: "roles", icon: <Shield size={18} />, label: "Roles" },
     { view: "settings", icon: <Settings size={18} />, label: "Settings" },
@@ -253,16 +253,19 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
           const isOpen = openGroups.has(group.group);
           const hasActive = group.items.some(i => i.view === currentView);
           return (
-          <div key={group.group} style={{ marginBottom: "6px" }}>
+          <div key={group.group} style={{ marginBottom: "24px" }}>
             {!collapsed && (
               <button
                 onClick={() => toggleGroup(group.group)}
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between",
-                  width: "100%", padding: "6px 10px", margin: "0 0 2px",
+                  width: "100%", padding: "6px 10px", margin: "0 0 4px",
                   border: "none", background: "transparent", cursor: "pointer",
-                  fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)",
-                  textTransform: "uppercase", letterSpacing: "0.8px",
+                  // Distinct "section label" treatment: smaller, uppercase, tracked
+                  // and muted — clearly separate from the Title-Case nav items below.
+                  // Uniform across every group so casing stays consistent.
+                  fontSize: "11px", fontWeight: 800, color: "var(--text-tertiary, #9089a0)",
+                  textTransform: "uppercase", letterSpacing: "0.7px",
                 }}
               >
                 <span>{group.group}</span>
@@ -334,15 +337,19 @@ export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, 
                           alignItems: "center",
                           gap: "10px",
                           width: "100%",
-                          padding: "8px 12px",
-                          margin: "2px 0",
+                          // Roomier hit target (issue: cramped items)
+                          padding: "10px 12px",
+                          margin: "3px 0",
                           borderRadius: "10px",
                           border: "none",
+                          // Left-edge accent bar marks the active item clearly (issue: weak active state)
+                          borderLeft: isActive ? "3px solid #007bff" : "3px solid transparent",
+                          paddingLeft: isActive ? "9px" : "12px",
                           cursor: "pointer",
                           fontSize: "14px",
                           fontWeight: isActive ? 700 : 600,
-                          color: "var(--text-secondary)",
-                          background: isActive ? "hsla(205,90%,55%,0.08)" : "transparent",
+                          color: isActive ? "#007bff" : "var(--text-secondary)",
+                          background: isActive ? "hsla(205,90%,55%,0.14)" : "transparent",
                           transition: "all 0.2s ease, opacity 0.45s ease-in-out, transform 0.45s ease-in-out",
                           transitionDelay: isOpen ? `${idx * 0.04}s` : "0s",
                           textAlign: "left",

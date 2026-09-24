@@ -125,12 +125,12 @@ export function AdmissionsCRM() {
             { label: "Conversion Rate", value: `${stats.conversionRate}%`, color: "var(--color-success)", badge: "enrolled" },
             { label: "Pipeline Active", value: stats.total - (stats.pipeline?.ENROLLED || 0) - (stats.pipeline?.LOST || 0), color: "#007bff", badge: "in progress" },
           ].map((s, i) => (
-            <div key={i} style={{ background: "#fff", borderRadius: "14px", padding: "16px", border: "1px solid var(--border-glass)", boxShadow: "0 2px 8px rgba(29,10,39,0.04)" }}>
+            <div key={i} style={{ background: "#fff", borderRadius: "16px", padding: "16px", border: "1px solid var(--border-glass)", boxShadow: "0 2px 8px rgba(29,10,39,0.04)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase" }}>{s.label}</span>
-                <span style={{ fontSize: "10px", fontWeight: 700, color: s.color, background: `${s.color}12`, padding: "2px 7px", borderRadius: "10px" }}>{s.badge}</span>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>{s.label}</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: s.color, background: `${s.color}12`, padding: "2px 7px", borderRadius: "8px" }}>{s.badge}</span>
               </div>
-              <h3 style={{ margin: 0, fontSize: "22px", fontWeight: 800, color: s.color }}>{s.value}</h3>
+              <div style={{ margin: 0, fontSize: "22px", fontWeight: 800, color: s.color, fontFamily: "var(--font-headings)" }}>{s.value}</div>
             </div>
           ))}
         </div>
@@ -197,7 +197,7 @@ export function AdmissionsCRM() {
                   </div>
                 </div>
                 <span style={{ fontSize: "11px", fontWeight: 600, color: "var(--text-secondary)" }}>{lead.source}</span>
-                <span style={{ fontSize: "10px", fontWeight: 700, color: stageColor, background: `${stageColor}12`, padding: "4px 10px", borderRadius: "20px", display: "inline-block", width: "fit-content" }}>{stageLabel}</span>
+                <span style={{ fontSize: "10px", fontWeight: 700, color: stageColor, background: `${stageColor}12`, padding: "4px 10px", borderRadius: "8px", display: "inline-block", width: "fit-content" }}>{stageLabel}</span>
                 <span style={{ fontSize: "11px", fontWeight: 600, color: isOverdue ? "var(--color-danger)" : "var(--text-secondary)" }}>
                   {followUp ? followUp.toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "—"}
                 </span>
@@ -329,7 +329,7 @@ export function AdmissionsCRM() {
       {/* ═══ ADD LEAD MODAL ═══ */}
       {showAddLead && (
         <div className="modal-overlay" style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setShowAddLead(false)}>
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "20px", padding: "28px", width: "100%", maxWidth: "480px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: "16px", padding: "28px", width: "100%", maxWidth: "480px", boxShadow: "0 24px 48px rgba(0,0,0,0.15)" }} className="animate-slide-up">
             <h3 style={{ margin: "0 0 20px", fontSize: "18px", fontWeight: 700 }}>New Enquiry</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
               <div style={{ gridColumn: "1 / -1" }}>
