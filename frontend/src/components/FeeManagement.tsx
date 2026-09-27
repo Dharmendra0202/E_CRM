@@ -192,7 +192,8 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
         : "Student";
 
       const options: any = {
-        key: orderRes.keyId || "rzp_test_TQlw6WdYyizH9Y",
+        // Key comes from the server's /payments/config — never hardcoded here.
+        key: orderRes.keyId,
         amount: orderRes.amount,
         currency: orderRes.currency || "INR",
         name: "EduFlow E-CRM",
@@ -201,11 +202,14 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
         order_id: orderRes.orderId,
         handler: async function (response: any) {
           try {
+            // Forward ONLY the real values Razorpay gave us. Never substitute
+            // placeholder ids/signatures — the server verifies the HMAC and will
+            // (correctly) reject anything fabricated here.
             await api.payments.verifyPayment({
               invoiceId: showPay.id,
-              razorpayOrderId: response.razorpay_order_id || orderRes.orderId,
-              razorpayPaymentId: response.razorpay_payment_id || `pay_test_${Date.now()}`,
-              razorpaySignature: response.razorpay_signature || "demo_signature",
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
               amount: payForm.amount,
             });
             alert("🎉 Razorpay Payment Successful! Invoice status updated.");
@@ -240,16 +244,12 @@ export function FeeManagement({ userRole = "STUDENT" }: { userRole?: string } = 
         rzp.open();
         setTimeout(() => setPaying(false), 800);
       } else {
-        await api.payments.verifyPayment({
-          invoiceId: showPay.id,
-          razorpayOrderId: orderRes.orderId,
-          razorpayPaymentId: `pay_simulated_${Date.now()}`,
-          razorpaySignature: "demo_signature",
-          amount: payForm.amount,
-        });
-        alert("🎉 Razorpay Test Mode Payment Simulated Successfully!");
-        setShowPay(null);
-        loadData();
+        // Razorpay checkout script unavailable. Do NOT fabricate a "simulated"
+        // settled payment — that marked invoices PAID without any money moving.
+        alert(
+          "Online payment is unavailable right now (checkout failed to load). " +
+          "Please check your connection and retry, or record an offline cash/bank payment instead."
+        );
         setPaying(false);
       }
     } catch (err: any) {

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
+import { getToken } from "./api";
 
 const SOCKET_URL = import.meta.env.VITE_API_URL?.replace("/api/v1", "") || "http://localhost:5000";
 
@@ -28,9 +29,21 @@ export function useAttendanceRealtime({ batchId, enabled = true, onUpdate }: Use
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<AttendanceUpdate | null>(null);
+  /** Set when the handshake or a room join is rejected, so the UI can say why. */
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!enabled || !batchId) return;
+
+    // The server authenticates every socket handshake and checks that the caller
+    // may join the requested batch room, so the access token must be supplied.
+    const token = getToken();
+    if (!token) {
+      setIsConnected(false);
+      setAuthError("Sign in to receive live attendance updates.");
+      return;
+    }
+    setAuthError(null);
 
     // Create socket connection with better stability
     const socket = io(SOCKET_URL, {
@@ -39,6 +52,7 @@ export function useAttendanceRealtime({ batchId, enabled = true, onUpdate }: Use
       reconnectionAttempts: 10,
       timeout: 10000,
       autoConnect: true,
+      auth: { token },
     });
 
     socketRef.current = socket;
@@ -67,6 +81,18 @@ export function useAttendanceRealtime({ batchId, enabled = true, onUpdate }: Use
     socket.on("connect_error", (error) => {
       console.error("🔴 WebSocket connection error:", error);
       if (connectionStable) setIsConnected(false);
+      // An "Unauthorized" handshake rejection is terminal — retrying with the
+      // same bad/expired token will keep failing, so stop reconnect attempts.
+      if (/unauthorized/i.test(error?.message || "")) {
+        setAuthError(error.message);
+        socket.disconnect();
+      }
+    });
+
+    // The server refuses batch rooms the caller has no access to.
+    socket.on("join_denied", (info: { batchId: string; message: string }) => {
+      console.warn("🚫 Batch room join denied:", info);
+      setAuthError(info?.message || "You do not have access to this batch.");
     });
 
     // Listen for attendance updates
@@ -101,6 +127,7 @@ export function useAttendanceRealtime({ batchId, enabled = true, onUpdate }: Use
     isConnected,
     lastUpdate,
     sendMessage,
+    authError,
     socket: socketRef.current,
   };
 }

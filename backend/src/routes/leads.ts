@@ -1,5 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { Router, Response, Request } from "express";
+import { z } from "zod";
 import { logAudit } from "../utils/auditLog";
 import { notifyUsers } from "../utils/notify";
 
@@ -12,21 +13,34 @@ const router = Router();
 // Creates a lead and notifies every admin so they get pinged instantly.
 // ══════════════════════════════════════════════════════════════
 router.post("/inquiry", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { name, email, phone, message, course } = req.body;
-    if (!name || !email) {
-      res.status(400).json({ status: "error", message: "Name and email are required." });
-      return;
-    }
+  // This endpoint is public and writes to the database, so validate strictly.
+  // Previously `name`/`email` were only checked for presence — email format was
+  // never validated and no field had a length cap, so arbitrarily large strings
+  // could be persisted and fanned out to every admin's notifications.
+  const InquirySchema = z.object({
+    name: z.string().trim().min(2, "Name must be at least 2 characters.").max(100),
+    email: z.string().trim().toLowerCase().email("Enter a valid email address.").max(200),
+    phone: z.string().trim().max(20).optional().or(z.literal("")),
+    message: z.string().trim().max(2000).optional().or(z.literal("")),
+    course: z.string().trim().max(120).optional().or(z.literal("")),
+  });
 
+  const parsed = InquirySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ status: "error", message: parsed.error.issues[0].message });
+    return;
+  }
+  const { name, email, phone, message, course } = parsed.data;
+
+  try {
     const lead = await prisma.lead.create({
       data: {
-        name: String(name).trim(),
-        email: String(email).trim().toLowerCase(),
-        phone: phone ? String(phone).trim() : "",
+        name,
+        email,
+        phone: phone || "",
         source: "Website Inquiry",
-        notes: message ? String(message).trim() : null,
-        course: course ? String(course).trim() : null,
+        notes: message || null,
+        course: course || null,
         status: "NEW",
       },
     });
@@ -64,7 +78,9 @@ router.get("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthReq
   try {
     const { status, source, search, page = "1", limit = "50" } = req.query as any;
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    const where: any = {};
+    // DELETE /:id is a SOFT delete (it sets deletedAt), so exclude archived rows
+    // here — otherwise "deleted" leads keep showing up in the pipeline.
+    const where: any = { deletedAt: null };
     if (status) where.status = status;
     if (source) where.source = source;
     if (search) {
@@ -101,14 +117,17 @@ router.get("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthReq
 // ══════════════════════════════════════════════════════════════
 router.get("/stats", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const counts = await prisma.lead.groupBy({ by: ["status"], _count: { id: true } });
-    const total = await prisma.lead.count();
-    const thisMonth = await prisma.lead.count({
-      where: { createdAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
-    });
-    const pendingFollowUps = await prisma.lead.count({
-      where: { nextFollowUp: { lte: new Date() }, status: { notIn: ["ENROLLED", "LOST"] } },
-    });
+    // Concurrent queries — see note in students.ts /stats. Sequential awaits made
+    // this endpoint take ~3.6s against the remote database.
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const [counts, total, thisMonth, pendingFollowUps] = await Promise.all([
+      prisma.lead.groupBy({ by: ["status"], _count: { id: true } }),
+      prisma.lead.count(),
+      prisma.lead.count({ where: { createdAt: { gte: monthStart } } }),
+      prisma.lead.count({
+        where: { nextFollowUp: { lte: new Date() }, status: { notIn: ["ENROLLED", "LOST"] } },
+      }),
+    ]);
 
     const pipeline: Record<string, number> = {};
     for (const c of counts) pipeline[c.status] = c._count.id;
@@ -146,8 +165,11 @@ router.get("/:id", authenticate, authorize("ADMIN", "TEACHER"), async (req: Auth
 
 // ══════════════════════════════════════════════════════════════
 // POST /api/v1/leads — create new lead
+// Staff-only: the CRM pipeline is internal. This was `authenticate` alone, so
+// any logged-in STUDENT could inject leads. (The public landing-page form uses
+// the separate, rate-limited /inquiry endpoint above.)
 // ══════════════════════════════════════════════════════════════
-router.post("/", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { name, email, phone, source, notes, course, expectedJoining } = req.body;
     if (!name || !email) { res.status(400).json({ status: "error", message: "Name and email required." }); return; }
@@ -221,8 +243,9 @@ router.patch("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest, 
 
 // ══════════════════════════════════════════════════════════════
 // POST /api/v1/leads/:id/activities — add note/activity
+// Staff-only: these are internal sales notes.
 // ══════════════════════════════════════════════════════════════
-router.post("/:id/activities", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post("/:id/activities", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { type, content, metadata } = req.body;
     if (!type || !content) { res.status(400).json({ status: "error", message: "type and content required." }); return; }
@@ -253,8 +276,9 @@ router.post("/:id/activities", authenticate, async (req: AuthRequest, res: Respo
 
 // ══════════════════════════════════════════════════════════════
 // GET /api/v1/leads/:id/activities — get lead timeline
+// Staff-only, matching GET /leads and GET /leads/:id.
 // ══════════════════════════════════════════════════════════════
-router.get("/:id/activities", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.get("/:id/activities", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const activities = await prisma.leadActivity.findMany({
       where: { leadId: req.params.id },

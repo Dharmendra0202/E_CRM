@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 — Page Not Found | E-CRM</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: #bfe4fb;
+        overflow: hidden;
+        font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+      }
+      .art {
+        position: relative;
+        width: 100%;
+        max-width: 1500px;
+        aspect-ratio: 1512 / 1035;
+        max-height: 100vh;
+      }
+      .art img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        user-select: none;
+      }
+      /* Interactive hit-area over the illustrated "Go Home" button.
+         Percent-based so it scales with the artwork on any screen size. */
+      .go-home {
+        position: absolute;
+        left: 8.2%;
+        top: 42%;
+        width: 18.5%;
+        height: 7.5%;
+        background: transparent;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .go-home:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 90, 200, 0.4);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="art">
+      <img
+        src="/404 page.png"
+        alt="404 — the page you are looking for was moved, removed, renamed or might never have existed."
+      />
+      <a class="go-home" href="/" aria-label="Go Home"></a>
+    </div>
+  </body>
+</html>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { api, setToken } from "../utils/api";
 import {
   Mail, Lock, User, ArrowRight, Eye, EyeOff,
-  Sparkles, CheckCircle2, RefreshCw, KeyRound, Zap,
+  Sparkles, CheckCircle2, RefreshCw, KeyRound,
 } from "lucide-react";
 
 interface LoginProps { onLoginSuccess: (sessionUser: any) => void; }
@@ -27,7 +27,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [role, setRole] = useState("ADMIN");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setRL] = useState(false);
   const [showPass, setShowPass] = useState(false);
@@ -69,25 +68,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setTimeout(() => setToast(null), 5000);
   };
 
-  const demoLogin = async () => {
-    setLoading(true);
-    showToast("Launching Demo Mode...", "info");
-    try {
-      const res = await api.auth.demoLogin();
-      if (res.token) setToken(res.token);
-      onLoginSuccess({
-        id: res.user?.id || "demo-user",
-        email: res.user?.email || "demo@ecrm.com",
-        role: res.user?.role || "ADMIN",
-        user_metadata: { name: res.user ? `${res.user.firstName} ${res.user.lastName}` : "Dharmendra Admin", role: res.user?.role || "ADMIN" },
-      });
-    } catch {
-      setToken("demo-offline-token");
-      onLoginSuccess({ id: "demo-user", email: "demo@ecrm.com", user_metadata: { name: "Dharmendra Admin", role: "ADMIN" } });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // NOTE: "Launch Demo Mode" was removed along with the backend /auth/demo
+  // endpoint. It signed you in as a hardcoded ADMIN (demo@ecrm.com /
+  // "Demo@123456") and re-created that account in the real database on every
+  // use, so the credential could never be permanently deleted.
+  // Sign in with Google or with a real email + password instead.
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +85,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         onLoginSuccess({ ...res.user, user_metadata: { name: `${res.user.firstName} ${res.user.lastName}`, role: res.user.role } });
       } else if (tab === "signup") {
         const parts = name.trim().split(" ");
-        await api.auth.register({ email, password, firstName: parts[0], lastName: parts.slice(1).join(" ") || parts[0], role, phone: "" });
+        // `role` is intentionally not sent — the server always assigns the
+        // least-privileged role on self-service signup.
+        await api.auth.register({ email, password, firstName: parts[0], lastName: parts.slice(1).join(" ") || parts[0], phone: "" });
         setPE(email);
         setScreen("verify");
       } else {
@@ -108,9 +95,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         setScreen("reset_sent");
       }
     } catch (err: any) {
+      // NEVER fall back to demo/admin on a network error — that would grant
+      // admin access to anyone whenever the backend is unreachable. Show a
+      // clear error and let the user retry instead.
       if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
-        showToast("Backend server unreachable. Launching Demo Mode...", "info");
-        demoLogin();
+        setErrorMsg("Can't reach the server. Please check your connection and try again.");
+        setLoading(false);
         return;
       }
       if (err.message?.toLowerCase().includes("verify")) { setPE(email); setScreen("verify"); setLoading(false); return; }
@@ -140,9 +130,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       setToken(res.token);
       onLoginSuccess({ ...res.user, user_metadata: { name: `${res.user.firstName} ${res.user.lastName}`, role: res.user.role } });
     } catch (err: any) {
+      // Do not silently grant demo/admin access when the server is unreachable.
       if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
-        showToast("Backend server unreachable. Launching Demo Mode...", "info");
-        demoLogin();
+        setErrorMsg("Can't reach the server. Please check your connection and try again.");
+        setLoading(false);
         return;
       }
       setErrorMsg(err.message || "Google sign-in failed.");
@@ -359,18 +350,15 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 </div>
               )}
 
+              {/* No role picker: accounts are always created with the least
+                  privileged role. An administrator assigns roles afterwards.
+                  Letting users pick their own role would be a privilege-
+                  escalation hole. */}
               {tab === "signup" && (
-                <div>
-                  <label style={{ fontSize: "12px", fontWeight: 700, color: "#60686f", display: "block", marginBottom: "7px" }}>Role</label>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "8px" }}>
-                    {["ADMIN", "TEACHER", "STUDENT"].map(r => (
-                      <button key={r} type="button" onClick={() => setRole(r)}
-                        style={{ padding: "9px", fontSize: "12px", fontWeight: 700, borderRadius: "9px", border: `1.5px solid ${role === r ? ACCENT : "#dfe3ea"}`, background: role === r ? `${ACCENT}0f` : "transparent", color: role === r ? ACCENT : "#6c757d", cursor: "pointer", transition: "all 0.2s" }}>
-                        {r}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                <p style={{ margin: 0, fontSize: "11px", color: "#98a0a8", lineHeight: 1.5 }}>
+                  New accounts are created with standard access. An administrator
+                  will assign your role after review.
+                </p>
               )}
 
               <button type="submit" disabled={loading}
@@ -396,13 +384,6 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 {GOOGLE_CLIENT_ID && (
                   <div id="google-signin-btn" style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }} />
                 )}
-
-                <button type="button" onClick={demoLogin} disabled={loading}
-                  style={{ width: "100%", height: "44px", borderRadius: "10px", border: "1.5px solid #dfe3ea", background: "#fff", color: "#2b2f36", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", transition: "all 0.2s" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = ACCENT; (e.currentTarget as HTMLElement).style.color = ACCENT; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#dfe3ea"; (e.currentTarget as HTMLElement).style.color = "#2b2f36"; }}>
-                  <Zap size={15} style={{ color: ACCENT }} /> Launch Demo Mode
-                </button>
               </>
             )}
           </>

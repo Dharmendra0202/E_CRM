@@ -26,6 +26,10 @@ out/
 .env.staging
 *.env
 .env.*
+# ...but DO track example/template files (they contain only placeholders).
+!.env.example
+!*.env.example
+!.env.*.example
 
 
 # System / IDE

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "./ui/Button";
+import { LoadErrorBanner } from "./ui/LoadErrorBanner";
 import { api } from "../utils/api";
 import {
   Plus, BookOpen, Calendar, CheckCircle2, Clock, Edit, Trash2,
@@ -31,8 +32,6 @@ const STATUS_COLORS: Record<ExamStatus, string> = {
   PUBLISHED: "hsl(142,70%,42%)",
 };
 
-const LS_KEY = "ecrm_exams"; // kept for migration fallback
-
 export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string }) {
   const isStudent = userRole === "STUDENT" || userRole === "PARENT";
   const [exams, setExams] = useState<Exam[]>([]);
@@ -40,6 +39,7 @@ export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string 
   const [showCreate, setShowCreate] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [form, setForm] = useState({
     title: "", type: EXAM_TYPES[0], subject: "", batch: "", date: "",
     totalMarks: "100", passingMarks: "35",
@@ -52,6 +52,7 @@ export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string 
 
   const loadData = async () => {
     setIsLoading(true);
+    setLoadError("");
     try {
       const [examRes, batchRes] = await Promise.all([
         api.exams2.getAll(),
@@ -72,10 +73,12 @@ export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string 
         })));
       }
       if (batchRes.data) setBatches(batchRes.data);
-    } catch {
-      // Fallback to localStorage if API fails (offline mode)
-      const saved = localStorage.getItem(LS_KEY);
-      if (saved) setExams(JSON.parse(saved));
+    } catch (err: any) {
+      // No localStorage fallback. It used to read "ecrm_exams", a key nothing
+      // writes any more, so it silently showed an empty or stale exam list
+      // instead of reporting that the request had failed.
+      setExams([]);
+      setLoadError(err?.message || "Could not load exams. Please try again.");
     }
     setIsLoading(false);
   };
@@ -140,6 +143,7 @@ export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string 
           <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>My Examinations</h1>
           <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Your scheduled exams and tests.</p>
         </div>
+        {loadError && <LoadErrorBanner message={loadError} onRetry={loadData} />}
         {isLoading ? (
           <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>Loading exams...</div>
         ) : upcoming.length === 0 ? (
@@ -178,6 +182,8 @@ export function ExaminationSystem({ userRole = "STUDENT" }: { userRole?: string 
         </div>
         <Button variant="primary" onClick={() => setShowCreate(true)} leftIcon={<Plus size={14} />}>Create Exam</Button>
       </div>
+
+      {loadError && <LoadErrorBanner message={loadError} onRetry={loadData} />}
 
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: "10px", marginBottom: "20px" }}>

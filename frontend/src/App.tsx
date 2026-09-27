@@ -49,7 +49,13 @@ import {
   ChevronLeft, ChevronRight, User
 } from "lucide-react";
 
-type ViewType = "dashboard" | "leads" | "student-profiles" | "batches" | "new-enrollment" | "online-admissions" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "parents" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "online-classes" | "class-attendance" | "class-timetable" | "attendance-details" | "fee-receipt" | "exams" | "academics" | "homework" | "transport" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding" | "my-profile";
+// Every value here MUST have a matching render branch below. Four members were
+// removed ("online-admissions", "parents", "academics", "transport") because
+// nothing rendered them — navigating to one produced a blank screen. Transport
+// has working backend routes and an api.transport client but no UI yet; when
+// that screen is built, add "transport" back here together with its render
+// branch and a Sidebar/ROLE_VIEWS entry.
+type ViewType = "dashboard" | "leads" | "student-profiles" | "batches" | "new-enrollment" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "online-classes" | "class-attendance" | "class-timetable" | "attendance-details" | "fee-receipt" | "exams" | "homework" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding" | "my-profile";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
@@ -386,6 +392,7 @@ function App() {
         isOpen={commandPaletteOpen}
         onClose={() => setCommandPaletteOpen(false)}
         onNavigate={(view) => { setCurrentView(view as ViewType); if (view === "leads") setStudentTab("all"); }}
+        userRole={effectiveRole}
       />
 
       {/* ── Bottom Dock ── */}
@@ -517,7 +524,9 @@ function App() {
                 { id: "schedule", name: "Timetable & Schedule", source: "Navigation", status: "VIEW", type: "NAV", target: "schedule" },
                 { id: "homework", name: "Homework & Assignments", source: "Navigation", status: "VIEW", type: "NAV", target: "homework" },
                 { id: "exams", name: "Report Cards & Exams", source: "Navigation", status: "VIEW", type: "NAV", target: "exams" },
-              ].filter(v => v.name.toLowerCase().includes(q));
+                // Only suggest destinations this role may actually open, otherwise
+                // selecting one just bounces the user back to the dashboard.
+              ].filter(v => canAccessView(effectiveRole, v.target) && v.name.toLowerCase().includes(q));
 
               const hits = [...navViews, ...studentHits, ...staffHits, ...batchHits];
               if (hits.length === 0) return (

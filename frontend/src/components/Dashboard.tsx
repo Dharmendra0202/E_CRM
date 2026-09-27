@@ -75,7 +75,9 @@ export function Dashboard({
   );
   const studentAssignedBatch = matchingStudentRecord?.source || "Not Enrolled";
 
-  const currentRole = (userRole || "ADMIN").toUpperCase();
+  // Fail closed: an unknown role gets the least-privileged (STUDENT) view,
+  // never admin.
+  const currentRole = (userRole || "STUDENT").toUpperCase();
   const isAdmin = currentRole === "ADMIN" || currentRole === "SUPER_ADMIN";
   const isTeacher = currentRole === "TEACHER";
   const isStudent = currentRole === "STUDENT";

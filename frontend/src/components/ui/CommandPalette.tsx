@@ -1,38 +1,60 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Search, LayoutDashboard, Users2, CalendarDays, CreditCard,
-  Briefcase, Check, BookOpen, GraduationCap, Target, UserCheck,
-  Bus, Library, Megaphone, BarChart3, Settings, Shield, FileText,
-  Command,
+  Briefcase, Check, BookOpen, Target,
+  Library, Megaphone, BarChart3, Settings, Shield, FileText,
+  Award, TrendingUp, UserCog, Layers, Video, User,
 } from "lucide-react";
+import { canAccessView } from "./Sidebar";
 
 interface CommandPaletteProps {
   isOpen: boolean;
   onClose: () => void;
   onNavigate: (view: string) => void;
+  /** Caller's role — commands they cannot access are hidden. */
+  userRole?: string;
 }
 
+/**
+ * Every entry here MUST correspond to a view that App.tsx actually renders.
+ *
+ * Previously this list contained "parents", "academics" and "transport", none of
+ * which have a render branch — selecting them navigated to a completely blank
+ * screen. It also showed every command to every role, so a student could pick
+ * "Roles & Permissions" and just get bounced back to the dashboard.
+ */
 const COMMANDS = [
   { view: "dashboard", icon: <LayoutDashboard size={16} />, label: "Dashboard", keywords: "home overview" },
-  { view: "admissions", icon: <Target size={16} />, label: "Admissions CRM", keywords: "leads enquiry pipeline" },
-  { view: "new-enrollment", icon: <Users2 size={16} />, label: "New Enrollment", keywords: "enroll student staff teacher register" },
-  { view: "parents", icon: <UserCheck size={16} />, label: "Parents", keywords: "parent guardian" },
-  { view: "staff", icon: <Briefcase size={16} />, label: "Staff & Teachers", keywords: "teacher employee" },
-  { view: "academics", icon: <GraduationCap size={16} />, label: "Academics", keywords: "subject course curriculum" },
-  { view: "schedule", icon: <CalendarDays size={16} />, label: "Timetable", keywords: "schedule class timing" },
-  { view: "attendance", icon: <Check size={16} />, label: "Attendance", keywords: "present absent mark" },
+  { view: "admissions", icon: <Target size={16} />, label: "Admissions CRM", keywords: "leads enquiry pipeline enquiries" },
+  { view: "new-enrollment", icon: <Layers size={16} />, label: "New Enrollment", keywords: "enroll student staff teacher register" },
+  { view: "leads", icon: <Users2 size={16} />, label: "Student Management", keywords: "students register search progress" },
+  { view: "student-profiles", icon: <Users2 size={16} />, label: "Student Profiles", keywords: "student profile directory" },
+  { view: "batches", icon: <Layers size={16} />, label: "Batches", keywords: "batch class group" },
+  { view: "staff", icon: <Briefcase size={16} />, label: "Staff", keywords: "employee admin support" },
+  { view: "teachers", icon: <UserCog size={16} />, label: "Teachers", keywords: "teacher faculty" },
+  { view: "schedule", icon: <CalendarDays size={16} />, label: "Timetable Scheduler", keywords: "schedule class timing" },
+  { view: "class-timetable", icon: <CalendarDays size={16} />, label: "Class Time Table", keywords: "timetable classes" },
+  { view: "online-classes", icon: <Video size={16} />, label: "Online Classes", keywords: "video live meeting" },
+  { view: "attendance", icon: <Check size={16} />, label: "Mark Attendance", keywords: "present absent mark tracker" },
+  { view: "class-attendance", icon: <Check size={16} />, label: "Class Attendance", keywords: "attendance summary" },
+  { view: "attendance-details", icon: <FileText size={16} />, label: "Attendance Details", keywords: "attendance datewise records" },
   { view: "homework", icon: <FileText size={16} />, label: "Homework", keywords: "assignment task" },
-  { view: "exams", icon: <BookOpen size={16} />, label: "Exams & Results", keywords: "exam test marks grade" },
-  { view: "billing", icon: <CreditCard size={16} />, label: "Fee Management", keywords: "invoice payment fee" },
-  { view: "transport", icon: <Bus size={16} />, label: "Transport", keywords: "bus route vehicle" },
+  { view: "examination", icon: <BookOpen size={16} />, label: "Examinations", keywords: "exam test schedule" },
+  { view: "exams", icon: <BookOpen size={16} />, label: "Exams & Report Cards", keywords: "exam result report card grade" },
+  { view: "marksheet", icon: <Award size={16} />, label: "Marksheet", keywords: "marks grade percentage rank" },
+  { view: "weak-students", icon: <TrendingUp size={16} />, label: "Weak Students", keywords: "improvement below average" },
+  { view: "bulk-promotion", icon: <Layers size={16} />, label: "Bulk Promotion", keywords: "promote batch year" },
+  { view: "billing", icon: <CreditCard size={16} />, label: "Fee Management", keywords: "invoice payment fee billing" },
+  { view: "fee-receipt", icon: <CreditCard size={16} />, label: "Fee Receipt", keywords: "receipt payment proof" },
   { view: "library", icon: <Library size={16} />, label: "Library", keywords: "book catalog issue" },
-  { view: "communication", icon: <Megaphone size={16} />, label: "Communication", keywords: "announcement notice" },
+  { view: "communication", icon: <Megaphone size={16} />, label: "Communication", keywords: "announcement notice message" },
   { view: "reports", icon: <BarChart3 size={16} />, label: "Reports & Analytics", keywords: "report chart analytics" },
-  { view: "roles", icon: <Shield size={16} />, label: "Roles & Permissions", keywords: "role permission user" },
-  { view: "settings", icon: <Settings size={16} />, label: "Settings", keywords: "config preference" },
+  { view: "roles", icon: <Shield size={16} />, label: "Roles & Permissions", keywords: "role permission user access" },
+  { view: "settings", icon: <Settings size={16} />, label: "Settings", keywords: "config preference organization" },
+  { view: "my-profile", icon: <User size={16} />, label: "My Profile", keywords: "account me password" },
 ];
 
-export function CommandPalette({ isOpen, onClose, onNavigate }: CommandPaletteProps) {
+export function CommandPalette({ isOpen, onClose, onNavigate, userRole }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,10 +79,15 @@ export function CommandPalette({ isOpen, onClose, onNavigate }: CommandPalettePr
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  const filtered = COMMANDS.filter((cmd) =>
-    cmd.label.toLowerCase().includes(query.toLowerCase()) ||
-    cmd.keywords.includes(query.toLowerCase())
-  );
+  // Only offer what this role may actually open, then apply the text filter.
+  const q = query.toLowerCase().trim();
+  const filtered = COMMANDS
+    .filter((cmd) => canAccessView(userRole, cmd.view))
+    .filter((cmd) =>
+      q === "" ||
+      cmd.label.toLowerCase().includes(q) ||
+      cmd.keywords.includes(q)
+    );
 
   useEffect(() => { setSelectedIndex(0); }, [query]);
 

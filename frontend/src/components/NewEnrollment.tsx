@@ -156,8 +156,10 @@ export const NewEnrollment: React.FC = () => {
         });
       } else {
         await api.staff.create({
+          // No password is sent. The server generates a random one, so staff
+          // accounts never share a guessable default like "Staff@123". The new
+          // teacher/staff member signs in with Google or uses "Forgot password".
           email: personal.email || `${personal.phone}@placeholder.com`,
-          password: "Staff@123",
           firstName: personal.firstName,
           lastName: personal.lastName || personal.firstName,
           role: role === "teacher" ? "TEACHER" : "SUPPORT",

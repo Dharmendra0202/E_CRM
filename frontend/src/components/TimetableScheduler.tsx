@@ -413,11 +413,14 @@ export function TimetableScheduler() {
       setBatches(merged);
       setSchedules((schRes.data as ApiSchedule[]).map(toCard));
       setUseLocal(false);
-    } catch {
-      // Fallback to local mode gracefully
+    } catch (err: any) {
+      // Fall back to local mode, but record WHY. The user was signed in, so the
+      // banner must not tell them to "log in" — the server call failed, and any
+      // schedule they save now stays in this browser only.
       setBatches(STATIC_BATCHES);
       setSchedules(loadLocalSchedules());
       setUseLocal(true);
+      setApiError(err?.message || "The server could not be reached.");
     } finally {
       setLoading(false);
     }
@@ -754,7 +757,11 @@ export function TimetableScheduler() {
         }}>
           <AlertCircle size={18} style={{ color: "#f59e0b", flexShrink: 0 }} />
           <span style={{ color: "#92400e", fontWeight: 600 }}>
-            <strong>Local mode active</strong> — schedules are saved in this browser. Log in as admin to sync with the server and send real email notifications.
+            <strong>Local mode active</strong> — schedules are saved in this browser only and are
+            {" "}<strong>not</strong> stored on the server.{" "}
+            {apiError
+              ? `${apiError} Reload once the server is reachable; anything you add now will not sync automatically.`
+              : "Log in as admin to sync with the server and send real email notifications."}
           </span>
         </div>
       )}

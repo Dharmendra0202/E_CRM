@@ -38,11 +38,20 @@ export function canAccessView(role: string | undefined, view: string): boolean {
   return allowed.includes("*") || allowed.includes(view);
 }
 
+// Every implemented view should be reachable from here. Items are filtered per
+// role via canAccessView, so listing a view is safe — roles that lack access
+// simply do not see it.
+//
+// Previously several fully-built screens had no sidebar entry at all (Student
+// Management, Fee Management, Homework, Library, Communication, Mark Attendance,
+// Timetable Scheduler, Report Cards, Weak Students, Bulk Promotion). They were
+// only reachable via Ctrl/Cmd+K or the bottom dock, so they looked missing.
 const NAV_ITEMS = [
   { group: "Main", items: [
     { view: "dashboard", icon: <LayoutDashboard size={18} />, label: "Dashboard" },
     { view: "admissions", icon: <Target size={18} />, label: "Enquiries" },
     { view: "new-enrollment", icon: <Layers size={18} />, label: "New Enrollment" },
+    { view: "leads", icon: <Users2 size={18} />, label: "Student Management" },
     { view: "batches", icon: <Layers size={18} />, label: "Batches" },
   ]},
   { group: "Profiles", items: [
@@ -51,19 +60,30 @@ const NAV_ITEMS = [
     { view: "teachers", icon: <UserCog size={18} />, label: "Teachers" },
   ]},
   { group: "Attendance", items: [
+    { view: "attendance", icon: <Check size={18} />, label: "Mark Attendance" },
     { view: "online-classes", icon: <Video size={18} />, label: "Online Classes" },
     { view: "class-attendance", icon: <Check size={18} />, label: "Class Attendance" },
+    { view: "schedule", icon: <CalendarDays size={18} />, label: "Timetable Scheduler" },
     { view: "class-timetable", icon: <CalendarDays size={18} />, label: "Class Time Table" },
     { view: "attendance-details", icon: <FileText size={18} />, label: "Attendance Datewise Details" },
   ]},
+  { group: "Academics", items: [
+    { view: "homework", icon: <FileText size={18} />, label: "Homework" },
+    { view: "library", icon: <BookOpen size={18} />, label: "Library" },
+    { view: "bulk-promotion", icon: <Layers size={18} />, label: "Bulk Promotion" },
+  ]},
   { group: "Examination", items: [
     { view: "examination", icon: <BookOpen size={18} />, label: "Examinations" },
+    { view: "exams", icon: <FileText size={18} />, label: "Report Cards" },
     { view: "marksheet", icon: <BarChart3 size={18} />, label: "Marksheet" },
+    { view: "weak-students", icon: <Target size={18} />, label: "Weak Students" },
   ]},
   { group: "Financials", items: [
+    { view: "billing", icon: <CreditCard size={18} />, label: "Fee Management" },
     { view: "fee-receipt", icon: <CreditCard size={18} />, label: "Fee Receipt" },
   ]},
   { group: "Administration", items: [
+    { view: "communication", icon: <Megaphone size={18} />, label: "Communication" },
     { view: "reports", icon: <BarChart3 size={18} />, label: "Reports" },
     { view: "roles", icon: <Shield size={18} />, label: "Roles" },
     { view: "settings", icon: <Settings size={18} />, label: "Settings" },
@@ -143,7 +163,7 @@ function DrawerGroup({ isOpen, children }: { isOpen: boolean; children: React.Re
 }
 
 
-export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, mobileOpen, onMobileClose, userRole = "ADMIN" }: SidebarProps) {
+export function Sidebar({ currentView, onNavigate, collapsed, onToggleCollapse, mobileOpen, onMobileClose, userRole = "STUDENT" }: SidebarProps) {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set(["Main"]));
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 

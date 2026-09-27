@@ -7,8 +7,10 @@ const router = Router();
 
 // ══════════════════════════════════════════════════════════════
 // GET /api/v1/roles?org_id= — list roles for an organization
+// Admin-only: role definitions and permission mappings are an administrative
+// surface, not something every authenticated student should be able to read.
 // ══════════════════════════════════════════════════════════════
-router.get("/", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.get("/", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { org_id } = req.query as any;
 
@@ -156,8 +158,9 @@ router.delete("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest,
 
 // ══════════════════════════════════════════════════════════════
 // GET /api/v1/roles/permissions — list all available permissions
+// Admin-only: enumerates the app's entire permission model.
 // ══════════════════════════════════════════════════════════════
-router.get("/permissions", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.get("/permissions", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const permissions = await prisma.permission.findMany({ orderBy: [{ module: "asc" }, { action: "asc" }] });
 
@@ -176,8 +179,15 @@ router.get("/permissions", authenticate, async (req: AuthRequest, res: Response)
 
 // ══════════════════════════════════════════════════════════════
 // GET /api/v1/roles/members?org_id= — list org members
+// Admin-only. This returns staff names, emails, phones and roles; previously any
+// authenticated user (including a STUDENT) could read it, and omitting org_id
+// dumped every member of every organization.
+//
+// NOTE: org_id remains optional because the admin console lists members across
+// the whole installation. If this app ever becomes genuinely multi-tenant with
+// separate admins per organization, this must be scoped to the caller's own org.
 // ══════════════════════════════════════════════════════════════
-router.get("/members", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.get("/members", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { org_id } = req.query as any;
 

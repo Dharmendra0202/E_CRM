@@ -81,10 +81,13 @@ router.get("/issues", authenticate, async (req: AuthRequest, res: Response): Pro
 // GET /api/v1/library/stats
 router.get("/stats", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const totalBooks = await prisma.book.count();
-    const totalCopies = await prisma.book.aggregate({ _sum: { totalCopies: true } });
-    const issued = await prisma.bookIssue.count({ where: { status: "ISSUED" } });
-    const overdue = await prisma.bookIssue.count({ where: { status: "ISSUED", dueDate: { lt: new Date() } } });
+    // Concurrent queries — sequential awaits made this take ~3.4s remotely.
+    const [totalBooks, totalCopies, issued, overdue] = await Promise.all([
+      prisma.book.count(),
+      prisma.book.aggregate({ _sum: { totalCopies: true } }),
+      prisma.bookIssue.count({ where: { status: "ISSUED" } }),
+      prisma.bookIssue.count({ where: { status: "ISSUED", dueDate: { lt: new Date() } } }),
+    ]);
     res.json({ status: "success", data: { totalBooks, totalCopies: totalCopies._sum.totalCopies || 0, issued, overdue } });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });

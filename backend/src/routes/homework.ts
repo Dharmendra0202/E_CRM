@@ -44,13 +44,14 @@ router.get("/", authenticate, async (req: AuthRequest, res: Response): Promise<v
 // ══════════════════════════════════════════════════════════════
 router.get("/stats", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const total = await prisma.homework.count();
-    const active = await prisma.homework.count({ where: { status: "ACTIVE" } });
-    const overdue = await prisma.homework.count({
-      where: { status: "ACTIVE", dueDate: { lt: new Date() } },
-    });
-    const totalSubmissions = await prisma.homeworkSubmission.count();
-    const graded = await prisma.homeworkSubmission.count({ where: { status: "GRADED" } });
+    // Concurrent queries — sequential awaits made this take ~4.7s remotely.
+    const [total, active, overdue, totalSubmissions, graded] = await Promise.all([
+      prisma.homework.count(),
+      prisma.homework.count({ where: { status: "ACTIVE" } }),
+      prisma.homework.count({ where: { status: "ACTIVE", dueDate: { lt: new Date() } } }),
+      prisma.homeworkSubmission.count(),
+      prisma.homeworkSubmission.count({ where: { status: "GRADED" } }),
+    ]);
 
     res.json({
       status: "success",
@@ -163,8 +164,20 @@ router.delete("/:id", authenticate, authorize("ADMIN", "TEACHER"), async (req: A
 // ══════════════════════════════════════════════════════════════
 router.post("/:id/submit", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { studentId, content, attachments } = req.body;
-    if (!studentId) { res.status(400).json({ status: "error", message: "studentId required." }); return; }
+    const { content, attachments } = req.body;
+
+    // Resolve the submitting student from the AUTHENTICATED user, never from the
+    // request body. Previously `studentId` was trusted from the body and used in
+    // an upsert, so any student could overwrite a classmate's submitted work.
+    const ownStudent = await prisma.student.findFirst({
+      where: { userId: req.user!.id },
+      select: { id: true },
+    });
+    if (!ownStudent) {
+      res.status(403).json({ status: "error", message: "Only enrolled students can submit homework." });
+      return;
+    }
+    const studentId = ownStudent.id;
 
     const hw = await prisma.homework.findUnique({ where: { id: req.params.id } });
     if (!hw) { res.status(404).json({ status: "error", message: "Homework not found." }); return; }

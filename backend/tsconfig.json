@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",
     "lib": ["ES2022"],
     "outDir": "./dist",
     "rootDir": "./src",
@@ -9,8 +8,21 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+
+    // `module` and `moduleResolution` must agree, and both must be Node16+.
+    //
+    // This project previously used "CommonJS" + "node" (a.k.a. node10), which
+    // TypeScript has deprecated ("Option 'moduleResolution=node10' is deprecated
+    // and will stop functioning..."). Suppressing it with `ignoreDeprecations`
+    // only hid the warning and would break on a future TypeScript release.
+    //
+    // "node16" is the modern, non-deprecated setting. Because package.json has
+    // NO `"type": "module"`, Node treats these files as CommonJS — so this still
+    // emits `require()` output and extensionless relative imports
+    // (e.g. `from "../utils/prisma"`) remain valid. No source changes needed.
+    "module": "node16",
+    "moduleResolution": "node16"
   },
   "include": ["src/**/*"]
 }

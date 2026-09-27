@@ -78,9 +78,12 @@ router.delete("/vehicles/:id", authenticate, authorize("ADMIN"), async (req: Aut
 // GET /api/v1/transport/stats
 router.get("/stats", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const totalRoutes = await prisma.transportRoute.count({ where: { status: "ACTIVE" } });
-    const totalVehicles = await prisma.vehicle.count({ where: { status: "ACTIVE" } });
-    const totalStops = await prisma.transportStop.count();
+    // Concurrent queries — see note in students.ts /stats.
+    const [totalRoutes, totalVehicles, totalStops] = await Promise.all([
+      prisma.transportRoute.count({ where: { status: "ACTIVE" } }),
+      prisma.vehicle.count({ where: { status: "ACTIVE" } }),
+      prisma.transportStop.count(),
+    ]);
     res.json({ status: "success", data: { totalRoutes, totalVehicles, totalStops } });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });

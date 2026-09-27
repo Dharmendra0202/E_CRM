@@ -43,8 +43,10 @@ router.get("/", authenticate, async (req: AuthRequest, res: Response): Promise<v
 
 // ══════════════════════════════════════════════════════════════
 // GET /api/v1/organizations/:id — get single org details
+// Admin-only: returns campuses, departments and the full member directory
+// (names, emails, roles). Previously readable by any authenticated user.
 // ══════════════════════════════════════════════════════════════
-router.get("/:id", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.get("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const org = await prisma.organization.findUnique({
       where: { id: req.params.id },
@@ -175,8 +177,11 @@ router.put("/:id", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: 
 
 // ══════════════════════════════════════════════════════════════
 // POST /api/v1/organizations/:id/setup — advance setup wizard step
+// Admin-only: this WRITES org state (campuses, departments, academic years).
+// The sibling PUT /:id and POST /:id/invite were already admin-gated; this one
+// was not, so any authenticated user could mutate an organization's setup.
 // ══════════════════════════════════════════════════════════════
-router.post("/:id/setup", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
+router.post("/:id/setup", authenticate, authorize("ADMIN", "SUPER_ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { step, data } = req.body;
     const orgId = req.params.id;

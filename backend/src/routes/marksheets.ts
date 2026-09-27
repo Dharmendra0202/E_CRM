@@ -63,7 +63,19 @@ router.get("/results", authenticate, async (req: AuthRequest, res: Response): Pr
   try {
     const { batch } = req.query;
     if (!batch) { res.status(400).json({ status: "error", message: "batch query param required." }); return; }
-    const entries = await prisma.marksheetEntry.findMany({ where: { batch: batch as string } });
+
+    // Apply the same scoping as GET / — without it this endpoint returned every
+    // student's name, per-subject marks, percentage and grade for the batch to
+    // any authenticated caller (including the students themselves).
+    const where: any = { batch: batch as string };
+    const role = req.user?.role;
+    if (role === "STUDENT" || role === "PARENT") {
+      const student = await prisma.student.findFirst({ where: { userId: req.user!.id } });
+      if (!student) { res.json({ status: "success", data: [] }); return; }
+      where.studentId = student.id;
+    }
+
+    const entries = await prisma.marksheetEntry.findMany({ where });
     
     // Aggregate by student
     const studentMap = new Map<string, { name: string; subjects: any[]; total: number; max: number }>();

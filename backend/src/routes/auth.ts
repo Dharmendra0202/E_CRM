@@ -1,7 +1,6 @@
 import { prisma } from "../utils/prisma";
 import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { z } from "zod";
 import { OAuth2Client } from "google-auth-library";
@@ -9,6 +8,7 @@ import { OAuth2Client } from "google-auth-library";
 import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/email";
 import { logAudit } from "../utils/auditLog";
 import { notifyAdmins } from "../utils/notify";
+import { signAccessToken, signRefreshToken, verifyAccessToken, verifyToken } from "../middleware/auth";
 
 const googleClient = new OAuth2Client();
 
@@ -36,7 +36,10 @@ const RegisterSchema = z.object({
     .regex(/[0-9]/, "Password must contain at least one number"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  role: z.enum(["ADMIN", "TEACHER", "STUDENT", "PARENT"]),
+  // NOTE: `role` is deliberately NOT accepted here. Self-service signup must
+  // never let a caller choose their own privilege level (registering as ADMIN
+  // would defeat every authorize() check in the app). New accounts are always
+  // created as STUDENT; an admin promotes them afterwards via /staff.
   phone: z.string().optional(),
 });
 
@@ -52,11 +55,9 @@ const ResetSchema = z.object({
 });
 
 // ── Helpers ──────────────────────────────────────────────────
-const signAccessToken = (user: { id: string; role: string; email: string }) =>
-  jwt.sign(user, process.env.JWT_SECRET!, { expiresIn: "15m" } as any);
-
-const signRefreshToken = (userId: string) =>
-  jwt.sign({ id: userId }, process.env.JWT_SECRET!, { expiresIn: "7d" } as any);
+// Token signing/verification lives in middleware/auth so the `typ` claim is
+// applied and asserted consistently everywhere (a refresh token must never be
+// usable as an access token).
 
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_DURATION_MINUTES = 15;
@@ -68,7 +69,9 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
     res.status(400).json({ status: "error", message: parsed.error.issues[0].message });
     return;
   }
-  const { email, password, firstName, lastName, role, phone } = parsed.data;
+  const { email, password, firstName, lastName, phone } = parsed.data;
+  // Least privilege: ignore any client-supplied role.
+  const role = "STUDENT";
   try {
     const exists = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
     if (exists) {
@@ -173,41 +176,17 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// ── POST /auth/demo ──────────────────────────────────────────
-router.post("/demo", async (req: Request, res: Response): Promise<void> => {
-  try {
-    let user = await prisma.user.findUnique({ where: { email: "demo@ecrm.com" } });
-    if (!user) {
-      const hash = await bcrypt.hash("Demo@123456", 10);
-      user = await prisma.user.create({
-        data: {
-          email: "demo@ecrm.com",
-          firstName: "Dharmendra",
-          lastName: "Admin",
-          passwordHash: hash,
-          role: "ADMIN",
-          emailVerified: true,
-        },
-      });
-    }
-    const refreshToken = signRefreshToken(user.id);
-    const accessToken = signAccessToken({ id: user.id, role: user.role, email: user.email });
-    res.json({
-      status: "success",
-      token: accessToken,
-      refreshToken,
-      user: { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName },
-    });
-  } catch (err: any) {
-    const secret = process.env.JWT_SECRET || "fallback_secret";
-    const token = jwt.sign({ id: "demo-user", role: "ADMIN", email: "demo@ecrm.com" }, secret, { expiresIn: "7d" });
-    res.json({
-      status: "success",
-      token,
-      user: { id: "demo-user", email: "demo@ecrm.com", role: "ADMIN", firstName: "Dharmendra", lastName: "Admin" },
-    });
-  }
-});
+// NOTE: POST /auth/demo was REMOVED.
+//
+// It created (or re-created) an account `demo@ecrm.com` with role ADMIN,
+// emailVerified: true and the hardcoded password "Demo@123456", then returned a
+// working session for it. Gating it to non-production was not enough: the
+// endpoint kept resurrecting a real admin row in the shared Supabase database
+// every time anyone ran the app locally, so deleting the account never stuck.
+//
+// There is no replacement. Sign in with Google (addresses listed in
+// ADMIN_EMAILS are granted ADMIN automatically) or register an account and have
+// an existing admin assign its role.
 
 // ── GET /auth/verify/:token ──────────────────────────────────
 router.get("/verify/:token", async (req: Request, res: Response): Promise<void> => {
@@ -297,7 +276,8 @@ router.post("/refresh", async (req: Request, res: Response): Promise<void> => {
   const { refreshToken } = req.body;
   if (!refreshToken) { res.status(400).json({ status: "error", message: "Refresh token required." }); return; }
   try {
-    const payload = jwt.verify(refreshToken, process.env.JWT_SECRET!) as any;
+    // Must be a refresh token specifically — an access token must not work here.
+    const payload = verifyToken(refreshToken, "refresh");
     const user = await prisma.user.findFirst({ where: { id: payload.id, refreshToken } });
     if (!user) { res.status(401).json({ status: "error", message: "Invalid refresh token." }); return; }
     const newToken = signAccessToken({ id: user.id, role: user.role, email: user.email });
@@ -317,7 +297,7 @@ router.get("/profile", async (req: Request, res: Response): Promise<void> => {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const decoded = verifyAccessToken(token);
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: {
@@ -346,7 +326,7 @@ router.put("/profile", async (req: Request, res: Response): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
-    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET!) as any;
+    const decoded = verifyAccessToken(authHeader.split(" ")[1]);
 
     const { firstName, lastName, phone, parentName, parentPhone, parentEmail, motherName, motherPhone, gender, address, bio, qualification } = req.body;
 
@@ -425,7 +405,7 @@ router.put("/change-password", async (req: Request, res: Response): Promise<void
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
-    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET!) as any;
+    const decoded = verifyAccessToken(authHeader.split(" ")[1]);
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) { res.status(400).json({ status: "error", message: "currentPassword and newPassword required." }); return; }
     if (newPassword.length < 8) { res.status(400).json({ status: "error", message: "New password must be at least 8 characters." }); return; }
@@ -444,7 +424,7 @@ router.delete("/logout-all", async (req: Request, res: Response): Promise<void> 
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith("Bearer ")) { res.status(401).json({ status: "error", message: "Unauthorized." }); return; }
-    const decoded = jwt.verify(authHeader.split(" ")[1], process.env.JWT_SECRET!) as any;
+    const decoded = verifyAccessToken(authHeader.split(" ")[1]);
     await prisma.user.update({ where: { id: decoded.id }, data: { refreshToken: null } });
     logAudit({ userId: decoded.id, module: "auth", action: "LOGOUT" }, req);
     res.json({ status: "success", message: "All sessions terminated." });
@@ -548,40 +528,12 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
 
 
 
-// ── POST /auth/set-role — Set role for new Google users ──────────
-router.post("/set-role", async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { userId, role } = req.body;
-    if (!userId || !role) { res.status(400).json({ status: "error", message: "userId and role required." }); return; }
-    
-    const validRoles = ["STUDENT", "TEACHER", "STAFF"];
-    if (!validRoles.includes(role)) {
-      res.status(400).json({ status: "error", message: "Role must be STUDENT, TEACHER, or STAFF." }); return;
-    }
-
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user || user.role !== "PENDING") {
-      res.status(400).json({ status: "error", message: "Invalid user or role already assigned." }); return;
-    }
-
-    const updated = await prisma.user.update({ where: { id: userId }, data: { role } });
-
-    // Issue JWT tokens
-    const refreshToken = signRefreshToken(updated.id);
-    await prisma.user.update({ where: { id: updated.id }, data: { refreshToken } });
-    const accessToken = signAccessToken({ id: updated.id, role: updated.role, email: updated.email });
-
-    logAudit({ userId: updated.id, userEmail: updated.email, module: "auth", action: "CREATE", metadata: { role, provider: "google" } });
-
-    res.json({
-      status: "success",
-      token: accessToken,
-      refreshToken,
-      user: { id: updated.id, email: updated.email, role: updated.role, firstName: updated.firstName, lastName: updated.lastName },
-    });
-  } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
-});
-
-
+// NOTE: POST /auth/set-role was REMOVED. It was unauthenticated, took `userId`
+// from the request body, and issued access + refresh tokens for any account it
+// found in the PENDING state — an account-takeover path for anyone who could
+// guess a user id. It is also obsolete: the Google sign-in flow above assigns
+// roles itself (allowlisted owner => ADMIN, everyone else => STUDENT) and
+// converts any legacy PENDING account to STUDENT, so no caller needs this.
+// Role changes must go through the admin-only staff endpoints.
 
 export default router;

@@ -69,8 +69,17 @@ router.post("/bulk", authenticate, authorize("ADMIN", "SUPER_ADMIN", "TEACHER"),
 // PATCH /api/v1/notifications/:id/read — mark single as read
 router.patch("/:id/read", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Scope by userId so a caller can't mark someone else's notification read.
+    // updateMany (not update) lets us filter on both id AND owner.
     // @ts-ignore
-    await prisma.notification.update({ where: { id: req.params.id }, data: { isRead: true } });
+    const result = await prisma.notification.updateMany({
+      where: { id: req.params.id, userId: req.user!.id },
+      data: { isRead: true },
+    });
+    if (result.count === 0) {
+      res.status(404).json({ status: "error", message: "Notification not found." });
+      return;
+    }
     res.json({ status: "success", message: "Marked as read." });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });
@@ -87,8 +96,16 @@ router.post("/read-all", authenticate, async (req: AuthRequest, res: Response): 
 // DELETE /api/v1/notifications/:id — delete single notification
 router.delete("/:id", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Scope by userId — previously any user could delete another user's
+    // notifications (e.g. suppress a fee-overdue or admin alert).
     // @ts-ignore
-    await prisma.notification.delete({ where: { id: req.params.id } });
+    const result = await prisma.notification.deleteMany({
+      where: { id: req.params.id, userId: req.user!.id },
+    });
+    if (result.count === 0) {
+      res.status(404).json({ status: "error", message: "Notification not found." });
+      return;
+    }
     res.json({ status: "success", message: "Notification deleted." });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });

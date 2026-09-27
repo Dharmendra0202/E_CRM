@@ -3,11 +3,45 @@ import { Router, Response } from "express";
 
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { sendStudentOnboardingEmail } from "../utils/email";
 import { logAudit } from "../utils/auditLog";
 import { notifyUsers, notifyAdmins } from "../utils/notify";
 
 const router = Router();
+
+const STAFF_ROLES = ["ADMIN", "SUPER_ADMIN", "TEACHER"];
+
+/**
+ * Password for admin-provisioned student accounts.
+ *
+ * These accounts are never given a password directly — the onboarding email
+ * tells students to sign in with Google or request a reset from an admin. So we
+ * set an unguessable random value rather than a shared constant. Previously
+ * every student was created with the same literal "Student@123", which meant
+ * knowing one student's email was enough to access their account.
+ */
+function generateProvisionalPassword(): string {
+  return crypto.randomBytes(24).toString("base64url");
+}
+
+/**
+ * Whether the caller may view a specific student's record.
+ * Staff see everyone; a STUDENT/PARENT may only see their own record.
+ * Without this, any authenticated user could enumerate ids and read every
+ * student's parents, contact details, invoices and attendance.
+ */
+async function canViewStudent(
+  user: { id: string; role: string },
+  studentId: string
+): Promise<boolean> {
+  if (STAFF_ROLES.includes(user.role)) return true;
+  const own = await prisma.student.findUnique({
+    where: { userId: user.id },
+    select: { id: true },
+  });
+  return own?.id === studentId;
+}
 
 // GET /api/v1/students
 router.get("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
@@ -25,11 +59,46 @@ router.get("/", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthReq
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });
 
+// ══════════════════════════════════════════════════════════════
+// GET /api/v1/students/stats — student overview stats
+// MUST stay registered BEFORE "/:id", otherwise Express matches "/:id" first
+// and "/stats" becomes unreachable (it previously 404'd as "Student not found").
+// ══════════════════════════════════════════════════════════════
+router.get("/stats", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    // Run all counts CONCURRENTLY. Awaiting them one-by-one meant 6 sequential
+    // round trips to a remote Postgres (~700ms each), making this endpoint take
+    // 5+ seconds and the dashboard feel broken.
+    const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    const [total, activeEnrollments, thisMonth, totalAttendance, presentCount, unpaidInvoices] =
+      await Promise.all([
+        prisma.student.count({ where: { deletedAt: null } }),
+        prisma.batchEnrollment.count({ where: { status: "ACTIVE" } }),
+        prisma.student.count({ where: { deletedAt: null, createdAt: { gte: monthStart } } }),
+        prisma.attendance.count(),
+        prisma.attendance.count({ where: { status: { in: ["PRESENT", "LATE"] } } }),
+        prisma.invoice.count({ where: { status: "UNPAID" } }),
+      ]);
+
+    const avgAttendance = totalAttendance > 0 ? Math.round((presentCount / totalAttendance) * 100) : 0;
+
+    res.json({
+      status: "success",
+      data: { total, activeEnrollments, thisMonth, avgAttendance, unpaidInvoices },
+    });
+  } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
+});
+
 // GET /api/v1/students/:id
 router.get("/:id", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const student = await prisma.student.findUnique({
-      where: { id: req.params.id },
+    // Authorization first: students/parents may only read their own record.
+    if (!(await canViewStudent(req.user!, req.params.id))) {
+      res.status(403).json({ status: "error", message: "Access denied." });
+      return;
+    }
+    const student = await prisma.student.findFirst({
+      where: { id: req.params.id, deletedAt: null },
       include: { user: true, enrollments: { include: { batch: { include: { teacher: { include: { user: true } } } } } }, invoices: true, attendance: { orderBy: { classDate: "desc" }, take: 20 } },
     });
     if (!student) { res.status(404).json({ status: "error", message: "Student not found." }); return; }
@@ -57,7 +126,7 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
       if (existingStudent) {
         // Another student already uses this email — create a unique email for the new student
         const uniqueEmail = `${firstName.toLowerCase()}.${Date.now()}@student.local`;
-        const hash = await bcrypt.hash("Student@123", 12);
+        const hash = await bcrypt.hash(generateProvisionalPassword(), 12);
         user = await prisma.user.create({
           data: {
             email: uniqueEmail,
@@ -78,7 +147,7 @@ router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res:
       }
     } else {
       // Brand new email — create fresh user
-      const hash = await bcrypt.hash("Student@123", 12);
+      const hash = await bcrypt.hash(generateProvisionalPassword(), 12);
       user = await prisma.user.create({
         data: {
           email: email.toLowerCase(),
@@ -281,38 +350,18 @@ router.delete("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest,
 });
 
 // ══════════════════════════════════════════════════════════════
-// GET /api/v1/students/stats — student overview stats
-// ══════════════════════════════════════════════════════════════
-router.get("/stats", authenticate, authorize("ADMIN", "TEACHER"), async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    const total = await prisma.student.count();
-    const activeEnrollments = await prisma.batchEnrollment.count({ where: { status: "ACTIVE" } });
-    const thisMonth = await prisma.student.count({
-      where: { createdAt: { gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) } },
-    });
-
-    // Attendance stats
-    const totalAttendance = await prisma.attendance.count();
-    const presentCount = await prisma.attendance.count({ where: { status: { in: ["PRESENT", "LATE"] } } });
-    const avgAttendance = totalAttendance > 0 ? Math.round((presentCount / totalAttendance) * 100) : 0;
-
-    // Fee stats
-    const unpaidInvoices = await prisma.invoice.count({ where: { status: "UNPAID" } });
-
-    res.json({
-      status: "success",
-      data: { total, activeEnrollments, thisMonth, avgAttendance, unpaidInvoices },
-    });
-  } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
-});
-
-// ══════════════════════════════════════════════════════════════
 // GET /api/v1/students/:id/profile — full student profile
 // ══════════════════════════════════════════════════════════════
 router.get("/:id/profile", authenticate, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const student = await prisma.student.findUnique({
-      where: { id: req.params.id },
+    // Same ownership rule as GET /:id — this endpoint returns even more data
+    // (full invoice + payment history), so it must not be readable by anyone.
+    if (!(await canViewStudent(req.user!, req.params.id))) {
+      res.status(403).json({ status: "error", message: "Access denied." });
+      return;
+    }
+    const student = await prisma.student.findFirst({
+      where: { id: req.params.id, deletedAt: null },
       include: {
         user: { select: { id: true, firstName: true, lastName: true, email: true, phone: true, createdAt: true } },
         enrollments: {
@@ -373,7 +422,7 @@ router.post("/bulk", authenticate, authorize("ADMIN"), async (req: AuthRequest, 
 
         let user = await prisma.user.findUnique({ where: { email: s.email.toLowerCase() } });
         if (!user) {
-          const hash = await bcrypt.hash("Student@123", 12);
+          const hash = await bcrypt.hash(generateProvisionalPassword(), 12);
           user = await prisma.user.create({
             data: { email: s.email.toLowerCase(), passwordHash: hash, firstName: s.firstName, lastName: s.lastName, role: "STUDENT", phone: s.phone || null, emailVerified: true },
           });

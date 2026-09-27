@@ -42,8 +42,7 @@ export const api = {
   auth: {
     login: (email: string, password: string) =>
       request<any>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
-    demoLogin: () =>
-      request<any>("/auth/demo", { method: "POST" }),
+
     register: (body: object) =>
       request<any>("/auth/register", { method: "POST", body: JSON.stringify(body) }),
     google: (credential: string) =>
@@ -64,7 +63,6 @@ export const api = {
     changePassword: (currentPassword: string, newPassword: string) =>
       request<any>("/auth/change-password", { method: "PUT", body: JSON.stringify({ currentPassword, newPassword }) }),
     logoutAll: () => request<any>("/auth/logout-all", { method: "DELETE" }),
-    setRole: (userId: string, role: string) => request<any>("/auth/set-role", { method: "POST", body: JSON.stringify({ userId, role }) }),
   },
 
   // ── Leads / Admissions CRM ──────────────────────────────

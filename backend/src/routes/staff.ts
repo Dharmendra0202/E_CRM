@@ -2,9 +2,24 @@ import { prisma } from "../utils/prisma";
 import { Router, Response } from "express";
 
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { authenticate, authorize, AuthRequest } from "../middleware/auth";
 
 const router = Router();
+
+/**
+ * Password for an admin-provisioned staff/teacher account when the caller does
+ * not supply one.
+ *
+ * The enrollment UI used to send a hardcoded "Staff@123" for every teacher and
+ * staff member, and these accounts are created pre-verified — so knowing the
+ * convention plus an email address was enough to sign in as any of them. An
+ * unguessable random value is used instead; the account holder signs in with
+ * Google or sets a password via "Forgot password".
+ */
+function generateProvisionalPassword(): string {
+  return crypto.randomBytes(24).toString("base64url");
+}
 
 // GET /api/v1/staff
 router.get("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
@@ -22,13 +37,26 @@ router.get("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: 
 router.post("/", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { email, password, firstName, lastName, role, phone, qualification, hourlyRate, bio } = req.body;
-    if (!email || !password || !firstName || !lastName || !role) {
+    if (!email || !firstName || !lastName || !role) {
       res.status(400).json({ status: "error", message: "Required fields missing." }); return;
+    }
+    // Only ADMIN reaches this handler, so assigning a role here is intentional.
+    // Restrict it to real staff roles so this can't be used to mint a STUDENT
+    // record or an unknown role string.
+    const ALLOWED_STAFF_ROLES = ["ADMIN", "TEACHER", "SUPPORT", "SALES", "BILLING"];
+    if (!ALLOWED_STAFF_ROLES.includes(role)) {
+      res.status(400).json({
+        status: "error",
+        message: `role must be one of: ${ALLOWED_STAFF_ROLES.join(", ")}.`,
+      });
+      return;
     }
     const exists = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
     if (exists) { res.status(409).json({ status: "error", message: "Email already registered." }); return; }
 
-    const hash = await bcrypt.hash(password, 12);
+    // `password` is optional. When omitted a random one is generated, so no
+    // account is ever created with a shared, guessable default.
+    const hash = await bcrypt.hash(password || generateProvisionalPassword(), 12);
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(), passwordHash: hash, firstName, lastName, role, phone,

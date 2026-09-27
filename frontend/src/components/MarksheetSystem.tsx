@@ -2,8 +2,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "../utils/api";
 import { Award, BookOpen, TrendingUp, Users2, Download } from "lucide-react";
 import { Button } from "./ui/Button";
-
-const LS_KEY = "ecrm_marksheets"; // kept for migration fallback
+import { LoadErrorBanner } from "./ui/LoadErrorBanner";
 
 interface MarkEntry {
   studentId: string;
@@ -23,6 +22,7 @@ export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string })
   const [selectedBatch, setSelectedBatch] = useState("");
   const [showAdd, setShowAdd] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [form, setForm] = useState({ studentId: "", subject: "", marks: "", totalMarks: "100", examTitle: "" });
 
   // Student's own results (from exam system)
@@ -35,7 +35,10 @@ export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string })
         try {
           const res = await api.exams2.myResults();
           setMyResults(res.data || []);
-        } catch { setMyResults([]); }
+        } catch (err: any) {
+          setMyResults([]);
+          setLoadError(err?.message || "Could not load your results.");
+        }
         setIsLoading(false);
       })();
     } else {
@@ -47,6 +50,7 @@ export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string })
 
   const loadData = async () => {
     setIsLoading(true);
+    setLoadError("");
     try {
       const [stuRes, batRes] = await Promise.all([api.students.getAll(), api.batches.getAll()]);
       if (stuRes.data) setStudents(stuRes.data);
@@ -54,7 +58,9 @@ export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string })
         setBatches(batRes.data);
         if (batRes.data.length > 0 && !selectedBatch) setSelectedBatch(batRes.data[0].name);
       }
-    } catch {}
+    } catch (err: any) {
+      setLoadError(err?.message || "Could not load students and batches.");
+    }
     setIsLoading(false);
   };
 
@@ -72,10 +78,12 @@ export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string })
           batch: e.batch,
         })));
       }
-    } catch {
-      // Fallback to localStorage if API fails
-      const saved = localStorage.getItem(LS_KEY);
-      if (saved) setEntries(JSON.parse(saved).filter((e: any) => e.batch === selectedBatch));
+    } catch (err: any) {
+      // No localStorage fallback. It read "ecrm_marksheets", a key nothing
+      // writes any more, so a failed request quietly rendered stale or empty
+      // marks as if they were real.
+      setEntries([]);
+      setLoadError(err?.message || "Could not load marks for this batch.");
     }
   };
 
@@ -139,6 +147,8 @@ export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string })
           )}
         </div>
 
+        {loadError && <LoadErrorBanner message={loadError} />}
+
         {isLoading ? (
           <div style={{ padding: "48px", textAlign: "center", color: "var(--text-secondary)" }}>Loading your marks...</div>
         ) : myResults.length === 0 ? (
@@ -195,6 +205,8 @@ export function MarksheetSystem({ userRole = "STUDENT" }: { userRole?: string })
         </div>
         <Button variant="primary" onClick={() => setShowAdd(true)} leftIcon={<Award size={14} />}>Add Marks</Button>
       </div>
+
+      {loadError && <LoadErrorBanner message={loadError} onRetry={loadData} />}
 
       {/* Batch Selector */}
       <div style={{ marginBottom: "20px" }}>

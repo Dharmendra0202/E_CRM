@@ -1,31 +1,53 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../utils/api";
-import { AlertCircle, TrendingDown, BookOpen, CheckCircle2, Target, Award } from "lucide-react";
-
-const LS_MARKS_KEY = "ecrm_marksheets";
+import { LoadErrorBanner } from "./ui/LoadErrorBanner";
+import { TrendingDown, BookOpen, CheckCircle2, Target, Award } from "lucide-react";
 
 export function WeakStudentModule() {
   const [students, setStudents] = useState<any[]>([]);
   const [batches, setBatches] = useState<any[]>([]);
   const [selectedBatch, setSelectedBatch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  // Marks come from the API. They used to be read from
+  // localStorage["ecrm_marksheets"], which nothing writes any more — so this
+  // module silently reported "0 weak students" no matter what the real marks
+  // were. Flagging a child as underperforming must never rely on stale
+  // browser-local data.
+  const [allMarks, setAllMarks] = useState<any[]>([]);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
     setIsLoading(true);
+    setLoadError("");
     try {
       const [stuRes, batRes] = await Promise.all([api.students.getAll(), api.batches.getAll()]);
       if (stuRes.data) setStudents(stuRes.data);
       if (batRes.data) { setBatches(batRes.data); if (batRes.data.length > 0 && !selectedBatch) setSelectedBatch(batRes.data[0].name); }
-    } catch {}
+    } catch (err: any) {
+      setLoadError(err?.message || "Could not load students and batches.");
+    }
     setIsLoading(false);
   };
 
-  // Get marks from localStorage (shared with MarksheetSystem)
-  const allMarks = (() => {
-    try { return JSON.parse(localStorage.getItem(LS_MARKS_KEY) || "[]"); } catch { return []; }
-  })();
+  // Reload marks whenever the selected batch changes.
+  useEffect(() => {
+    if (!selectedBatch) { setAllMarks([]); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.marksheets.getAll({ batch: selectedBatch });
+        if (!cancelled) setAllMarks(res.data || []);
+      } catch (err: any) {
+        if (!cancelled) {
+          setAllMarks([]);
+          setLoadError(err?.message || "Could not load marks for this batch.");
+        }
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [selectedBatch]);
 
   const batchStudents = students.filter(s => s.enrollments?.some((e: any) => e.batch?.name === selectedBatch));
 
@@ -47,6 +69,15 @@ export function WeakStudentModule() {
         <h1 className="text-gradient-indigo" style={{ margin: "0 0 6px" }}>Weak Student Improvement</h1>
         <p style={{ margin: 0, fontSize: "14px", color: "var(--text-secondary)" }}>Auto-identify students scoring below 40% and track their improvement.</p>
       </div>
+
+      {/* Load failure must be visible — otherwise an empty list looks like
+          "all students are performing well", which is dangerously misleading. */}
+      {loadError && (
+        <LoadErrorBanner
+          message={`${loadError} Results below may be incomplete.`}
+          onRetry={loadData}
+        />
+      )}
 
       {/* Batch Selector */}
       <div style={{ marginBottom: "20px", display: "flex", gap: "12px", alignItems: "center" }}>

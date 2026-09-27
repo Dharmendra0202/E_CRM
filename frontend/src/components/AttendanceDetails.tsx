@@ -9,7 +9,7 @@ const VALUE = "#6c757d";
 const CARD_SHADOW = "rgba(90, 97, 105, 0.1) 0px 7.5px 35px 0px, rgba(90, 97, 105, 0.1) 0px 2px 3px 0px";
 const FONT = "'Nunito', 'Segoe UI', Arial, sans-serif";
 
-interface Record {
+interface AttendanceRecord {
   id: string;
   date: string;
   studentName: string;
@@ -33,7 +33,7 @@ export function AttendanceDetails({ userRole = "STUDENT" }: { userRole?: string 
   const [batchId, setBatchId] = useState("all");
   const [batches, setBatches] = useState<Batch[]>([]);
 
-  const [records, setRecords] = useState<Record[]>([]);
+  const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState("");

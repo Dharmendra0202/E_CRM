@@ -53,9 +53,32 @@ router.post("/", authenticate, authorize("ADMIN", "SUPER_ADMIN", "BILLING", "STA
 // PATCH /api/v1/invoices/:id — general update
 router.patch("/:id", authenticate, authorize("ADMIN"), async (req: AuthRequest, res: Response): Promise<void> => {
   try {
+    // Whitelist updatable fields. Passing `data: req.body` straight through was
+    // mass assignment: it allowed writing `status: "PAID"` / `paidAt` directly
+    // (bypassing the VALID_TRANSITIONS workflow enforced by /:id/approve), and
+    // even re-pointing `studentId` at a different student.
+    // Only these exist on the Invoice model and are safe to edit directly.
+    // `status`/`paidAt` are deliberately excluded (use /:id/approve), as are
+    // `studentId`, `deletedAt` and the gateway id fields.
+    const ALLOWED_FIELDS = ["totalAmount", "dueDate"] as const;
+    const data: Record<string, any> = {};
+    for (const field of ALLOWED_FIELDS) {
+      if (req.body[field] !== undefined) data[field] = req.body[field];
+    }
+    if (Object.keys(data).length === 0) {
+      res.status(400).json({
+        status: "error",
+        message: `No updatable fields provided. Allowed: ${ALLOWED_FIELDS.join(", ")}. Use /:id/approve to change status.`,
+      });
+      return;
+    }
+    if (data.dueDate !== undefined) data.dueDate = new Date(data.dueDate);
+
     const prev = await prisma.invoice.findUnique({ where: { id: req.params.id } });
-    const invoice = await prisma.invoice.update({ where: { id: req.params.id }, data: req.body });
-    logAudit({ module: "invoices", action: "UPDATE", entityId: invoice.id, previousValue: { status: prev?.status }, newValue: req.body }, req);
+    if (!prev) { res.status(404).json({ status: "error", message: "Invoice not found." }); return; }
+
+    const invoice = await prisma.invoice.update({ where: { id: req.params.id }, data });
+    logAudit({ module: "invoices", action: "UPDATE", entityId: invoice.id, previousValue: { status: prev.status }, newValue: data }, req);
     res.json({ status: "success", data: invoice });
   } catch (err: any) { res.status(500).json({ status: "error", message: err.message }); }
 });

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
+import { LoadErrorBanner } from "./ui/LoadErrorBanner";
 import { api } from "../utils/api";
 import { addHistoryItem } from "../utils/history";
 import { exportStudents } from "../utils/exportExcel";
@@ -166,6 +167,9 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
   // Core state â€” starts empty, loads from API
   const [students, setStudents] = useState<Student[]>([]);
   const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  // Bumping this re-runs the load effect (used by the Retry button).
+  const [reloadKey, setReloadKey] = useState(0);
   const [activeTab, setActiveTab] = useState<StudentTab>(initialTab);
 
   useEffect(() => {
@@ -212,28 +216,20 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
     setTimeout(() => setToast(null), 4500);
   };
 
-  const LS_STUDENTS_KEY = "ecrm_students_list";
-
-  const getLocalStudents = (): Student[] => {
-    try {
-      const raw = localStorage.getItem(LS_STUDENTS_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch { return []; }
-  };
-
-  const saveLocalStudents = (list: Student[]) => {
-    try { localStorage.setItem(LS_STUDENTS_KEY, JSON.stringify(list)); } catch (e) { console.error(e); }
-  };
+  // NOTE: this component deliberately has NO localStorage persistence.
+  //
+  // It used to mirror the student list into localStorage["ecrm_students_list"]
+  // and seed the table from it on mount. Combined with an optimistic insert that
+  // never rolled back, a failed save left a phantom student that looked fully
+  // registered — forever, across reloads — while nothing existed in the
+  // database. Students are server-owned records: the API is the only source of
+  // truth.
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Load students from API & LocalStorage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     const loadStudents = async () => {
       setIsLoadingStudents(true);
-      const localList = getLocalStudents();
-      if (localList.length > 0) {
-        setStudents(localList);
-      }
-
+      setLoadError("");
       try {
         const res = await api.students.getAll();
         if (res.data && Array.isArray(res.data)) {
@@ -257,20 +253,18 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
             subjects: [],
           }));
 
-          const dbIds = new Set(mapped.map(s => s.id));
-          const pendingLocal = localList.filter(s => s.id.startsWith("stu-") && !dbIds.has(s.id));
-          const merged = [...pendingLocal, ...mapped];
-          setStudents(merged);
-          saveLocalStudents(merged);
+          setStudents(mapped);
         }
-      } catch {
-        // Backend offline â€” keep localList in state
+      } catch (err: any) {
+        // Report the failure instead of silently showing stale local data.
+        setStudents([]);
+        setLoadError(err?.message || "Could not load students. Please retry.");
       } finally {
         setIsLoadingStudents(false);
       }
     };
     loadStudents();
-  }, []);
+  }, [reloadKey]);
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Filtered & Sorted Students â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const filteredStudents = useMemo(() => {
@@ -340,19 +334,23 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Delete Student â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleDeleteStudent = async (id: string) => {
-    // Optimistic UI update
-    setStudents(prev => {
-      const updated = prev.filter(s => s.id !== id);
-      saveLocalStudents(updated);
-      return updated;
-    });
+    // Keep a copy so the row can be restored if the delete fails.
+    const previous = students;
+    setStudents(prev => prev.filter(s => s.id !== id));
     if (expandedRow === id) setExpandedRow(null);
     if (selectedStudent?.id === id) setSelectedStudent(null);
     try {
       await api.students.delete(id);
       showToast("Student record removed successfully.", "info");
-    } catch {
-      showToast("Student removed locally (DB sync pending).", "info");
+    } catch (err: any) {
+      // Restore the row. The old message claimed "removed locally (DB sync
+      // pending)", but no sync mechanism exists — the record was still in the
+      // database while being hidden from the UI.
+      setStudents(previous);
+      showToast(
+        `Could not delete the student: ${err?.message || "the server is unreachable"}. The record was not removed.`,
+        "error"
+      );
     }
   };
 
@@ -396,29 +394,12 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
       ],
     };
 
-    // Optimistic UI â€” add immediately
-    setStudents(prev => {
-      const updated = [optimisticStudent, ...prev];
-      saveLocalStudents(updated);
-      return updated;
-    });
-    setFormData({ name: "", email: "", phone: "", dob: "", gender: "Male", guardianName: "", guardianPhone: "", address: "", batch: BATCHES[0], feeAmount: "8500", notes: "" });
+    // Optimistic insert for responsiveness. IMPORTANT: this is rolled back if
+    // the save fails, and we do NOT claim success (toast / history / modal)
+    // until the server has actually persisted the record.
+    setStudents(prev => [optimisticStudent, ...prev]);
     setFormErrors({});
-    addHistoryItem({
-      category: "Student",
-      action: "Created",
-      title: `Student registered: ${optimisticStudent.name}`,
-      details: `Batch: ${optimisticStudent.batch} Â· Email: ${optimisticStudent.email} Â· Fee: â‚¹${optimisticStudent.feeAmount}`,
-      badgeColor: "#007bff",
-    });
-    showToast(`ðŸŽ‰ ${optimisticStudent.name} registered successfully!`, "success");
-    setActiveTab("all");
 
-    setSuccessModalData({
-      student: optimisticStudent,
-    });
-
-    // Save to database in background
     try {
       const res = await api.students.create({
         firstName: nameParts[0],
@@ -453,19 +434,32 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
           notes: currentData.notes,
           subjects: optimisticStudent.subjects,
         };
-        setStudents(prev => {
-          const updated = prev.map(item => item.id === optimisticStudent.id ? mappedStudent : item);
-          saveLocalStudents(updated);
-          return updated;
+        // Swap the placeholder for the real, server-assigned record.
+        setStudents(prev => prev.map(item => item.id === optimisticStudent.id ? mappedStudent : item));
+
+        // Only now is it true that the student was registered.
+        setFormData({ name: "", email: "", phone: "", dob: "", gender: "Male", guardianName: "", guardianPhone: "", address: "", batch: BATCHES[0], feeAmount: "8500", notes: "" });
+        addHistoryItem({
+          category: "Student",
+          action: "Created",
+          title: `Student registered: ${mappedStudent.name}`,
+          details: `Batch: ${mappedStudent.batch} · Email: ${mappedStudent.email} · Fee: ₹${mappedStudent.feeAmount}`,
+          badgeColor: "#007bff",
         });
-        
-        // Update modal data with real server-assigned student ID
-        setSuccessModalData({
-          student: mappedStudent,
-        });
+        showToast(`${mappedStudent.name} registered successfully!`, "success");
+        setActiveTab("all");
+        setSuccessModalData({ student: mappedStudent });
+      } else {
+        throw new Error("Server did not return the created student.");
       }
-    } catch (err) {
-      console.error("Database save failed, student retained in local storage:", err);
+    } catch (err: any) {
+      // Roll back the optimistic row so the UI never shows a student that was
+      // not saved. The form keeps its values so the user can retry.
+      setStudents(prev => prev.filter(item => item.id !== optimisticStudent.id));
+      showToast(
+        `Could not register ${currentData.name}: ${err?.message || "the server is unreachable"}. Nothing was saved — please try again.`,
+        "error"
+      );
     }
   };
 
@@ -754,6 +748,12 @@ export const StudentManagement: React.FC<StudentManagementProps> = ({ initialTab
           <Sparkles size={14} />
           <span>{toast.message}</span>
         </div>
+      )}
+
+      {/* A failed load must be visible — an empty table must never be mistaken
+          for "no students enrolled". */}
+      {loadError && (
+        <LoadErrorBanner message={loadError} onRetry={() => setReloadKey(k => k + 1)} />
       )}
 
       {/* Page Header */}

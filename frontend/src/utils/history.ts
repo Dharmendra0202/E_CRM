@@ -11,12 +11,21 @@ export interface HistoryItem {
 
 const LS_KEY = "ecrm_creation_history";
 
+/**
+ * Local activity log for actions taken in this browser.
+ *
+ * Starts EMPTY. It used to seed two fabricated entries (a "Grade 10 Science &
+ * Maths" class and a student "Alice Connor") so the panel looked populated on a
+ * fresh install — which meant an administrator saw events that never happened,
+ * referencing a student who does not exist. The History panel has a proper
+ * empty state, so showing nothing is both honest and correct.
+ */
 export const getHistoryList = (): HistoryItem[] => {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    return raw ? JSON.parse(raw) : getInitialDefaultHistory();
+    return raw ? JSON.parse(raw) : [];
   } catch {
-    return getInitialDefaultHistory();
+    return [];
   }
 };
 
@@ -44,28 +53,4 @@ export const clearHistoryList = () => {
   window.dispatchEvent(new CustomEvent("ecrm_history_updated"));
 };
 
-function getInitialDefaultHistory(): HistoryItem[] {
-  const now = new Date();
-  return [
-    {
-      id: "hist-init-1",
-      category: "Class Schedule",
-      action: "Created",
-      title: "Grade 10 – Science & Maths scheduled",
-      details: "Monday 08:00 AM – 09:30 AM in Room 101",
-      timestamp: new Date(now.getTime() - 1000 * 60 * 30).toISOString(),
-      user: "Admin",
-      badgeColor: "#0069d9",
-    },
-    {
-      id: "hist-init-2",
-      category: "Student",
-      action: "Created",
-      title: "Student Profile: Alice Connor",
-      details: "Enrolled in Grade 10 Algebra – Contact: aconnor@gmail.com",
-      timestamp: new Date(now.getTime() - 1000 * 60 * 120).toISOString(),
-      user: "Admin",
-      badgeColor: "#007bff",
-    },
-  ];
-}
+
