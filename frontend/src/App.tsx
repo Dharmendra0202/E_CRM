@@ -14,7 +14,6 @@ import { ClassTimeTable } from "./components/ClassTimeTable";
 import { ClassAttendance } from "./components/ClassAttendance";
 import { AttendanceDetails } from "./components/AttendanceDetails";
 import { FeeReceipt } from "./components/FeeReceipt";
-import { TimetableScheduler } from "./components/TimetableScheduler";
 import { HistoryModal } from "./components/HistoryModal";
 import { AttendanceTracker } from "./components/AttendanceTracker";
 import { ExamsManagement } from "./components/ExamsManagement";
@@ -55,7 +54,7 @@ import {
 // has working backend routes and an api.transport client but no UI yet; when
 // that screen is built, add "transport" back here together with its render
 // branch and a Sidebar/ROLE_VIEWS entry.
-type ViewType = "dashboard" | "leads" | "student-profiles" | "batches" | "new-enrollment" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "schedule" | "billing" | "staff" | "teachers" | "attendance" | "online-classes" | "class-attendance" | "class-timetable" | "attendance-details" | "fee-receipt" | "exams" | "homework" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding" | "my-profile";
+type ViewType = "dashboard" | "leads" | "student-profiles" | "batches" | "new-enrollment" | "bulk-promotion" | "examination" | "marksheet" | "weak-students" | "admissions" | "billing" | "staff" | "teachers" | "attendance" | "online-classes" | "class-attendance" | "class-timetable" | "attendance-details" | "fee-receipt" | "exams" | "homework" | "library" | "communication" | "reports" | "roles" | "settings" | "onboarding" | "my-profile";
 type StaffRoleType = "ALL" | "ADMIN" | "TEACHER" | "SALES" | "BILLING" | "SUPPORT";
 
 function App() {
@@ -521,7 +520,6 @@ function App() {
                 { id: "dashboard", name: "Dashboard Overview", source: "Navigation", status: "VIEW", type: "NAV", target: "dashboard" },
                 { id: "attendance", name: "Attendance Tracker", source: "Navigation", status: "VIEW", type: "NAV", target: "attendance" },
                 { id: "billing", name: "Payment & Fee Records", source: "Navigation", status: "VIEW", type: "NAV", target: "billing" },
-                { id: "schedule", name: "Timetable & Schedule", source: "Navigation", status: "VIEW", type: "NAV", target: "schedule" },
                 { id: "homework", name: "Homework & Assignments", source: "Navigation", status: "VIEW", type: "NAV", target: "homework" },
                 { id: "exams", name: "Report Cards & Exams", source: "Navigation", status: "VIEW", type: "NAV", target: "exams" },
                 // Only suggest destinations this role may actually open, otherwise
@@ -729,12 +727,7 @@ function App() {
             </div>
           )}
 
-          {/* ══════════════ TIMETABLE VIEW ══════════════ */}
-          {currentView === "schedule" && (
-            <div className="animate-fade-in">
-              <TimetableScheduler />
-            </div>
-          )}
+
 
           {/* ══════════════ ATTENDANCE VIEW ══════════════ */}
           {currentView === "attendance" && <AttendanceTracker userRole={effectiveRole} />}

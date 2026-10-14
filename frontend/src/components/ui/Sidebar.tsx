@@ -24,9 +24,9 @@ export const ROLE_VIEWS: Record<string, string[]> = {
   SUPER_ADMIN: ["*"],
   // NOTE: "attendance" (AttendanceTracker) is the MARKING tool — admin/teacher only.
   // Students/parents get "class-attendance" (own summary) + "attendance-details" (own records).
-  TEACHER: ["dashboard", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "schedule", "homework", "exams", "examination", "marksheet", "leads", "student-profiles", "batches", "communication", "my-profile"],
+  TEACHER: ["dashboard", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "homework", "exams", "examination", "marksheet", "leads", "student-profiles", "batches", "communication", "my-profile"],
   STAFF: ["dashboard", "leads", "student-profiles", "attendance", "online-classes", "class-attendance", "class-timetable", "attendance-details", "billing", "fee-receipt", "communication", "my-profile"],
-  STUDENT: ["dashboard", "schedule", "online-classes", "class-attendance", "class-timetable", "attendance-details", "examination", "marksheet", "fee-receipt", "my-profile"],
+  STUDENT: ["dashboard", "online-classes", "class-attendance", "class-timetable", "attendance-details", "examination", "marksheet", "fee-receipt", "my-profile"],
   PARENT: ["dashboard", "examination", "marksheet", "fee-receipt", "my-profile"],
   ACCOUNTANT: ["dashboard", "billing", "reports", "my-profile"],
   PENDING: ["dashboard"],
@@ -63,7 +63,6 @@ const NAV_ITEMS = [
     { view: "attendance", icon: <Check size={18} />, label: "Mark Attendance" },
     { view: "online-classes", icon: <Video size={18} />, label: "Online Classes" },
     { view: "class-attendance", icon: <Check size={18} />, label: "Class Attendance" },
-    { view: "schedule", icon: <CalendarDays size={18} />, label: "Timetable Scheduler" },
     { view: "class-timetable", icon: <CalendarDays size={18} />, label: "Class Time Table" },
     { view: "attendance-details", icon: <FileText size={18} />, label: "Attendance Datewise Details" },
   ]},

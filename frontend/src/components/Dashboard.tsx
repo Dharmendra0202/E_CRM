@@ -137,7 +137,7 @@ export function Dashboard({
     { icon: <GraduationCap size={22} />, label: "Batches", desc: `${totalBatches} active`, color: "#17a2b8", view: "batches" },
     { icon: <CheckCircle2 size={22} />, label: "Attendance", desc: `${avgAttendance.toFixed(0)}% avg rate`, color: "hsl(142,70%,42%)", view: "attendance", primary: true },
     { icon: <IndianRupee size={22} />, label: "Billing", desc: `₹${totalFeesCollected.toLocaleString("en-IN")} collected`, color: "hsl(38,92%,50%)", view: "billing", primary: true },
-    { icon: <CalendarDays size={22} />, label: "Timetable", desc: "Manage schedules", color: "hsl(200,70%,45%)", view: "schedule" },
+    { icon: <CalendarDays size={22} />, label: "Class Time Table", desc: "Weekly timetable", color: "hsl(200,70%,45%)", view: "class-timetable" },
     { icon: <BookOpen size={22} />, label: "Exams", desc: "Results & reports", color: "hsl(205, 85%, 50%)", view: "exams", primary: true },
     { icon: <Activity size={22} />, label: "Homework", desc: "Assignments & grading", color: "hsl(200,70%,45%)", view: "homework" },
     { icon: <Layers size={22} />, label: "Staff", desc: `${totalStaffOnly} members`, color: "hsl(260,91%,55%)", view: "staff" },
@@ -148,9 +148,9 @@ export function Dashboard({
   const allowedModuleViews: Record<string, string[]> = {
     ADMIN: moduleCards.map(c => c.view),
     SUPER_ADMIN: moduleCards.map(c => c.view),
-    TEACHER: ["leads", "attendance", "schedule", "exams", "homework", "communication"],
+    TEACHER: ["leads", "attendance", "class-timetable", "exams", "homework", "communication"],
     STAFF: ["leads", "attendance", "billing", "communication"],
-    STUDENT: ["schedule", "attendance", "exams", "homework"],
+    STUDENT: ["class-timetable", "attendance", "exams", "homework"],
   };
   // Only the top few tasks the current role can access — capped at 5 to avoid
   // duplicating the full sidebar. Prefer `primary` tasks, then fill up to 5.
@@ -174,9 +174,9 @@ export function Dashboard({
       {isTeacher && (
         <div className="animate-fade-in" style={{ display: "flex", flexDirection: "column", gap: "22px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px" }}>
-            <div onClick={() => onNavigate("schedule")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
+            <div onClick={() => onNavigate("class-timetable")} style={{ background: "#fff", borderRadius: "16px", padding: "20px", cursor: "pointer", border: "1px solid hsla(285,40%,60%,0.1)", transition: "transform 0.2s" }} onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }} onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}>
               <div style={{ fontSize: "12px", fontWeight: 700, color: "var(--text-secondary)" }}>My timetable</div>
-              <div style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", marginTop: "4px" }}>View Schedule →</div>
+              <div style={{ fontSize: "22px", fontWeight: 800, color: "var(--text-primary)", marginTop: "4px" }}>View Time Table →</div>
               <p style={{ margin: "6px 0 0", fontSize: "12px", color: "var(--text-secondary)" }}>{totalBatches} active batch schedules</p>
             </div>
 
