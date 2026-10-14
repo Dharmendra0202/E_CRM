@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { api, setToken } from "../utils/api";
+import { api, setToken, ApiError } from "../utils/api";
+import { ServiceUnavailable } from "../pages/ServiceUnavailable";
 import {
   Mail, Lock, User, ArrowRight, Eye, EyeOff,
   Sparkles, CheckCircle2, RefreshCw, KeyRound,
@@ -33,6 +34,42 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [errorMsg, setErrorMsg] = useState("");
   const [pendingEmail, setPE] = useState("");
   const [toast, setToast] = useState<{ msg: string; type: string } | null>(null);
+  // When the backend is unreachable or the DB is down (e.g. Supabase paused),
+  // we show a full-screen ServiceUnavailable page instead of leaking the raw
+  // error into the form.
+  const [serviceDown, setServiceDown] = useState<null | "db" | "network">(null);
+  const [retrying, setRetrying] = useState(false);
+
+  // Centralised handler: returns true if it consumed the error as a
+  // service-down condition (so callers can stop further handling).
+  const handleServiceDown = (err: any): boolean => {
+    if (err instanceof ApiError && err.isServiceDown) {
+      setServiceDown(err.isDbUnavailable ? "db" : "network");
+      return true;
+    }
+    // Older message-based fallback for non-ApiError throws.
+    const m = String(err?.message || "");
+    if (m.includes("Failed to fetch") || m.includes("NetworkError")) {
+      setServiceDown("network");
+      return true;
+    }
+    return false;
+  };
+
+  // Health-check retry from the ServiceUnavailable page.
+  const retryConnection = async () => {
+    setRetrying(true);
+    try {
+      await api.health();
+      setServiceDown(null); // DB/server is back — return to the form
+    } catch (err: any) {
+      // Still down: keep the page, just refresh which kind of outage it is.
+      if (err instanceof ApiError && err.isNetworkError) setServiceDown("network");
+      else setServiceDown("db");
+    } finally {
+      setRetrying(false);
+    }
+  };
 
   // ── Cloud mascot state ──────────────────────────────────
   const [isTyping, setIsTyping] = useState(false); // password focused → eyes shut
@@ -95,14 +132,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         setScreen("reset_sent");
       }
     } catch (err: any) {
-      // NEVER fall back to demo/admin on a network error — that would grant
-      // admin access to anyone whenever the backend is unreachable. Show a
-      // clear error and let the user retry instead.
-      if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
-        setErrorMsg("Can't reach the server. Please check your connection and try again.");
-        setLoading(false);
-        return;
-      }
+      // Server unreachable or DB down (e.g. Supabase paused) => full-screen
+      // ServiceUnavailable page, NOT a raw error in the form. Never fall back
+      // to demo/admin here.
+      if (handleServiceDown(err)) { setLoading(false); return; }
       if (err.message?.toLowerCase().includes("verify")) { setPE(email); setScreen("verify"); setLoading(false); return; }
       setErrorMsg(err.message || "Invalid email or password.");
     } finally {
@@ -130,12 +163,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       setToken(res.token);
       onLoginSuccess({ ...res.user, user_metadata: { name: `${res.user.firstName} ${res.user.lastName}`, role: res.user.role } });
     } catch (err: any) {
-      // Do not silently grant demo/admin access when the server is unreachable.
-      if (err.message?.includes("Failed to fetch") || err.message?.includes("NetworkError")) {
-        setErrorMsg("Can't reach the server. Please check your connection and try again.");
-        setLoading(false);
-        return;
-      }
+      // Server/DB down => ServiceUnavailable page (this is exactly the paused-
+      // Supabase case that used to dump a raw Prisma error into the UI).
+      if (handleServiceDown(err)) { setLoading(false); return; }
       setErrorMsg(err.message || "Google sign-in failed.");
     } finally {
       setLoading(false);
@@ -212,6 +242,18 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       <Eye_ side="right" />
     </div>
   );
+
+  // Service down (backend unreachable or DB paused): show the full-screen
+  // error page with a Retry, instead of the login form + a raw error string.
+  if (serviceDown) {
+    return (
+      <ServiceUnavailable
+        reason={serviceDown}
+        retrying={retrying}
+        onRetry={retryConnection}
+      />
+    );
+  }
 
   return (
     <div style={{

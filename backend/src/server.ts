@@ -229,7 +229,14 @@ app.get("/api/v1/health", async (_req: Request, res: Response) => {
     await prisma.$queryRaw`SELECT 1`;
     res.json({ status: "success", message: "E-CRM API healthy.", timestamp: new Date().toISOString() });
   } catch (err: any) {
-    res.status(500).json({ status: "error", message: "DB check failed.", error: err.message });
+    // 503 + DB_UNAVAILABLE so the client treats a paused/unreachable database
+    // as a "service waking up" state. Do not leak the raw DB error.
+    logger.error(`[health] DB check failed: ${err?.code || ""} ${err?.message || err}`);
+    res.status(503).json({
+      status: "error",
+      code: "DB_UNAVAILABLE",
+      message: "The database is temporarily unavailable. Please try again shortly.",
+    });
   }
 });
 

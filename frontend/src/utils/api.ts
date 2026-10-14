@@ -10,6 +10,31 @@ export const setToken = (token: string | null) => {
 
 export const getToken = () => authToken;
 
+/**
+ * Error thrown by every api.* call on failure. Carries the HTTP status and the
+ * server's machine-readable `code` so callers can branch reliably without
+ * parsing human text.
+ *
+ * - status 0           => network failure (server unreachable)
+ * - code "DB_UNAVAILABLE" (status 503) => database is down / Supabase paused
+ */
+export class ApiError extends Error {
+  status: number;
+  code?: string;
+  constructor(message: string, status: number, code?: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+  /** True when the backend could not be reached at all. */
+  get isNetworkError() { return this.status === 0; }
+  /** True when the server is up but the database is unavailable. */
+  get isDbUnavailable() { return this.code === "DB_UNAVAILABLE" || this.status === 503; }
+  /** True when the app is effectively unusable and should show the error page. */
+  get isServiceDown() { return this.isNetworkError || this.isDbUnavailable; }
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -17,14 +42,27 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   };
   if (authToken) headers["Authorization"] = `Bearer ${authToken}`;
 
-  const res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE_URL}${path}`, { ...options, headers });
+  } catch (e: any) {
+    // fetch rejects only on a true network failure (server unreachable, DNS,
+    // CORS). Surface it as a status-0 ApiError so the UI can show the
+    // "service unavailable" screen instead of a raw "Failed to fetch".
+    throw new ApiError(
+      "Can't reach the server. Please check your connection and try again.",
+      0,
+      "NETWORK",
+    );
+  }
+
   let data: any;
   try {
     data = await res.json();
   } catch {
-    // Response is not JSON (e.g. rate limiter plain text)
+    // Response is not JSON (e.g. rate limiter plain text, or a proxy 502 page)
     const text = await res.text().catch(() => "Request failed");
-    throw new Error(text || `HTTP ${res.status}`);
+    throw new ApiError(text || `HTTP ${res.status}`, res.status);
   }
   if (!res.ok) {
     // If token expired, clear it and reload to force re-login
@@ -32,13 +70,16 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       setToken(null);
       window.location.reload();
     }
-    throw new Error(data.message || "Request failed");
+    throw new ApiError(data.message || "Request failed", res.status, data.code);
   }
   return data;
 }
 
 // ── Auth ──────────────────────────────────────────────────
 export const api = {
+  /** Liveness + DB check. Throws ApiError (status 0 / 503) when unavailable. */
+  health: () => request<any>("/health"),
+
   auth: {
     login: (email: string, password: string) =>
       request<any>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),

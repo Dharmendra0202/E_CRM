@@ -9,6 +9,7 @@ import { sendVerificationEmail, sendPasswordResetEmail } from "../utils/email";
 import { logAudit } from "../utils/auditLog";
 import { notifyAdmins } from "../utils/notify";
 import { signAccessToken, signRefreshToken, verifyAccessToken, verifyToken } from "../middleware/auth";
+import { sendError, isDbUnavailable } from "../utils/apiError";
 
 const googleClient = new OAuth2Client();
 
@@ -109,7 +110,7 @@ router.post("/register", async (req: Request, res: Response): Promise<void> => {
       user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role },
     });
   } catch (err: any) {
-    res.status(500).json({ status: "error", message: err.message });
+    sendError(res, err, "Could not create your account. Please try again.");
   }
 });
 
@@ -172,7 +173,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
     });
     logAudit({ userId: user.id, userEmail: user.email, module: "auth", action: "LOGIN", metadata: { role: user.role } }, req);
   } catch (err: any) {
-    res.status(500).json({ status: "error", message: err.message });
+    sendError(res, err, "Could not sign you in. Please try again.");
   }
 });
 
@@ -204,7 +205,7 @@ router.get("/verify/:token", async (req: Request, res: Response): Promise<void> 
     });
     res.json({ status: "success", message: "Email verified successfully. You can now log in." });
   } catch (err: any) {
-    res.status(500).json({ status: "error", message: err.message });
+    sendError(res, err, "Could not verify your email. Please try again.");
   }
 });
 
@@ -224,7 +225,7 @@ router.post("/resend-verification", async (req: Request, res: Response): Promise
     sendVerificationEmail(user.email, user.firstName, verificationToken).catch(console.error);
     res.json({ status: "success", message: "Verification email sent. Please check your inbox." });
   } catch (err: any) {
-    res.status(500).json({ status: "error", message: err.message });
+    sendError(res, err, "Could not resend the verification email. Please try again.");
   }
 });
 
@@ -243,7 +244,7 @@ router.post("/forgot-password", async (req: Request, res: Response): Promise<voi
     }
     res.json({ status: "success", message: "If that email exists, a password reset link has been sent." });
   } catch (err: any) {
-    res.status(500).json({ status: "error", message: err.message });
+    sendError(res, err, "Could not process the request. Please try again.");
   }
 });
 
@@ -267,7 +268,7 @@ router.post("/reset-password", async (req: Request, res: Response): Promise<void
     });
     res.json({ status: "success", message: "Password reset successful. You can now log in." });
   } catch (err: any) {
-    res.status(500).json({ status: "error", message: err.message });
+    sendError(res, err, "Could not reset your password. Please try again.");
   }
 });
 
@@ -397,7 +398,7 @@ router.put("/profile", async (req: Request, res: Response): Promise<void> => {
     logAudit({ userId: decoded.id, userEmail: updatedUser.email, module: "auth", action: "UPDATE", metadata: { updated: "profile" } }, req);
 
     res.json({ status: "success", message: "Profile updated successfully.", data: fullProfile });
-  } catch (err: any) { res.status(500).json({ status: "error", message: err.message || "Failed to update profile." }); }
+  } catch (err: any) { sendError(res, err, "Failed to update profile."); }
 });
 
 // ── PUT /auth/change-password ────────────────────────────────
@@ -522,7 +523,10 @@ router.post("/google", async (req: Request, res: Response): Promise<void> => {
       user: { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName },
     });
   } catch (err: any) {
-    res.status(401).json({ status: "error", message: err.message || "Google authentication failed." });
+    // A DB-connectivity failure (e.g. Supabase paused) must surface as a clean
+    // 503, not leak the raw Prisma "Can't reach database server..." text.
+    if (isDbUnavailable(err)) { sendError(res, err); return; }
+    res.status(401).json({ status: "error", code: "UNAUTHORIZED", message: "Google authentication failed." });
   }
 });
 
